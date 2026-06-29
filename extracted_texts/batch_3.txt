@@ -1,0 +1,1705 @@
+--- START OF PAPER: jmir-2025-1-e65272.pdf ---
+Review
+Wearable Artificial Intelligence for Sleep Disorders: Scoping
+Review
+Sarah Aziz1, MSc; Amal A M Ali2,3, MSc; Hania Aslam1, MSc; Alaa A Abd-alrazaq1, PhD; Rawan AlSaad1, PhD;
+Mohannad Alajlani4, PhD; Reham Ahmad4, MSc; Laila Khalil5, MD; Arfan Ahmed1, PhD; Javaid Sheikh1, MD
+1AI Center for Precision Health, Weill Cornell Medicine-Qatar, Doha, Qatar
+2College of Science and Engineering, Hamad Bin Khalifa University, Doha, Qatar
+3Social and Economic Survey Research Institute, Qatar University, Doha, Qatar
+4Institute of Digital Healthcare, University of Warwick, Warwick, United Kingdom
+5Weill Cornell Medicine-Qatar, Doha, Qatar
+Corresponding Author:
+Sarah Aziz, MSc
+AI Center for Precision Health
+Weill Cornell Medicine-Qatar
+Education City, Street 2700
+Doha
+Qatar
+Phone: 974 44928827
+Email: saa4038@qatar-med.cornell.edu
+Abstract
+Background: Worldwide, 30%-45% of adults have sleep disorders, which are linked to major health issues such as diabetes
+and cardiovascular disease. Long-term monitoring with traditional in-lab testing is impractical due to high costs. Wearable artificial
+intelligence (AI)–powered solutions offer accessible, scalable, and continuous monitoring, improving the identification and
+treatment of sleep problems.
+Objective: This scoping review aims to provide an overview of AI-powered wearable devices used for sleep disorders, focusing
+on study characteristics, wearable technology features, and AI methodologies for detection and analysis.
+Methods: Seven electronic databases (MEDLINE, PsycINFO, Embase, IEEE Xplore, ACM Digital Library, Google Scholar,
+and Scopus) were searched for peer-reviewed literature published before March 2024. Keywords were selected based on 3
+domains: sleep disorders, AI, and wearable devices. The primary selection criterion was the inclusion of studies that utilized AI
+algorithms to detect or predict various sleep disorders using data from wearable devices. Study selection was conducted in 2
+steps: first, by reviewing titles and abstracts, followed by full-text screening. Two reviewers independently conducted study
+selection and data extraction, resolving discrepancies by consensus. The extracted data were synthesized using a narrative
+approach.
+Results: The initial search yielded 615 articles, of which 46 met the eligibility criteria and were included in the final analysis.
+The majority of studies focused on sleep apnea. Wearable AI was widely deployed for diagnosing and screening disorders;
+however, none of the studies used it for treatment. Commercial devices were the most commonly used type of wearable technology,
+appearing in 30 out of 46 (65%) studies. Among these, various brands were utilized rather than a single large, well-known brand;
+19 (41%) studies used wrist-worn devices. Respiratory data were used by 25 of 46 (54%) studies as the primary data for model
+development, followed by heart rate (22/46, 48%) and body movement (17/46, 37%). The most popular algorithm was the
+convolutional neural network, adopted by 17 of 46 (37%) studies, followed by random forest (14/46, 30%) and support vector
+machines (12/46, 26%).
+Conclusions: Wearable AI technology offers promising solutions for sleep disorders. These devices can be used for screening
+and diagnosis; however, research on wearable technology for sleep disorders other than sleep apnea remains limited. To statistically
+synthesize performance and efficacy results, more reviews are needed. Technology companies should prioritize advancements
+such as deep learning algorithms and invest in wearable AI for treating sleep disorders, given its potential. Further research is
+necessary to validate machine learning techniques using clinical data from wearable devices and to develop useful analytics for
+data collection, monitoring, prediction, classification, and recommendation in the context of sleep disorders.
+J Med Internet Res 2025 | vol. 27 | e65272 | p. 1https://www.jmir.org/2025/1/e65272
+(page number not for citation purposes)
+Aziz et alJOURNAL OF MEDICAL INTERNET RESEARCH
+XSL•FO
+RenderX
+(J Med Internet Res 2025;27:e65272) doi: 10.2196/65272
+KEYWORDS
+sleep disorders; wearable devices; artificial intelligence; machine learning; scoping review
+Introduction
+Background
+Sleep is a fundamental biological process essential for
+maintaining overall health and well-being. It is a dynamic state
+in which the brain processes daily experiences, promotes
+synaptic plasticity, and supports physical functions. During
+sleep, the brain and body engage in recovery, repair, and
+preparation for the next day [1]. Sufficient sleep is crucial for
+mood stability, cognitive function, and overall health. Both
+sleep quantity and quality are vital for optimal functioning of
+the body and mind [2]. The National Sleep Foundation defines
+optimal sleep quantity for adults as 7-9 hours per night [3],
+while sleep quality is characterized by factors such as minimal
+interruptions, appropriate sleep onset latency (typically under
+30 minutes), and a significant proportion of restorative sleep
+stages (eg, deep sleep, rapid eye movement sleep). According
+to the Philips Global Sleep Survey [4], 62% of people worldwide
+report not getting the quality of sleep they desire, and 44% have
+experienced worsening sleep over the past 5 years, a problem
+that may be attributed to various sleep disorders. The
+International Classification of Sleep Disorders categorizes sleep
+disorders into insomnia, sleep-disordered breathing, central
+hypersomnolence disorders, circadian rhythm sleep-wake
+disorders, parasomnias, and sleep-related movement disorders
+[5].
+Existing research has shown that sleep disorders significantly
+impact both physical and mental health. They can manifest as
+insufficient sleep, excessive sleep, or abnormal movements
+during sleep. Several studies have found that sleep disorders
+are associated with an increased risk of cardiovascular disease,
+diabetes, and cancer [6-8]. Additionally, they are linked to
+mental health issues such as depression, anxiety, and suicidal
+behavior [9-11]. Beyond individual health, sleep disorders also
+have broader societal consequences, including an increased risk
+of road accidents [12]. To mitigate the negative health and social
+impacts of sleep disorders, early detection, monitoring, and
+treatment are essential.
+Various methods and devices have been used to monitor and
+diagnose sleep disorders, including polysomnography (PSG),
+home sleep testing (HST), and actigraphy. PSG is the gold
+standard for diagnosing sleep disorders, as it accurately assesses
+sleep phases and identifies potential conditions. However,
+despite its advantages, PSG has some limitations. It is costly
+and time-consuming, requires individuals to spend the night in
+a sleep laboratory, and depends on expert monitoring and
+scoring. By contrast, HST and actigraphy are less costly, allow
+data collection over multiple days, and can be used in
+nonlaboratory settings compared with PSG [13,14]. However,
+HST has limitations, including underestimating results and
+providing limited evaluations of certain sleep disorders [15,16].
+These limitations can be addressed by wearable artificial
+intelligence (AI) technology.
+As wearable AI devices become increasingly popular, they have
+revolutionized the health care industry by enabling real-time
+monitoring and diagnostic capabilities [17]. This technology
+integrates AI into wearable devices (WDs), allowing them to
+perform tasks such as data processing, inference, and
+decision-making directly on the device [18]. According to the
+IEC (International Electrotechnical Commission)
+Standardization Group 10, wearable smart devices are
+categorized into 4 groups based on their proximity to, placement
+on, or implantation within an organism, such as the human body
+(as cited in [19]). Near-body wearables, such as radar-based
+monitoring systems, contactless sleep-tracking devices, and
+mobile sleep apps, operate close to the body but do not require
+direct skin contact. On-body wearables, including smartwatches,
+fitness trackers, smart glasses, electrocardiogram electrodes,
+electromyography sensors, and electrodermal activity monitors,
+are worn directly on the body and maintain continuous skin
+contact. In-body wearables, such as implantable smart patches
+and pacemakers, are implanted into the body. Electronic textiles
+integrate fabric-based electronics, including smart clothing
+designed to monitor physiological parameters.
+Research Problem and Aim
+Several studies have been published on the use of WDs
+combined with AI to detect or monitor sleep disorders. While
+multiple reviews have summarized previous studies, certain
+limitations exist. Some reviews focused solely on the features
+of AI models without discussing their integration with WDs
+[20-22]. Others examined only a specific type of sleep disorder
+[23-25]. Additionally, several reviews used search queries that
+omitted important terms [22,26]. Numerous reviews did not
+include searches in popular databases such as MEDLINE,
+PsycINFO, and Embase [20-22]. Some reviews focused on
+specific types of data, such as clinical data or consumer data
+from sleep technology devices used outside clinical settings
+[20,26]. Several reviews were narrative in nature, indicating
+that they did not follow systematic approaches [22,26].
+Therefore, this review aims to provide an overview of
+AI-powered WDs used for sleep disorders by analyzing key
+aspects across 3 dimensions. First, it examines the study
+characteristics, including design, population, and geographical
+trends, to highlight research patterns. Second, it explores the
+technological features of WDs, such as sensor types and
+biosignals collected, emphasizing their role in sleep monitoring.
+Third, it investigates the AI methodologies employed, their
+applications, and validation approaches, showcasing
+advancements in AI-driven sleep disorder detection.
+Methods
+Study Design
+To ensure a thorough and systematic approach, this scoping
+review adhered to the PRISMA-ScR (Preferred Reporting Items
+for Systematic Reviews and Meta-Analyses extension for
+J Med Internet Res 2025 | vol. 27 | e65272 | p. 2https://www.jmir.org/2025/1/e65272
+(page number not for citation purposes)
+Aziz et alJOURNAL OF MEDICAL INTERNET RESEARCH
+XSL•FO
+RenderX
+Scoping Reviews). A detailed account of adherence to
+PRISMA-ScR guidelines is provided in Multimedia Appendix
+1, outlining the structured process we followed.
+Search Strategy
+A comprehensive search was conducted across several electronic
+databases, including MEDLINE, PsycINFO, Embase, IEEE
+Xplore, ACM Digital Library, Scopus, and Google Scholar. An
+automatic alert was set to run the search query biweekly. The
+bibliographic data collection period spanned from December
+7, 2023, to March 6, 2024. As a result of the overwhelming
+volume of results from Google Scholar and its ability to
+prioritize relevant search results, this review deliberately focused
+only on the first 100 results. To identify additional relevant
+sources, we performed backward and forward reference list
+checking. This process involved analyzing the reference lists
+of included articles and examining studies that cited them using
+Google Scholar’s “Cited by” feature.
+The search queries combined terms related to sleep disorders
+(eg, sleep disorder*s, sleep disturbance, and sleep apnea) with
+terms related to AI (eg, AI, machine learning, and deep learning)
+and WDs (eg, wearable, smartwatch, and smart band). In
+collaboration with digital health experts and after reviewing
+relevant literature, the final search query was meticulously
+crafted. Boolean operators “OR” and “AND” were used to
+combine terms within the same category and across different
+categories, respectively. The language filter was set to English
+only. Duplicates were identified and removed using EndNote
+X9 (Clarivate Plc). Full details of the search terms used for each
+electronic database are provided in Multimedia Appendix 2.
+Study Eligibility Criteria
+This review encompassed studies that utilized AI algorithms
+for any purpose related to sleep disorders using data from WDs.
+Research articles were deemed suitable for inclusion if they
+primarily focused on individuals diagnosed with or suspected
+of having any type of sleep disorder, without restrictions based
+on age, gender, or ethnicity. Studies that focused solely on AI
+applications for detecting sleep quality or sleep staging—without
+directly addressing sleep disorders—or those forecasting
+intervention outcomes for sleep disorders were excluded.
+This review included studies that gathered data using
+noninvasive, on-body WDs. Research papers that exclusively
+relied on non-WDs, handheld devices (eg, mobile phones),
+near-body or in-body WDs, WDs physically connected to
+non-WDs, or wearables requiring expert oversight—such as
+those necessitating precise electrode placement—were excluded.
+Studies on animals or patients with other primary health
+conditions were also eliminated. Additionally, only
+peer-reviewed journal articles, conference papers, and
+dissertations were considered, with no restrictions on study
+setting, study design, reference standard (ie, ground truth), year
+of publication, or country of study. However, papers not
+published in English or classified as editorials, preprints,
+reviews, protocols, posters, conference abstracts, or research
+highlights were excluded from consideration.
+Study Selection Process
+The study selection process in this review comprised 2 key
+steps. First, all retrieved articles underwent a preliminary
+screening based on their titles and abstracts by 2 reviewers. This
+step was essential for determining whether the articles met the
+inclusion criteria without requiring a full-text review. It aimed
+to exclude studies that clearly did not meet the criteria, such as
+those unrelated to WDs or focusing on other aspects of sleep
+technology.
+Articles that passed the initial screening were then subjected to
+a detailed full-text review. The same 2 reviewers independently
+conducted this assessment, thoroughly evaluating each study
+against the inclusion and exclusion criteria to confirm its
+relevance to the research questions. Studies that lacked sufficient
+data on AI algorithm performance, used nonwearable
+technology, or fell outside the scope of peer-reviewed literature
+were excluded. Any discrepancies between reviewers were
+resolved through discussion until a consensus was reached. If
+disagreement persisted, a third reviewer was consulted to make
+the final decision.
+Data Extraction Process
+Two reviewers independently extracted data from the included
+studies using Microsoft Excel. The extracted information
+included study metadata, WD features, and AI algorithm
+characteristics. The data extraction form used in this review is
+provided in Multimedia Appendix 3. Any differences in data
+interpretation or extraction between reviewers were resolved
+through discussion until a consensus was reached.
+Data Synthesis
+We used a narrative approach to synthesize the extracted data,
+which were then aggregated using text, tables, and figures.
+Specifically, we first presented the search results, followed by
+an overview of the studies’ general characteristics, and finally,
+a detailed description of the features of WDs and AI
+technologies. We examined the technical characteristics of WDs,
+including key measurements, sensing approaches, and sensor
+properties, as well as general attributes such as device type,
+placement, and status. The AI aspects were analyzed based on
+the models used, evaluation criteria, and their applications.
+Results
+Search Findings
+Figure 1 illustrates the study selection process, as per
+PRISMA-ScR guidelines (Multimedia Appendix 1). The initial
+database search yielded 689 citations. After identifying and
+removing 240 duplicates using EndNote X9, 449 unique studies
+remained. Screening the titles and abstracts led to the exclusion
+of 397 studies. The full texts of the remaining 52 studies were
+retrieved and assessed, resulting in the exclusion of 9 studies.
+The primary reasons for exclusion were the lack of studies
+focusing on sleep disorders (n=2), the absence of AI algorithms
+(n=6), and inappropriate publication type (n=1). Additionally,
+3 relevant studies were identified through reference list
+screening. Ultimately, 46 studies were included in this review.
+J Med Internet Res 2025 | vol. 27 | e65272 | p. 3https://www.jmir.org/2025/1/e65272
+(page number not for citation purposes)
+Aziz et alJOURNAL OF MEDICAL INTERNET RESEARCH
+XSL•FO
+RenderX
+
+[... MIDDLE PAGES OMITTED ...]
+
+71. Le TQ, Changqing Cheng, Sangasoongsong A, Wongdhamma W, Bukkapatnam STS. Wireless wearable multisensory
+suite and real-time prediction of obstructive sleep apnea episodes. IEEE J Transl Eng Health Med. 2013;1:2700109-2700109.
+[doi: 10.1109/jtehm.2013.2273354]
+72. Kanal V, Abujelala M, Gattupalli S, Athitsos V, Makedon F. APSEN: pre-screening tool for sleep apnea in a home
+environment. In: Digital Human Modeling. Applications in Health, Safety, Ergonomics, and Risk Management: Health
+and Safety. Cham, Switzerland. Springer; 2016:36-51.
+73. Baron KG, Duffecy J, Berendsen MA, Cheung Mason I, Lattie EG, Manalo NC. Feeling validated yet? A scoping review
+of the use of consumer-targeted wearable and mobile technology to measure and improve sleep. Sleep Medicine Reviews.
+Aug 2018;40:151-159. [FREE Full text] [doi: 10.1016/j.smrv.2017.12.002] [Medline: 29395985]
+74. Hoang NH, Liang Z. Knowledge discovery in ubiquitous and personal sleep tracking: scoping review. JMIR Mhealth
+Uhealth. Jun 28, 2023;11:e42750. [FREE Full text] [doi: 10.2196/42750] [Medline: 37379057]
+75. Willoughby AR, Alikhani I, Karsikas M, Chua XY, Chee MW. Country differences in nocturnal sleep variability: observations
+from a large-scale, long-term sleep wearable study. Sleep Med. Oct 2023;110:155-165. [FREE Full text] [doi:
+10.1016/j.sleep.2023.08.010] [Medline: 37595432]
+76. Qiu D, Yu Y, Li R, Li Y, Xiao S. Prevalence of sleep disturbances in Chinese healthcare professionals: a systematic review
+and meta-analysis. Sleep Medicine. Mar 2020;67:258-266. [doi: 10.1016/j.sleep.2019.01.047] [Medline: 31040078]
+77. Stranges S, Tigbe W, Gómez-Olivé FX, Thorogood M, Kandala N-B. Sleep problems: an emerging global epidemic?
+Findings from the INDEPTH WHO-SAGE study among more than 40,000 older adults from 8 countries across Africa and
+Asia. Sleep. Aug 01, 2012;35(8):1173-1181. [FREE Full text] [doi: 10.5665/sleep.2012] [Medline: 22851813]
+78. Dong Z. Sleep quality and influencing factors in residents (>18 years old) of Xuzhou city in 2013. Chin J Prev Contr Chron
+Dis. 2014;22(6):654-658.
+79. Wang J, Wu J, Liu J, Meng Y, Li J, Zhou P, et al. Prevalence of sleep disturbances and associated factors among Chinese
+residents: a web-based empirical survey of 2019. J Glob Health. Aug 04, 2023;13:04071. [doi: 10.7189/jogh.13.04071]
+[Medline: 37539543]
+80. Polo-Kantola P. Sleep problems in midlife and beyond. Maturitas. Mar 2011;68(3):224-232. [doi:
+10.1016/j.maturitas.2010.12.009] [Medline: 21295422]
+81. Kundu K, Saini LK. Novel wearable devices for screening obstructive sleep apnea. Sleep Vigilance. Jun 13, 2024;8(1):1-2.
+[doi: 10.1007/s41782-024-00275-6]
+82. Manoni A, Loreti F, Radicioni V, Pellegrino D, Della Torre L, Gumiero A, et al. A new wearable system for home sleep
+apnea testing, screening, and classification. Sensors (Basel). Dec 08, 2020;20(24):7014. [doi: 10.3390/s20247014] [Medline:
+33302407]
+83. Tran NT, Tran HN, Mai AT. A wearable device for at-home obstructive sleep apnea assessment: state-of-the-art and research
+challenges. Front Neurol. Feb 7, 2023;14:1123227. [FREE Full text] [doi: 10.3389/fneur.2023.1123227] [Medline: 36824418]
+84. De ZM. Wearable sleep technology in clinical and research settings. Medicine and science in sports and exercise.
+2019;51(7):1538. [doi: 10.1249/mss.0000000000001947]
+85. Willoughby AR, Golkashani HA, Ghorbani S, Wong KF, Chee NI, Ong JL, et al. Performance of wearable sleep trackers
+during nocturnal sleep and periods of simulated real-world smartphone use. Sleep Health. Jun 2024;10(3):356-368. [FREE
+Full text] [doi: 10.1016/j.sleh.2024.02.007] [Medline: 38570223]
+86. Ahmed A, Aziz S, Abd-Alrazaq A, Farooq F, Sheikh J. Overview of artificial intelligence-driven wearable devices for
+diabetes: scoping review. J Med Internet Res. Aug 09, 2022;24(8):e36010. [doi: 10.2196/36010] [Medline: 35943772]
+87. Birrer V, Elgendi M, Lambercy O, Menon C. Evaluating reliability in wearable devices for sleep staging. NPJ Digit Med.
+Mar 18, 2024;7(1):74. [FREE Full text] [doi: 10.1038/s41746-024-01016-9] [Medline: 38499793]
+88. Abad VC, Guilleminault C. Diagnosis and treatment of sleep disorders: a brief review for clinicians. Dialogues in Clinical
+Neuroscience. Apr 01, 2022;5(4):371-388. [doi: 10.31887/dcns.2003.5.4/vabad]
+89. Holder S, Narula NS. Common sleep disorders in adults: diagnosis and management. Am Fam Physician. Apr 01,
+2022;105(4):397-405. [FREE Full text] [Medline: 35426627]
+90. Alzubaidi L, Zhang J, Humaidi AJ, Al-Dujaili A, Duan Y, Al-Shamma O, et al. Review of deep learning: concepts, CNN
+architectures, challenges, applications, future directions. J Big Data. Mar 31, 2021;8(1):53. [doi: 10.1186/s40537-021-00444-8]
+[Medline: 33816053]
+91. Dillier R. Continuous respiratory monitoring for sleep apnea screening by ambulatory hemodynamic monitor. World journal
+of cardiology. 2012;4(4):121. [Medline: 22558491]
+92. Zhu K, Li M, Akbarian S, Hafezi M, Yadollahi A, Taati B. Vision-based heart and respiratory rate monitoring during sleep
+– a validation study for the population at risk of sleep apnea. IEEE J Transl Eng Health Med. 2019;7:1-8. [doi:
+10.1109/jtehm.2019.2946147]
+93. Stisen A, Blunck H, Bhattacharya S, Prentow TS, Kjærgaard BM, Dey A, et al. Smart devices are different: assessing and
+mitigating mobile sensing heterogeneities for activity recognition. In: SenSys '15: Proceedings of the 13th ACM Conference
+on Embedded Networked Sensor Systems. 2015. Presented at: SenSys '15: The 13th ACM Conference on Embedded
+Network Sensor Systems; November 1-4, 2015:127-140; Seoul, South Korea. [doi: 10.1145/2809695.2809718]
+J Med Internet Res 2025 | vol. 27 | e65272 | p. 18https://www.jmir.org/2025/1/e65272
+(page number not for citation purposes)
+Aziz et alJOURNAL OF MEDICAL INTERNET RESEARCH
+XSL•FO
+RenderX
+94. Welch V, Wy TJ, Ligezka A, Hassett LC, Croarkin PE, Athreya AP, et al. Use of mobile and wearable artificial intelligence
+in child and adolescent psychiatry: scoping review. J Med Internet Res. Mar 14, 2022;24(3):e33560. [doi: 10.2196/33560]
+[Medline: 35285812]
+95. Razjouyan J, Lee H, Parthasarathy S, Mohler J, Sharafkhaneh A, Najafi B. Improving sleep quality assessment using
+wearable sensors by including information from postural/sleep position changes and body acceleration: a comparison of
+chest-worn sensors, wrist actigraphy, and polysomnography. J Clin Sleep Med. Nov 15, 2017;13(11):1301-1310. [FREE
+Full text] [doi: 10.5664/jcsm.6802] [Medline: 28992827]
+96. Burgard SA, Ailshire JA. Gender and time for sleep among U.S. adults. Am Sociol Rev. Feb 30, 2013;78(1):51-69. [doi:
+10.1177/0003122412472048] [Medline: 25237206]
+97. Teece AR, Beaven M, Argus CK, Gill N, Driller MW. Comparing perceived sleep quality, practices, and behaviors of male
+and female elite rugby union athletes with the use of sleep questionnaires. Sleep Sci. Sep 11, 2023;16(3):e271-e277. [doi:
+10.1055/s-0043-1772788] [Medline: 38196769]
+98. Putilov AA, Sveshnikov DS, Bakaeva ZB, Yakunina EB, Starshinov YP, Torshin VI, et al. Differences between male and
+female university students in sleepiness, weekday sleep loss, and weekend sleep duration. Journal of Adolescence. Mar 02,
+2021;88(1):84-96. [doi: 10.1016/j.adolescence.2021.02.006]
+99. Sampaio R, Pereira MG, Winck JC. Psychological morbidity, illness representations, and quality of life in female and male
+patients with obstructive sleep apnea syndrome. Psychol Health Med. Mar 2012;17(2):136-149. [doi:
+10.1080/13548506.2011.579986] [Medline: 21745022]
+Abbreviations
+AI: artificial intelligence
+CNN: convolutional neural network
+HST: home sleep testing
+IEC: International Electrotechnical Commission
+PRISMA-ScR: Preferred Reporting Items for Systematic Reviews and Meta-Analyses extension for Scoping
+Reviews
+PSG: polysomnography
+WD: wearable device
+Edited by N Cahill; submitted 11.08.24; peer-reviewed by BS Ibrahim, H Abu Serhan, M Alsahli, Z Liang; comments to author 24.10.24;
+revised version received 10.02.25; accepted 20.02.25; published 06.05.25
+Please cite as:
+Aziz S, A M Ali A, Aslam H, A Abd-alrazaq A, AlSaad R, Alajlani M, Ahmad R, Khalil L, Ahmed A, Sheikh J
+Wearable Artificial Intelligence for Sleep Disorders: Scoping Review
+J Med Internet Res 2025;27:e65272
+URL: https://www.jmir.org/2025/1/e65272
+doi: 10.2196/65272
+PMID:
+©Sarah Aziz, Amal A M Ali, Hania Aslam, Alaa A Abd-alrazaq, Rawan AlSaad, Mohannad Alajlani, Reham Ahmad, Laila
+Khalil, Arfan Ahmed, Javaid Sheikh. Originally published in the Journal of Medical Internet Research (https://www.jmir.org),
+06.05.2025. This is an open-access article distributed under the terms of the Creative Commons Attribution License
+(https://creativecommons.org/licenses/by/4.0/), which permits unrestricted use, distribution, and reproduction in any medium,
+provided the original work, first published in the Journal of Medical Internet Research (ISSN 1438-8871), is properly cited. The
+complete bibliographic information, a link to the original publication on https://www.jmir.org/, as well as this copyright and
+license information must be included.
+J Med Internet Res 2025 | vol. 27 | e65272 | p. 19https://www.jmir.org/2025/1/e65272
+(page number not for citation purposes)
+Aziz et alJOURNAL OF MEDICAL INTERNET RESEARCH
+XSL•FO
+RenderX
+
+--- END OF PAPER: jmir-2025-1-e65272.pdf ---
+
+--- START OF PAPER: journal.pone.0269500.pdf ---
+RESEA RCH ARTICL E
+Multi-scale ResNet and BiGRU automatic
+sleep staging based on attention mechanism
+Changyuan Liu
+ID
+1
+*, Yunfu Yin
+1
+, Yuhan Sun
+1
+, Okan K. Ersoy
+2
+1 School of Measuremen t and Commun ication Engine ering, Harbin University of Science and Technolo gy,
+Harbin, China, 2 Electrical and Compute r Engineeri ng Department , Purdue University, West Lafayette,
+Indiana , United States of America
+* liuchang yuan@hrb ust.edu.cn
+Abstract
+Sleep staging is the basis of sleep evaluation and a key step in the diagnosis of sleep-
+related diseases. Despite being useful, the existing sleep staging methods have several dis-
+advantages, such as relying on artificial feature extraction, failing to recognize temporal
+sequence patterns in the long-term associated data, and reaching the accuracy upper limit
+of sleep staging. Hence, this paper proposes an automatic Electroencephalo gram (EEG)
+sleep signal staging model, which based on Multi-scale Attention Residual Nets (MAResnet)
+and Bidirectional Gated Recurrent Unit (BiGRU). The proposed model is based on the resid-
+ual neural network in deep learning. Compared with the traditional residual learning module,
+the proposed model additionally uses the improved channel and spatial feature attention
+units and convolution kernels of different sizes in parallel at the same position. Thus, multi-
+scale feature extraction of the EEG sleep signals and residual learning of the neural net-
+works is performed to avoid network degradation. Finally, BiGRU is used to determine the
+dependence between the sleep stages and to realize the automatic learning of sleep data
+staging features and sleep cycle extraction. According to the experiment, the classification
+accuracy and kappa coefficient of the proposed method on sleep-EDF data set are 84.24%
+and 0.78, which are respectively 0.24% and 0.21 higher than the traditional residual net. At
+the same time, this paper also verified the proposed method on UCD and SHHS data sets,
+and the figure of classification accuracy is 79.34% and 81.6%, respectively. Compared to
+related existing studies, the recognition accuracy is significantly improved, which validates
+the effectiveness and generalization performance of the proposed method.
+1 Introduction
+More than a third of a person’s day is spent in sleep, sleep plays a vital role in the balance of
+physiological function. Sleep staging is the basis of sleep quality assessment, and the accuracy
+and convenience of sleep staging are the key factors in the diagnosis of sleep-related diseases
+[1]. At present, the medical analysis of sleep state is mainly by reading the information of Poly-
+SomnGram (PSG) for sleep stage interpretation. During the whole night sleep, various signals
+of the human body will show different characteristics with the change of sleep state. According
+PLOS ONE
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02695 00 June 16, 2022 1 / 20
+a1111111111
+a1111111111
+a1111111111
+a1111111111
+a1111111111
+OPEN ACCESS
+Citation: Liu C, Yin Y, Sun Y, Ersoy OK (2022)
+Multi-sca le ResNet and BiGRU automatic sleep
+staging based on attention mechanism. PLoS ONE
+17(6): e0269500. https:// doi.org/10.1371 /journal.
+pone.026950 0
+Editor: Sathishkuma r V E, Hanyang University ,
+REPUBLIC OF KOREA
+Received: March 31, 2022
+Accepted: May 20, 2022
+Published: June 16, 2022
+Peer Review History: PLOS recognize s the
+benefits of transpar ency in the peer review
+process; therefore, we enable the publication of
+all of the content of peer review and author
+response s alongside final, published articles. The
+editorial history of this article is available here:
+https://doi.o rg/10.1371/jo urnal.pone.0 269500
+Copyright: © 2022 Liu et al. This is an open access
+article distributed under the terms of the Creative
+Commons Attributi on License, which permits
+unrestricted use, distribution , and reproduction in
+any medium, provide d the original author and
+source are credited .
+Data Availabilit y Statement: All relevant data are
+within the manuscript and its Support ing
+information files.
+Funding: This project is funded by the Nationa l
+Natural Science Foundation of China (51779050)
+to the change of signal characteristics, the sleep process can be divided into several sleep stages,
+corresponding to the change of sleep state. In the General Rechtschaffen & Kales (R&K)
+Guidelines [2], all night’s sleep is mainly divided into Wake stage (W), Rapid Eye Movement
+stage (REM) and S1, S2, S3 and S4. The American Academy of Sleep Medicine suggests that
+both S3 and S4 are in deep sleep, which merged S3 and S4 into Slow wave Sleep stage (SS) [3].
+At present, there are two sleep stages in the field of sleep medicine. One is the classification
+of manual sleep periods by scholars, which takes hours to observe and analyze. The other is
+automatic sleep staging, which is the current mainstream research method. In the initial stage
+of sleep staging research, EEG can only be divided into various sleep stages by experts. This
+work is not only time-consuming and cumbersome, but also prone to subjective errors [4].
+Such studies have employed algorithms such as decision trees [5–9], support vector machines
+[10–13], Markov models [14, 15], and neural networks [16, 17], which operate on combina-
+tions of the traditional multi-channel PSG biometrics to provide algorithmic and automated
+assessment of a patient’s underlying sleep architecture. How to solve the tedious and time-con-
+suming problems of manual calibration method and effectively improve the accuracy of sleep
+staging has become a research hotspot of experts around the world.
+With the development of deep learning, several studies have attempted to develop an auto-
+matic sleep staging model based on deep learning. A convolutional neural network framework
+based on joint classification and prediction is proposed in literature [18], which can automati-
+cally extract sleep features from raw data, but the experimental results are still not as good as
+high-level classification models based on feature engineering at the same time. Then the
+framework of recurrent neural network is improved, and the end-to-end hierarchical recur-
+rent neural network model for automatic sleep staging of sequence pairs is established, and
+good staging results are achieved [19, 20], However, there are limitations on the sleep data
+with small-scale imbalanced categories, and the classification accuracy has great room for
+improvement. In order to improve the effect of sleep staging, Jia Ziyu et al. used parallel convo-
+lution network to automatically learn the original EEG features, and then used empty convolu-
+tion and residual link to fuse features [21]. Later, some scholars applied Recurrent Neural
+Networks (RNNs) in biological signal processing, and achieved good results. Supratak et al.
+[22] applied RNNs on sleep staging research, which has good effect but can improve the space
+greatly. However, RNNs has defects in processing long sequences, so LSTM came into being.
+Luo et al. [23] applied LSTM to sleep stages recognition of EEG signals. Kuo et al. [24] pro-
+posed an automatic sleep stage scoring combining the techniques of data augmentation,
+ensemble convolutional neural network (CNN), and expert knowledge. In addition, residual-
+like fusion structure is used to append the attention map to the input feature map for adaptive
+feature refinement [25]. The accuracy of sleep staging has been greatly improved. Feng et al.
+[26] proposed an automatic sleep staging algorithm based on the time attention mechanism.
+This approach reduces computing resources and time costs. In 2021, Altini Marco et al. [27]
+comprehensively analyzed the influence of accelerometer, peripheral signal mediated by auto-
+nomic nervous system (ANS) and circadian rhythm characteristics on the detection of sleep
+stage of large data set, making the accuracy of sleep stage reached 79%. Its limitations are how-
+ever ecological validity is limited by wearing reference PSG, which can be a disruption in the
+participant’s typical sleep patterns. In 2021, Huttunen et al. [28] used CNNs to stage EEG sig-
+nals. But the model had a weak ability to learn the relationship between sleep fragments, with a
+recognition rate of 68.7%. Casciola et al. [29] built a CNN-LSTM network model for sleep stag-
+ing, lacking the access to important information and multiscale extraction of features. In 2022,
+You Yuyang et al. [30] came up with a novel method for automatic sleep stage classification
+based on the time, frequency, and fractional Fourier transform (FRFT) domain features
+extracted from a single-channel electroencephalogram (EEG). Although this method achieves
+PLOS ONE
+Multi-scale ResNet and BiGRU automatic sleep staging based on attention mechanism
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02695 00 June 16, 2022 2 / 20
+and the National Natural Science Foundation of
+Heilongjiang Province (F201602 2). All the funds
+obtained for this study were used to purchase
+correspon ding experimenta l equipment and
+conduct experimenta l tests, and the researcher did
+not receive salary from the sponsors. The funders
+had no role in study design, data collecti on and
+analysis, decision to publish, or prepara tion of the
+manuscript.
+Competing interests : No author has a competing
+interest.
+a certain effect on sleep staging of EEG signals on sleep-EDF data set, the classification accu-
+racy (81.6%) is still 2.64% lower than the method proposed in this paper. The drawbacks of
+this method are that it only extracts the features of a single channel and does not fully extract
+the sleep features of multiple channels.
+Considering the above-given factors, this paper provides a detailed review of the residual
+network, which is proven to be effective in sleep staging. As a result, we propose an EEG-based
+sleep signal staging model using Multi-scale Attention Residual Nets (MAResnet) and a Bidi-
+rectional Gated Recurrent Unit (BiGRU) network. This study have proposed three innovations
+as follows:
+Firstly, in order to highlight the characteristics of EEG sleep sequence, channel feature
+attention unit and spatial feature attention unit are added to the residual module, while the
+ReLU activation function is replaced by the extended exponential linear unit activation func-
+tion to construct the residual spatial channel attention module. This plays a key role in identi-
+fying different sleep periods, since it can fully learn the importance of different channel
+characteristics and the correlation between characteristics.
+Secondly, convolution kernels of different sizes were used in parallel at the same spatial
+position. The shortcomings of the single-size filter extraction were mitigated, which allowed us
+to obtain the multi-scale EEG sleep feature output and fully excavate the intrinsic sleep infor-
+mation of the EEG signal.
+Thirdly, given the limited learning capability of the sleep cycle characteristics caused due to
+the traditional algorithm’s inability of identifying timing patterns in the long-term correlation
+data, a BiGRU network was introduced to analyze the timing information in detail.
+The improved model has stronger learning ability for features, which can fully excavate
+more intrinsic features, identify the temporal pattern of long-term association data, and effec-
+tively improve the accuracy of sleep staging model. Experimental results show that the
+improved model has better classification performance.
+2 Theoretical analysis
+2.1 Residual neural net
+The convolutional neural network has a wide range of applications in the field of image classi-
+fication and target recognition, from 5 layers of the convolution of original Lenet to 19 layers
+of convolution of VGG -19. The recognition effect and depth of this network are closely
+related. Networks such as VGGNet and GoogLeNet both indicate that having enough depth is
+a prerequisite for the model to perform well, but when the network depth increases to a certain
+extent, deeper networks mean higher training errors. The reason for the increase of error is
+that the deeper the net, the more prone to gradient dispersion. Generally speaking, the depth
+of convolutional network is easy to appear the gradient attenuation problem of shallow hidden
+layer, which increases the difficulty of training. In this paper, the residual network is selected
+as the basic network to improve. Residual network can effectively alleviate the problem of gra-
+dient attenuation.
+The principle of Residual Networks (ResNet) is as follows. If the x is input to a neural net, it
+is expected to output as function H(x). From the diagram, the desired output of the underlying
+mapping is to determine the residual function fitting a given layer, H(x) is the desired underly-
+ing mapping description. To ensure that the depth increases while the network does not
+degenerate, y = x layers need to be superimposed on the shallow net. The input x is transmitted
+and output in the corresponding ’ jump connection ’ mode, and the corresponding result is
+H(x) = F(x) + x. Under F(x) = 0, this relation is simplified to H (x) = x. The relation is the
+PLOS ONE
+Multi-scale ResNet and BiGRU automatic sleep staging based on attention mechanism
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02695 00 June 16, 2022 3 / 20
+
+[... MIDDLE PAGES OMITTED ...]
+
+References
+1. Wulff K. et al., “Sleep and circadian rhythm disrupti on in psychiatric and neurodegen erative disease,”
+Nat. Rev. Neurosci., vol. 11, no.8, pp.589–599, 2010. https:// doi.org/10.10 38/nrn2868 PMID: 20631712
+2. Brodeck V., Kuhn A., and Wegner F., “EEG microsta tes of wakefulnes s and NREM sleep,” Neuroimag e,
+vol. 62, no.2, pp.2129–21 39, 2012.
+3. Xiao M., Yan H., and Song J.Z., “Sleep stages classif ication based on heart rate variability and random
+forest,” Biomed . Signal Process Control, vol. 8, no.6, pp.624–633, 2013.
+4. Jingwei Hao, Senlin Luo, Limin Pan. "A Novel Sleep Staging Algorithm Based on Hybrid Neural Net-
+work", 2019 IEEE 9th Internat ional Conferen ce on Electronics Informatio n and Emerge ncy Commun ica-
+tion (ICEIEC), 2019.
+5. Agarwal R., et al., “Computer -Assisted Sleep Staging,” IEEE T Biomed. Eng. vol. 48, no. 12, pp. 1421–
+1423, 2001. https://doi.or g/10.1109/ 10.966600 PMID: 117599 22
+6. Virkkala J. et al., “Automa tic sleep stage classific ation using two-channe l electro- oculography,” J. Neu-
+rosci. Methods, vol. 166, no. 1, pp. 109–155, 2007. https://doi.or g/10.101 6/j.jneumet h.2007.06.016
+PMID: 176813 82
+7. Liang S.F., et al., “A rule-based automatic sleep staging method,” J. Neurosc i. Methods, vol. 205, no.
+1, pp. 169–17 6, 2012. https://doi.or g/10.101 6/j.jneume th.2011.12. 022 PMID: 22245090
+8. Stepnowsk y C. et al., “Scoring accuracy of automated sleep staging from a bipolar electroocu lar record -
+ing compared to manual scoring by multiple raters,” Sleep Med., vol. 14, no. 11, pp. 1199–120 7, 2013.
+https://doi.or g/10.101 6/j.sleep.2 013.04.022 PMID: 24047533
+9. Malhotra A. et al., “Performan ce of an Automate d Polysomnog raphy Scoring System Versus Com-
+puter-Ass isted Manual Scoring,” Sleep, vol. 36, no. 4, pp. 573–582, 2013. https://doi.or g/10.5665 /
+sleep.254 8 PMID: 23565003
+10. Koley B. et al., “An ensemble system for automatic sleep stage classif ication using single channel EEG
+signal,” Compu t. Biol. Med., vol. 42, no. 12, pp. 1186–1195, 2012. https://doi.or g/10.1016/j.
+compbiomed .2012.09.012 PMID: 23102750
+11. Zhu G. et al., “Analysis and Classifi cation of Sleep Stages Based on Differenc e Visibility Graphs From a
+Single-Chann el EEG Signal,” IEEE T Biomed . Eng., vol. 18, no. 6, pp. 1813–1821, 2014. https://doi.
+org/10.1109/ JBHI.2014.23 03991 PMID: 25375678
+12. M. Radha et al., “Compariso n of Feature and Classifier Algorithms for Online Automatic Sleep Staging
+Based on a Single EEG Signal.” in Presented at The 36th Annual International Conferen ce of the IEEE
+Engineeri ng in Medicine and Biology Society (EMBC 2014), 2014, pp. 1876–188 0.
+13. Bajaj V. et al., “Automa tic classific ation of sleep stages based on the time-fre quency image of EEG sig-
+nals,” Compu t. Method Program Biomed., vol. 112, no. 3, pp. 320–328, 2013. https:// doi.org/10.10 16/j.
+cmpb.2013.0 7.006 PMID: 24008250
+14. Yaghouby F. et al., “Quasi-su pervised scoring of human sleep in polysomnogr ams using augmente d
+input variables ,” Compu. Biol. Med., vol. 59, no. 1, pp. 54–63, 2015. https://doi.or g/10.1016/ j.
+compbiomed .2015.01.012 PMID: 25679475
+15. Onton J. et al., “Visualization of Whole-Night Sleep EEG From 2-Channel Mobile Recording Device
+Reveals Distinct Deep Sleep Stages with Differentia l Electrodermal Activity,” Front. Hum. Neurosci.,
+vol. 10, no. 605, pp. 1–12, 2016. https://doi.or g/10.338 9/fnhum.20 16.00605 PMID: 279655 58
+16. Shambroom A. et al., “Validation of an automated wireless system to monitor sleep in healthy adults,” J.
+Sleep Res., vol. 21, no. 2, pp. 221–23 0, 2012. https://doi.or g/10.111 1/j.1365-286 9.2011.0 0944.x
+PMID: 218594 38
+17. X. Cai, Z. Jia, M. Tang and G. Zheng, “BrainSle epNet: Learning Multivaria te EEG Representa tion for
+Automatic Sleep Staging,” in 2020 IEEE Internat ional Conference on Bioinformatic s and Biomed icine
+(BIBM), Seoul, Korea (South), 2020, pp. 976–979.
+18. Phan H., Andreotti F., and Cooray N., “Joint classification and predicti on CNN framework for automatic
+sleep stage classifica tion,” IEEE T Biomed. Eng., vol. 66, no.5, pp.1285–1296 , 2018. https://doi.or g/10.
+1109/TBM E.2018.287 2652 PMID: 30346277
+19. Phan H. et al., “SeqSlee pNet:end- to-end hierarchical recurrent neural network for sequence- to-
+sequence automatic sleep staging,” IEEE T Neur. Syst. Rehab. Eng., vol. 27, no.3, pp.:400–4 10, 2019.
+https://doi.or g/10.110 9/TNSRE.20 19.2896659 PMID: 307160 40
+20. Mousavi S., Afghah F., and Acharya U.R., “SleepEE GNet:autom ated sleep stage scoring with
+sequence to sequence deep learning approach ,” PloS One, vol. 14, no.5, pp.e021 6456, 2019. https://
+doi.org/10.13 71/journal.p one.0216456 PMID: 31063501
+21. Jia Z. et al., “Sleep staging model based on deep convolutio n neural network ,” Journal of Zhejiang Uni-
+versity (Engineer ing Edition), vol. 54, no.10, pp.:1899–190 5, 2010.
+PLOS ONE
+Multi-scale ResNet and BiGRU automatic sleep staging based on attention mechanism
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02695 00 June 16, 2022 19 / 20
+22. Supratak A. et al., “DeepSleepN et: A Model for Automatic Sleep Stage Scoring Based on Raw Single-
+Channel EEG,” in IEEE Transaction s on Neural Systems and Rehabilita tion Engineeri ng, vol. 25, no.
+11, pp. 1998–2 008, Nov. 2017. https://d oi.org/10.110 9/TNSR E.2017.27211 16 PMID: 28678710
+23. Luo S L. Automatic sleep staging method based on CNN-BiLSTM . Journal of Beijing University of Tech-
+nology,20 20, 40(07):746 –752.
+24. Kuo Chih-En, Chen Guan-Ting , Liao Po-Yu. An EEG spectrogra m-based automatic sleep stage scoring
+method via data augmenta tion, ensemb le convolutio n neural network, and expert knowledge. Biomed i-
+cal Signal Processin g and Control,20 21, 70.
+25. Shasha Sun,Chua npeng Li,Ning Lv,Xiaoma n Zhang,Zh aoyan Yu,Haibo Wang. Attention based convo-
+lutional network for automatic sleep stage classific ation. Biomed izinische Technik. Biomedic al engi-
+neering,202 1, 66(4).
+26. Feng Li Xiao,Li Xin,Wan g Hong Yu,Zheng Wen Yin,Zha ng Yong Qing,Gao Dong Rui,et al., Automatic
+Sleep Staging Algorithm Based on Time Attention Mechanism . Frontiers in Human Neurosc ience,2021 .
+https://doi.or g/10.338 9/fnhum.20 21.692054 PMID: 34483864
+27. Altini M, Kinnun en H. The Promise of Sleep: A Multi-S ensor Approach for Accurate Sleep Stage Detec-
+tion Using the Oura Ring[J]. Sensor s (Basel, Switzerlan d), 2021, 21(13): 758–770. https://doi.or g/10.
+3390/s21 134302 PMID: 342018 61
+28. Huttunen R, Leppa ¨ nen T, Duce B, et al. Assessme nt of Obstructi ve Sleep Apnea-R elated Sleep Frag-
+mentation Utilizing Deep Learning -Based Sleep Staging from Photop lethysmogra phy[J]. Sleep, 2021,
+44(19): 142. https://doi.o rg/10.1093/slee p/zsab142 PMID: 34089616
+29. Casciola A A, Carlucci S K, Kent B A, et al. A Deep Learning Strategy for Automatic Sleep Staging
+Based on Two-Ch annel EEG Headband Data[J]. Sensors, 2021, 21(10): 3316. https://doi.o rg/10.3390/
+s211033 16 PMID: 34064694
+30. Yuyang You, Xuyang Zhong, Guozheng Liu, Zhihong Yang. Automatic sleep stage classification: A light
+and efficient deep neural network model based on time, frequency and fractional Fourier transfor m
+domain features[J]. Artificial Intelligenc e in Medicine,2 022 (prepublish ).
+31. Goldberg er A L, Amaral L A, Glass L, et al., “PhysioBank , PhysioToo lkit, and PhysioNet: Component s
+of a New Researc h Resource for Complex Physiolog ic Signals ,” Circulation , vol. 101, no.23, 2000,
+E215–E220 . https://do i.org/10.1161 /01.cir.10 1.23.e215 PMID: 10851218
+32. Kemp B., and Zwinderman A.H., “Analysis of a sleep-depend ent neuronal feedback loop: the slow-
+wave microcontin uity of the EEG,” IEEE Trans. Biomed . Eng., vol. 47, no.9, pp.1185– 1194, 2000.
+https://doi.or g/10.110 9/10.867928 PMID: 11008419
+33. Zhang G.-Q. et al. The National Sleep Researc h Resource: towards a sleep data commons . Journal of
+the American Medical Informatics Association 25, 2018: 1351–1358. https://d oi.org/10.109 3/jamia/
+ocy064 PMID: 29860441
+34. Quan S. F. et al. The sleep heart health study: design, rationale, and methods . Sleep 20, 1997:1077–
+1085. PMID: 9493915
+35. Guo Y P. et al., “Automa tic sleep staging based on single channel EEG signal,” Journal of Shanxi Nor-
+mal Univers ity, vol. 48, no.6, pp.18–2 5, 2020.
+36. Yu Y. et al., “Sleep staging method based on improved k-means clustering and distance correction,” J.
+Comput. Appl., vol. 40, pp.269– 273, 2020.
+37. PHAN H, ANDREOTT I F, COORAY N, et al. DNN filter bank improves 1-max pooling CNN for single-
+channel EEG automatic sleep stage classif ication. Proceedings of the 40th Interna tional Conferen ce of
+the IEEE Engineeri ng in Medicine and Biology Society. Piscataw ay: IEEE Press, 2018: 453–456.
+38. HUMAY UN A I, SUSHMI T A S, HASAN T, et al. End-to-en d sleep staging with raw single channel EEG
+using deep residual ConvNet. Proceedings of the IEEE EMBS International Conferen ce on Biomed ical
+and Health Informatics. Piscataway: IEEE Press, 2019: 1–5.
+39. SEO H, BACK S, LEE S, et al. Intra- and inter-epoch temporal context network (IITNet) using sub-
+epoch feature s for automatic sleep scoring on raw single-channe l EEG. Biomed ical signal processing
+and control, 2020, 61: 102037.
+40. SMEEETON N C. Early history of the kappa statistic, Biometr ics, 1985, 41(3):795– 795.
+41. LANDIS J R, KOCH G G. The measureme nt of observer agreem ent for categorica l data. Bio-
+metrics,1977 , 33(1):159– 174. PMID: 843571
+PLOS ONE
+Multi-scale ResNet and BiGRU automatic sleep staging based on attention mechanism
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02695 00 June 16, 2022 20 / 20
+
+--- END OF PAPER: journal.pone.0269500.pdf ---
+
+--- START OF PAPER: journal.pone.0285703.pdf ---
+RESEA RCH ARTICL E
+AI-Driven sleep staging from actigraphy and
+heart rate
+Tzu-An Song
+1☯
+, Samadrita Roy Chowdhury
+ID
+2☯
+, Masoud Malekzadeh
+1☯
+,
+Stephanie Harrison
+4
+, Terri Blackwell Hoge
+4
+, Susan Redline
+3
+, Katie L. Stone
+ID
+4
+,
+Richa Saxena
+2
+, Shaun M. Purcell
+3
+, Joyita Dutta
+ID
+1
+*
+1 University of Massach usetts Amherst, Amherst, MA, United States of America, 2 Massach usetts General
+Hospital, Boston, MA, United States of America, 3 Brigham and Women’s Hospital, Boston, MA, United
+States of America, 4 California Pacific Medical Center Resea rch Institute, San Francisco, CA, United States
+of America
+☯ These authors contribu ted equally to this work.
+* jdutta@um ass.edu
+Abstract
+Sleep is an important indicator of a person’s health, and its accurate and cost-effective
+quantification is of great value in healthcare. The gold standard for sleep assessment and
+the clinical diagnosis of sleep disorders is polysomnogra phy (PSG). However, PSG requires
+an overnight clinic visit and trained technicians to score the obtained multimodality data.
+Wrist-worn consumer devices, such as smartwatches, are a promising alternative to PSG
+because of their small form factor, continuous monitoring capability, and popularity. Unlike
+PSG, however, wearables -derived data are noisier and far less information-rich because of
+the fewer number of modalities and less accurate measurements due to their small form fac-
+tor. Given these challenges, most consumer devices perform two-stage (i.e., sleep-wake)
+classification, which is inadequate for deep insights into a person’s sleep health. The chal-
+lenging multi-class (three, four, or five-class) staging of sleep using data from wrist-worn
+wearables remains unresolved. The difference in the data quality between consumer-grade
+wearables and lab-grade clinical equipment is the motivation behind this study. In this
+paper, we present an artificial intelligence (AI) technique termed sequence-to-seque nce
+LSTM for automated mobile sleep staging (SLAMSS), which can perform three-class
+(wake, NREM, REM) and four-class (wake, light, deep, REM) sleep classification from activ-
+ity (i.e., wrist-accelerom etry-derived locomotion) and two coarse heart rate measures—both
+of which can be reliably obtained from a consumer-gr ade wrist-wearable device. Our
+method relies on raw time-series datasets and obviates the need for manual feature selec-
+tion. We validated our model using actigraphy and coarse heart rate data from two indepen-
+dent study populations: the Multi-Ethnic Study of Atheroscleros is (MESA; N = 808) cohort
+and the Osteoporotic Fractures in Men (MrOS; N = 817) cohort. SLAMSS achieves an over-
+all accuracy of 79%, weighted F1 score of 0.80, 77% sensitivity, and 89% specificity for
+three-class sleep staging and an overall accuracy of 70-72%, weighted F1 score of 0.72-
+0.73, 64-66% sensitivity, and 89-90% specificity for four-class sleep staging in the MESA
+cohort. It yielded an overall accuracy of 77%, weighted F1 score of 0.77, 74% sensitivity,
+and 88% specificity for three-class sleep staging and an overall accuracy of 68-69%,
+PLOS ONE
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02857 03 May 17, 2023 1 / 29
+a1111111111
+a1111111111
+a1111111111
+a1111111111
+a1111111111
+OPEN ACCESS
+Citation: Song T-A, Chowdhury SR, Malekzadeh M,
+Harrison S, Hoge TB, Redline S, et al. (2023) AI-
+Driven sleep staging from actigraphy and heart
+rate. PLoS ONE 18(5): e0285703. https://doi.o rg/
+10.1371/ journal.pone. 0285703
+Editor: Kathirava n Srinivasan, Vellore Institute of
+Technology : VIT University, INDIA
+Received: July 11, 2022
+Accepted: May 2, 2023
+Published: May 17, 2023
+Copyright: © 2023 Song et al. This is an open
+access article distributed under the terms of the
+Creative Commons Attribution License, which
+permits unrestricte d use, distribu tion, and
+reproduction in any medium, provided the original
+author and source are credited.
+Data Availabilit y Statement: MESA actigrap hy and
+PSG data are freely available through the National
+Sleep Research Resource at https://do i.org/10.
+25822/n7h q-c406. MrOS PSG data are freely
+available through the Nationa l Sleep Research
+Resource at https://doi.org/10 .25822/kc27-042 5.
+MrOS actigrap hy data are not publicly available for
+download, but access requests can be made to the
+the MrOS Sleep Study investigato r K.L.S.,
+California Pacific Medical Center Research Institute,
+San Francisco, CA.
+weighted F1 score of 0.68-0.69, 60-63% sensitivity, and 88-89% specificity for four-class
+sleep staging in the MrOS cohort. These results were achieved with feature-poor inputs with
+a low temporal resolution. In addition, we extended our three-class staging model to an
+unrelated Apple Watch dataset. Importantly, SLAMSS predicts the duration of each sleep
+stage with high accuracy. This is especially significant for four-class sleep staging, where
+deep sleep is severely underreprese nted. We show that, by appropriately choosing the loss
+function to address the inherent class imbalance, our method can accurately estimate deep
+sleep time (SLAMSS/MESA: 0.61±0.69 hours, PSG/MESA ground truth: 0.60±0.60 hours;
+SLAMSS/MrOS: 0.53±0.66 hours, PSG/MrOS ground truth: 0.55±0.57 hours;). Deep sleep
+quality and quantity are vital metrics and early indicators for a number of diseases. Our
+method, which enables accurate deep sleep estimation from wearables -derived data, is
+therefore promising for a variety of clinical applications requiring long-term deep sleep
+monitoring.
+Introduction
+The quantity and quality of sleep are key indicators of human health [1]. Sleep is known to
+restore energy [2], bolster the immune system [3], ward off infection [4], and impact cognition
+and behavior [5]. Chronic disruptions in sleep patterns have been linked to cardiovascular dis-
+ease [6], diabetes [7, 8], Alzheimer’s disease [9–11], depression [12], migraine [13], and many
+other serious conditions. Monitoring of sleep and the subsequent analysis and characterization
+of sleep patterns are, therefore, of long-standing interest to healthcare providers [14].
+The gold standard for clinical sleep monitoring is overnight polysomnography (PSG),
+which is a multiparametric assessment of sleep featuring several functional measurements,
+including electroencephalography (EEG), electrocardiography (ECG), pulse oximetry, electro-
+oculography (EOG), electromyography (EMG), and respiratory tracking (measurement of
+nasal pressure, thoracic effort, and abdominal effort). Following a PSG, trained technicians
+perform sleep scoring, which involves categorization of each 30-s sleep epoch into one of five
+sleep stages, namely, wake (W), rapid eye movement (REM) sleep, and three distinct categories
+of non-REM (NREM) sleep: N1, N2, and N3, as recognized by the American Academy of
+Sleep Medicine (AASM) [15]. Despite its universality in the clinic, PSG has serious limitations:
+It requires bulky equipment, is usually conducted in a clinical sleep laboratory by specialized
+personnel, and is unsuitable for continuous and long-term sleep monitoring. Manual sleep
+scoring following a PSG is a labor-intensive and expensive process that is limited by inter-rater
+scoring variability [16]. The development of reliable alternatives to this setup, encompassing
+both hardware (e.g., wearable devices for sleep monitoring) and software (automated tech-
+niques for sleep staging), remains an open research problem of high significance in sleep medi-
+cine and digital health [17–19].
+Consumer-grade wearable devices are capable of continuous monitoring of sleep with the
+advantages of scalability and low cost over PSG. AASM has approved several specialized acti-
+graphy devices for sleep vs. wake categorization (two-class sleep staging) [20–23]. In fact, two-
+class sleep staging is a well-established consumer technology beyond the clinic and a standard
+feature in many consumer-grade wrist wearables, e.g., smartwatches [24, 25]. In comparison,
+automated multi-class (i.e., three-, four-, or five-class) sleep staging from wearables-derived
+data remains an active area of research. Three-class staging involves categorizing each epoch
+PLOS ONE
+AI-Driven sleep staging from actigraphy and heart rate
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02857 03 May 17, 2023 2 / 29
+Funding: This work was supported in part by the
+NIH grant R21AG068890 (to J.D., R.S., and S.M.
+P.) and the AAUW American Fellowship (to S.R.C.).
+There was no additional external funding receive d
+for this study. The funders had no role in study
+design, data collection and analysis, decision to
+publish, or preparation of the manuscript.
+Competing interests : The authors have declared
+that no competing interests exist.
+as wake, REM, or NREM, while four-class staging further splits NREM into light (N1 and N2)
+and deep/slow-wave (N3) sleep categories. Methods for automated sleep staging have tradi-
+tionally focused on EEG [26–29]. While portable EEG headbands exist, these are far from
+being universally adopted as consumer electronics. Recently, there has been significant enthu-
+siasm surrounding ECG-based sleep scoring [30–33]. While wrist-based consumer smartwatch
+devices like the Apple Watch are capable of performing a single-lead ECG, this data cannot be
+acquired passively (e.g., when the wearer is asleep) or in real time as it requires conscious
+action on the wearer’s part (i.e., placing one’s finger on the sensor). Unlike ECG, heart rate is
+passively and continuously measured in these devices using photoplethysmography (PPG). As
+opposed to EEG- and ECG-based approaches which have limited on-the-go utility, an auto-
+mated sleep staging technique that accepts activity and heart rate as the only two inputs will
+have broad applicability across a wide range of consumer-grade wrist-based devices and can
+be easily scaled to the fast-growing pool of smartwatch users.
+It should be noted that four-class sleep staging is a more challenging machine learning
+problem than three-class staging because the four sleep classes are inherently severely imbal-
+anced, i.e., there are major differences in the occurrence of the classes in a typical night. Specif-
+ically, among the three NREM sleep stages, N2 is the majority class and constitutes 45–55% of
+the total sleep period, while deep sleep (N3) comprises only about 10–20% [34]. This class
+imbalance problem curtails the performance of sleep staging algorithms and frequently leads
+to under-/over-estimation of individual sleep stages as previously noted [35–37]. Methods
+addressing class imbalance in machine learning are diverse and include the use of specialized
+loss functions such as class-balanced loss [38], cost-sensitive learning [39], or focal loss [40]
+and various forms of data augmentation such as synthetic minority oversampling (SMOTE)
+[41] and adaptive minority oversampling [42]. Such traditional oversampling methods, how-
+ever, are not well-suited for sleep staging as the temporal correlations of the input time series
+must be maintained during the synthesis phase. The underrepresentatio n of deep sleep epochs
+makes four-class staging even more challenging when working with information-poor data
+from smartwatches and other wrist wearables compared to lab-grade ECG and EEG.
+With the emergence of artificial intelligence (AI), new approaches for automated sleep scor-
+ing have become available. Unlike conventional approaches for EEG and ECG classification
+that are heavily reliant on feature handcrafting, deep learning techniques, such as convolu-
+tional neural networks (CNNs) and long short-term memory (LSTM) neural networks, can
+learn features that are the most discriminative for the sleep staging task directly from the raw
+data. In this paper, we present an AI technique that we coin sequence-to-sequence LSTM for
+automated mobile sleep staging (SLAMSS), which can perform three-stage and four-stage
+sleep classification using activity and two coarse heart rate measures (heart rate mean and
+heart rate standard deviation). The input data types for SLAMSS are compliant with a wide
+range of wrist wearables, which confers broad utility to our approach. The dependence on raw
+data obviates the need for manual feature selection. For performance evaluation, instead of
+relying solely on overall classification accuracy (which is often skewed in favor of the high-per-
+forming majority class when there is class imbalance), our approach emphasizes the accurate
+estimation of the duration of each sleep stage. A key focus of this work is the accurate compu-
+tation of NREM sleep time, particularly the time spent in the N3 (or slow-wave/deep sleep)
+stage, as reduced N3 sleep is implicated in a broad range of serious disorders. It should be
+noted that the N3 staging is challenging and typically relies on EEG data—even efforts based
+on lab-grade ECG have led to significant under- or overestimation of the N3 stage [32].
+To train and test the SLAMSS network, we use activity and heart rate measures derived
+from the Multi-Ethnic Study of Atherosclerosis (MESA) dataset [43, 44]. To show the broad
+utility of our model, we also validate the model using another independent dataset, the
+PLOS ONE
+AI-Driven sleep staging from actigraphy and heart rate
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02857 03 May 17, 2023 3 / 29
+
+[... MIDDLE PAGES OMITTED ...]
+
+32. Sridhar N, Shoeb A, Stephe ns P, Kharbouch A, Shimol DB, Burkart J, et al. Deep learning for auto-
+mated sleep staging using instantane ous heart rate. NPJ Digit Med. 2020; 3:106. https:/ /doi.org/10.
+1038/s41 746-020-0 291-x PMID: 328850 52
+33. Werth J, Radha M, Andriess en P, Aarts RM, Long X. Deep learning approach for ECG-b ased automatic
+sleep state classific ation in preterm infants. Biomed Signal Process Control. 2020; 56:1016 63. https://
+doi.org/10.10 16/j.bspc.20 19.101663
+34. Institute of Medicine (US) Committe e on Sleep Medicine and Research. Sleep Disorders and Sleep
+Deprivatio n: An Unmet Public Health Problem. In: Colten HR, Altevogt BM, editors. The National Acade-
+mies Collection: Reports funded by National Institutes of Health. Washingto n D.C.: National Academie s
+Press (US); 2006.
+35. Supratak A, Dong H, Wu C, Guo Y. DeepSleep Net: A model for automatic sleep stage scoring based on
+raw single- channel EEG. IEEE Trans Neural Syst Rehabil Eng. 2017; 25(11):19 98–2008. https://doi.
+org/10.1109/ TNSRE.2017.2 721116 PMID: 28678710
+36. Sun C, Fan J, Chen C, Li W, Chen W. A Two-Stag e Neural Network for Sleep Stage Classifi cation
+Based on Feature Learning, Sequence Learning, and Data Augmen tation. IEEE Access. 2019;
+7:109386–1 09397. https://doi.or g/10.110 9/ACCESS .2019.2933814
+37. Tsinalis O, Matthews PM, Guo Y. Automatic sleep stage scoring using time-fre quency analysis and
+stacked sparse autoenco ders. Ann Biomed Eng. 2016; 44(5):1587 –1597. https:// doi.org/10.10 07/
+s10439-015 -1444-y PMID: 26464268
+38. Cui Y, Jia M, Lin TY, Song Y, Belongie SJ. Class-balan ced loss based on effective number of samples.
+arXiv:190105 555. 2019;.
+39. Zhou ZH, Liu XY. On multi-class cost-s ensitive learning. Comp utational Intelligenc e. 2010; 26(3):232–
+257. https://do i.org/10.1111 /j.1467-8640 .2010.00 358.x
+40. Lin TY, Goyal P, Girshic k R, He K, Dolla ´ r P. Focal loss for dense object detection. arXiv:170802 002.
+2018;.
+41. Chawla NV, Bowyer KW, Hall LO, Kegelm eyer WP. SMOTE: Synthetic minority over-samp ling tech-
+nique. J Artif Intell Res. 2002; 16:321–3 57. https://doi.or g/10.161 3/jair.953
+42. He H, Bai Y, Garcia EA, Li S. ADASYN: Adaptive synthetic sampling approach for imbalan ced learning.
+In: IJCNN. IEEE; 2008. p. 1322–132 8.
+43. Zhang GQ, Cui L, Mueller R, Tao S, Kim M, Rueschma n M, et al. The National Sleep Research
+Resource: towards a sleep data commo ns. J Am Med Inform Assoc. 2018; 25(10):135 1–1358 . https://
+doi.org/10.10 93/jamia/oc y064 PMID: 29860441
+44. Chen X, Wang R, Zee P, Lutsey PL, Javaheri S, Alca ´ ntara C, et al. Racial/ethn ic differences in sleep
+disturbanc es: The Multi-Ethnic Study of Atheros clerosis (MESA). Sleep. 2015; 38(6):877– 888. https://
+doi.org/10.56 65/sleep.4732 PMID: 25409106
+45. Blackwell T, Yaffe K, Ancoli-Israel S, Redline S, Ensrud KE, Stefanick ML, et al. Association s between
+sleep architectur e and sleep-d isordered breathing and cognition in older commu nity-dwellin g men: the
+Osteoporotic Fractures in Men Sleep Study. J Am Geriatr Soc. 2011; 59(12):221 7–2225. https://doi. org/
+10.1111/ j.1532-5415 .2011.03731. x PMID: 221880 71
+46. Walch O, Huang Y, Forger D, Goldstein C. Sleep stage prediction with raw accelerati on and photo-
+plethysmog raphy heart rate data derived from a consumer wearabl e device. Sleep. 2019; 42(12).
+https://doi.or g/10.109 3/sleep/zsz 180 PMID: 31579900
+47. Bild DE, Bluemke DA, Burke GL, Detrano R, Diez Roux AV, Folsom AR, et al. Multi-E thnic Study of Ath-
+eroscleros is: objectives and design. Am J Epidemiol. 2002; 156(9):871 –881. https://doi.or g/10.109 3/
+aje/kwf113 PMID: 12397006
+48. Walch O. Motion and heart rate from a wrist-worn wearabl e and labeled sleep from polysomnogr aphy
+(version 1.0.0). PhysioNet. 2019;.
+49. Goldberg er AL, Amaral LA, Glass L, Hausdorff JM, Ivanov PC, Mark RG, et al. PhysioBan k, Physio-
+Toolkit, and PhysioNet: components of a new research resour ce for complex physiolog ic signals. Circu-
+lation. 2000; 101(23):E2 15–220. https://doi.or g/10.116 1/01.CIR.1 01.23.e215 PMID: 108512 18
+50. Te Lindert BH, Van Someren EJ. Sleep estimates using microelectr omechanical systems (MEMS).
+Sleep. 2013; 36(5):781– 789. https://doi.or g/10.5665 /sleep.2648 PMID: 23633761
+51. Sutskever I, Vinyals O, Le QV. Sequence to Seque nce Learning with Neural Networks.
+arXiv:140932 15. 2014;.
+52. Bahdanau D, Cho K, Bengio Y. Neural Machine Translati on by Jointly Learning to Align and Translate .
+arXiv:140904 73. 2016;.
+53. Ho Y, Wookey S. The real world-wei ght cross-entr opy loss function: Modeling the costs of mislabelin g.
+IEEE Access. 2020; 8:4806–4813. https:// doi.org/10.11 09/ACC ESS.2019.2 962617
+PLOS ONE
+AI-Driven sleep staging from actigraphy and heart rate
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02857 03 May 17, 2023 28 / 29
+54. Laffan A, Caffo B, Swihart BJ, Punjabi NM. Utility of sleep stage transitions in assessin g sleep continu-
+ity. Sleep. 2010; 33(12):168 1–1686. https:// doi.org/10.10 93/sleep/3 3.12.168 1 PMID: 21120130
+55. Vallat R, Walker MP. An open-source, high-perfo rmance tool for automated sleep staging. Elife. 2021;
+10:e70092. https://doi.or g/10.7554/ eLife.70092 PMID: 346484 26
+56. Kirsch MR, Monahan K, Weng J, Redline S, Loparo KA. Entropy-bas ed measures for quantifyin g sleep-
+stage transition dynamics : relationship to sleep fragmenta tion and daytime sleepines s. IEEE Transac-
+tions on Biomedical Engineeri ng. 2011; 59(3):787– 796. https://doi.or g/10.110 9/TBME.2 011.2179032
+PMID: 221675 54
+57. Kishi A, Natelson BH, Togo F, Struzik ZR, Rapopor t DM, Yamamoto Y. Sleep-s tage dynamics in
+patients with chronic fatigue syndrom e with or without fibromyalg ia. Sleep. 2011; 34(11):155 1–1560 .
+https://doi.or g/10.566 5/sleep.13 96 PMID: 22043126
+58. Beattie Z, Oyang Y, Statan A, Ghoreys hi A, Pantelopoul os A, Russell A, et al. Estimation of sleep
+stages in a healthy adult population from optical plethysmogr aphy and accelerome ter signals. Physiol
+Meas. 2017; 38(11):196 8–1979 . https://doi.or g/10.108 8/1361-6579 /aa9047 PMID: 29087960
+59. Zhai B, Perez-Poz uelo I, Clifton EAD, Palotti J, Guan Y. Making sense of sleep: Multimodal sleep stage
+classifica tion in a large, diverse population using movement and cardiac sensing. Proc ACM Interact
+Mob Wearable Ubiquitou s Technol. 2020;4.
+60. Boe AJ, McGee Koch LL, O’Brien MK, Shawen N, Rogers JA, Lieber RL, et al. Automatin g sleep stage
+classifica tion using wireless, wearabl e sensors. NPJ Digit Med. 2019; 2:131. https://doi.or g/10.103 8/
+s41746-019 -0210-1 PMID: 31886412
+61. Martin JL, Hakim AD. Wrist actigraphy. Chest. 2011; 139(6):151 4–1527. https://doi.or g/10.1378/ chest.
+10-1872 PMID: 216525 63
+62. Fekedule gn D, Andrew ME, Shi M, Violanti JM, Knox S, Innes KE. Actigraphy -based assessmen t of
+sleep parame ters. Ann Work Expo Health. 2020; 64(4):350– 367. https://doi.or g/10.109 3/annweh/
+wxaa007 PMID: 320531 69
+63. Radha M, Fonseca P, Moreau A, Ross M, Cerny A, Anderer P, et al. Sleep stage classific ation from
+heart-rate variability using long short-term memory neural networks. Sci Rep. 2019; 9(1):1414 9. https://
+doi.org/10.10 38/s41598-019 -49703-y PMID: 31578345
+64. Musiek ES, Xiong DD, Holtzman DM. Sleep, circadian rhythms, and the pathogenesis of Alzheime r dis-
+ease. Exp Mol Med. 2015; 47:e148 . https://doi.or g/10.103 8/emm.2014.1 21 PMID: 25766617
+65. Peter-Derex L, Yammine P, Bastuji H, Croisile B. Sleep and Alzheimer’s disease. Sleep Med Rev.
+2015; 19:29–3 8. https://doi.or g/10.101 6/j.smrv.2014 .03.007 PMID: 24846773
+66. Delgado R, Tibau XA. Why Cohen’s Kappa should be avoided as performanc e measure in classi fica-
+tion. PLoS One. 2019; 14(9):e02 22916. https://doi.or g/10.137 1/journal.po ne.0222916 PMID: 31557204
+67. Muehlrot h BE, Rasch B, Werkle-Ber gner M. Episodic memory consolida tion during sleep in healthy
+aging. Sleep medicine reviews. 2020; 52:101304. https://doi. org/10.1016/j .smrv.20 20.101304 PMID:
+32278267
+68. Pawlows ki MA, Gazea M, Wollweber B, Dresler M, Holsboer F, Keck ME, et al. Heart rate variabi lity and
+cordance in rapid eye movement sleep as biomarke rs of depressio n and treatment response . Journal of
+psychiatric resear ch. 2017; 92:64–7 3. https://doi.or g/10.101 6/j.jpsychire s.2017.03 .026 PMID:
+28411417
+69. Hishikawa Y, Shimizu T. Physiolog y of REM sleep, cataplexy, and sleep paralysis. Adv Neurol. 1995;
+67:245–271 . PMID: 8848973
+PLOS ONE
+AI-Driven sleep staging from actigraphy and heart rate
+PLOS ONE | https://doi.or g/10.137 1/journal.po ne.02857 03 May 17, 2023 29 / 29
+
+--- END OF PAPER: journal.pone.0285703.pdf ---
+
+--- START OF PAPER: journal.pone.0332577.pdf ---
+ID: pone.0332577 — 2025/11/1 — page 1 — #1
+PLOS ONE
+OPEN ACCESS
+Citation: EssahrauiS,LamaakalI,MalehY,
+MakkaouiKE,BouamiMF,OuahbiI,etal.
+(2025)FastKAN-DDD:Anovelfast
+Kolmogorov-Arnoldnetwork-basedapproach
+fordriverdrowsinessdetectionoptimizedfor
+TinyMLdeployment.PLoSOne20(11):
+e0332577.
+https://doi.org/10.1371/journal.pone.0332577
+Editor: MarcoAntonioMoreno-Armendariz,
+InstitutoPolitecnicoNacional,MEXICO
+Received: May13,2025
+Accepted: September2,2025
+Published: November5,2025
+Peer Review History: PLOSrecognizesthe
+benefitsoftransparencyinthepeerreview
+process;therefore,weenablethepublicationof
+allofthecontentofpeerreviewandauthor
+responsesalongsidefinal,publishedarticles.
+Theeditorialhistoryofthisarticleisavailable
+here:https://doi.org/10.1371/journal.pone.
+0332577
+Copyright: © 2025 Essahrauietal.Thisisan
+openaccessarticledistributedundertheterms
+ofthe CreativeCommonsAttributionLicense ,
+whichpermitsunrestricteduse,distribution,
+andreproductioninanymedium,providedthe
+originalauthorandsourcearecredited.
+Data availability statement: Datasourcesare
+includedinthepaper.
+RESEARCH ARTICLE
+FastKAN-DDD: A novel fast
+Kolmogorov-Arnold network-based
+approach for driver drowsiness detection
+optimized for TinyML deployment
+Siham Essahraui1☯, Ismail Lamaakal
+ 
+ 
+1☯, Yassine Maleh
+ 
+ 
+2∗, Khalid El Makkaoui1,
+Mouncef Filali Bouami1, Ibrahim Ouahbi1, Hela Elmannai
+ 
+ 
+3, Ahmed A. Abd El-Latif4,5
+1 Multidisciplinary Faculty of Nador, Mohammed Premier University, Oujda, Morocco,2 Laboratory LaSTI,
+ENSAK, Sultan Moulay Slimane University, Khouribga, Morocco,3 Department of Information
+Technology, College of Computer and Information Sciences, Princess Nourah bint Abdulrahman
+University, Riyadh, Saudi Arabia,4 EIAS Data Science Lab, College of Computer and Information
+Sciences, and Center of Excellence in Quantum and Intelligent Computing, Prince Sultan University,
+Riyadh, Saudi Arabia,5 Department of Mathematics and Computer Science, Faculty of Science, Menoufia
+University, Shebin El-Koom 32511, Egypt
+☯ These authors contributed equally to this work.
+∗ yassine.maleh@ieee.org
+Abstract
+Driver drowsiness is a leading cause of traffic accidents and fatalities, highlighting the
+urgent need for intelligent systems capable of real-time fatigue detection. Although
+recent advancements in machine learning (ML) and deep learning (DL) have signifi-
+cantly improved detection accuracy, most existing models are computationally demand-
+ing and not well-suited for deployment in resource-limited environments such as micro-
+controllers. While the emerging domain of TinyML presents promising avenues for such
+applications, there remains a substantial gap in the development of lightweight, inter-
+pretable, and high-performance models specifically tailored for embedded automotive
+systems. This paper introduces FastKAN-DDD, an innovative driver drowsiness detec-
+tion model grounded in the Fast Kolmogorov-Arnold Network (FastKAN) architecture.
+The model incorporates learnable nonlinear activation functions based on radial basis
+functions (RBFs), facilitating efficient function approximation with a minimal number of
+parameters. To enhance suitability for TinyML deployment, the model is further optimized
+through post-training quantization techniques, including dynamic range, float-16, and
+weight-only quantization. Comprehensive experiments were conducted using the UTA-
+RLDD dataset—a real-world benchmark for driver drowsiness detection—evaluating the
+model across various input resolutions and quantization schemes. The FastKAN-DDD
+model achieved a test accuracy of 99.94%, with inference latency as low as 0.04 ms
+and a total memory footprint of merely 35 KB, rendering it exceptionally well-suited for
+real-time inference on microcontroller-based systems. Comparative evaluations further
+confirm that FastKAN surpasses several state-of-the-art TinyML models in terms of
+PLOS One https://doi.org/10.1371/journal.pone.0332577 November 5, 2025 1/ 21
+ID: pone.0332577 — 2025/11/1 — page 2 — #2
+PLOS One FastKAN-DDD
+accuracy, computational efficiency, and model compactness. Our code’s are publicly
+available at:https://github.com/sihamess/driver_drowsiness_detection_TinyML.
+1 Introduction
+Driver drowsiness remains a major cause of road accidents and traffic-related fatalities glob-
+Funding: PrincessNourahbintAbdulrahman
+UniversityResearchersSupportingProject
+number(PNURSP2025R747),PrincessNourah
+bintAbdulrahmanUniversity,Riyadh,Saudi
+Arabia.Thefundershadaroleinthedecisionto
+publishandthepreparationofthemanuscript.
+Competing interests: NOauthorshave
+competinginterests. ally, contributing significantly to incidents characterized by delayed response times, impaired
+decision-making, and compromised vehicle control [1]. In response to the increasing inte-
+gration of intelligent safety features in modern vehicles, considerable research attention has
+been directed toward the development of effective Driver Drowsiness Detection (DDD) sys-
+tems capable of real-time monitoring to enhance driver and passenger safety. Existing DDD
+methodologies primarily rely on physiological signals (e.g., EEG, ECG, EDA) [2,3], behav-
+ioral indicators (e.g., yawning, eye closure, head movements) [4–6], or vehicular dynamics
+(e.g., steering patterns) [7,8]. While these approaches have demonstrated potential, their prac-
+tical application—particularly in low-cost, real-time embedded systems—continues to pose
+significant technical challenges.
+Recent progress in ML and DL [9–12] has led to improved accuracy and responsiveness
+in DDD systems, especially those leveraging computer vision [13]. Nevertheless, many of
+these models are computationally intensive and unsuitable for deployment in resource-
+constrained environments such as microcontrollers or edge devices, where constraints on
+power consumption, memory, and latency are critical. Although TinyML—a paradigm aimed
+at enabling ML execution on ultra-low-power hardware—has garnered increasing interest,
+existing DDD models still grapple with the trade-offs between performance, interpretability,
+and deployability [14,15].
+To overcome these limitations, the present study introduces a novel model based on the
+Fast Kolmogorov-Arnold Network (FastKAN-DDD) [16], specifically optimized for real-
+time driver drowsiness detection in TinyML environments. This model draws upon the
+Kolmogorov–Arnold representation theorem by substituting conventional weight matri-
+ces with learnable univariate functions, thereby enhancing model expressiveness, compact-
+ness, and interpretability. The integration of radial basis functions and a streamlined network
+architecture facilitates accurate classification of drowsy states while maintaining minimal
+memory usage and inference latency, rendering the approach particularly well-suited to
+embedded automotive systems.
+The primary contributions of this research are summarized as follows:
+• A novel FastKAN-based architecture for DDD is proposed, offering a balance between
+accuracy, model compactness, and interpretability.
+• Comprehensive experimental evaluations are conducted using the UTA-RLDD dataset,
+examining model performance across varying input resolutions and quantization schemes
+tailored for edge deployment.
+• The proposed model is benchmarked against current state-of-the-art TinyML-based DDD
+systems, demonstrating superior performance in terms of inference speed, classification
+accuracy, and practical deployability.
+The remainder of this paper is organized as follows:Sect 2reviews the relevant litera-
+ture on ML, DL, and TinyML approaches to DDD.Sect 3outlines the proposed methodol-
+ogy, including dataset characteristics, architectural design, and quantization methods.Sect 4
+details the experimental configuration, evaluation procedures.Sect 5discusses the obtained
+PLOS One https://doi.org/10.1371/journal.pone.0332577 November 5, 2025 2/ 21
+ID: pone.0332577 — 2025/11/1 — page 3 — #3
+PLOS One FastKAN-DDD
+results, compares the findings with prior studies, and addresses deployment considerations.
+Finally, Sect 6concludes the study and suggests avenues for future work.
+2 Literature review
+This section offers a thorough review of recent research focused on enhancing DDD using AI.
+It begins by examining both traditional ML and advanced DL approaches that analyze physi-
+ological and visual indicators of fatigue. The section then highlights the growing importance
+of TinyML in powering real-time, energy-efficient DDD systems designed for embedded
+environments.
+2.1 Machine learning and deep learning in driver drowsiness detection
+Driver tiredness identification has been extensively studied utilizing diverse machine learn-
+ing methodologies to improve road safety. Recent studies have investigated facial analysis with
+machine learning, deep learning, and hybrid frameworks to enhance accuracy and reliability
+in diverse driving conditions.
+A real-time driver drowsiness detection system was developed using machine learning
+and deep learning [17] models based on face analysis [9]. The research evaluated K-Nearest
+Neighbors (KNN), Support Vector Machines (SVM), Convolutional Neural Networks
+(CNNs), YOLOv5, YOLOv8, and Faster R-CNN using the NTHUDDD, YawDD, and
+UTA-RLDD datasets. YOLOv5 and YOLOv8 attained 100% precision and recall, while KNN
+obtained 98.89% accuracy on UTA-RLDD. The system effectively monitors and analyzes
+driver facial expressions for drowsiness detection with high accuracy in real-time driver mon-
+itoring applications. An advanced driver-fatigue detection system integrated deep CNNs with
+emotional state monitoring to improve detection accuracy under varying illumination condi-
+tions [18]. The system underwent evaluation using the Yawn and YawDDR datasets, attaining
+an accuracy of 95.3% on YawDDR. The model utilizes dynamic brightness adaption meth-
+ods, guaranteeing real-time monitoring in challenging environmental conditions such as
+tunnels and varying light exposure. Further extending CNN-based fatigue detection, a real-
+time system focused on yawning and eye state monitoring to assess driver drowsiness [19].
+The system was trained on video datasets with diverse lighting conditions and face angles,
+employing Haar cascade classifiers for facial extraction and deep learning models for fatigue
+detection. The model attained a testing accuracy of 96.54%, indicating exceptional efficacy
+in real-time drowsiness detection. To address the limitations of conventional fatigue detec-
+tion models when drivers wear sunglasses, an alternative approach employed YOLOv8 with
+transfer learning and infrared imagery [20]. Conventional visual fatigue detection models
+encounter difficulties with blocked facial features; however, this method utilizes infrared
+cameras to identify eye closure, yawning, and prolonged drowsiness. The system attained
+98% detection accuracy by using a threshold-based classification algorithm that evaluates
+closed-eye frame ratios. Beyond driver fatigue, an intelligent transportation monitoring sys-
+tem was introduced to integrate real-time analysis of both driver behavior and surrounding
+traffic environments [21]. The system employs YOLOv9 for traffic object detection, enhanc-
+ing the accuracy of vehicle and pedestrian recognition while concurrently observing driver
+behavior, including fatigue and aggressive driving patterns. SafeSmartDrive attained 83.1%
+accuracy in traffic detection and presents a multi-layer AI-driven framework for enhancing
+road safety.
+Overall, conventional machine learning and deep learning pipelines for driver drowsi-
+ness detection report strong performance on curated benchmarks and controlled testbeds.
+End-to-end CNN or YOLO detectors, as well as transfer-learning variants—sometimes aug-
+mented with infrared sensing—achieve high accuracy and low false-alarm rates with real-time
+PLOS One https://doi.org/10.1371/journal.pone.0332577 November 5, 2025 3/ 21
+
+[... MIDDLE PAGES OMITTED ...]
+
+ID: pone.0332577 — 2025/11/1 — page 20 — #20
+PLOS One FastKAN-DDD
+Supervision: Yassine Maleh, Khalid El Makkaoui, Mouncef Filali Bouami, Ibrahim Ouahbi,
+Hela Elmannai, Ahmed A. Abd El-Latif.
+Validation:Yassine Maleh, Khalid El Makkaoui, Hela Elmannai.
+Visualization: Ismail Lamaakal, Yassine Maleh, Khalid El Makkaoui, Mouncef Filali Bouami,
+Ibrahim Ouahbi.
+Writing – original draft:Siham Essahraui, Ismail Lamaakal.
+Writing – review & editing:Yassine Maleh, Khalid El Makkaoui, Mouncef Filali Bouami,
+Ibrahim Ouahbi, Hela Elmannai, Ahmed A. Abd El-Latif.
+References
+1. Farhangi F, Sadeghi-Niaraki A, Nahvi A, Razavi-Termeh SV. Spatial modelling of accidents risk
+caused by driver drowsiness with data mining algorithms. Geocarto Int. 2021;37(9):2698–716.
+https://doi.org/10.1080/10106049.2020.1831626
+2. Guo Y, Yang K, Wu Y. A multi-modality attention network for driver fatigue detection based on
+frontal EEG, EDA and PPG signals. IEEE J Biomed Health Inform. 2025.
+3. Aminosharieh Najafi T, Affanni A, Rinaldo R, Zontone P. Driver attention assessment using
+physiological measures from EEG, ECG, and EDA signals. Sensors (Basel). 2023;23(4):2039.
+https://doi.org/10.3390/s23042039 PMID: 36850637
+4. Maheswari VU, Aluvalu R, Kantipudi MP, Chennam KK, Kotecha K, Saini JR. Driver drowsiness
+prediction based on multiple aspects using image processing techniques. IEEE Access.
+2022;10:54980–90. https://doi.org/10.1109/access.2022.3176451
+5. Kassem HA, Chowdhury M, Abawajy JH. Drivers fatigue level prediction using facial, and head
+behavior information. IEEE Access. 2021;9:121686–97.
+https://doi.org/10.1109/access.2021.3108561
+6. Hassan OF, Ibrahim AF, Gomaa A, Makhlouf MA, Hafiz B. Real-time driver drowsiness detection
+using transformer architectures: A novel deep learning approach. Sci Rep. 2025;15(1):17493.
+https://doi.org/10.1038/s41598-025-02111-x PMID: 40394076
+7. Li Z, Chen L, Nie L, Yang SX. A novel learning model of driver fatigue features representation for
+steering wheel angle. IEEE Trans Veh Technol. 2022;71(1):269–81.
+https://doi.org/10.1109/tvt.2021.3130152
+8. Babusiak B, Hajducik A, Medvecky S, Lukac M, Klarak J. Design of smart steering wheel for
+unobtrusive health and drowsiness monitoring. Sensors (Basel). 2021;21(16):5285.
+https://doi.org/10.3390/s21165285 PMID: 34450727
+9. Essahraui S, Lamaakal I, El Hamly I, Maleh Y, Ouahbi I, El Makkaoui K, et al. Real-time driver
+drowsiness detection using facial analysis and machine learning techniques. Sensors (Basel).
+2025;25(3):812. https://doi.org/10.3390/s25030812 PMID: 39943451
+10. Jebraeily Y, Sharafi Y, Teshnehlab M. Driver drowsiness detection based on convolutional neural
+network architecture optimization using genetic algorithm. IEEE Access. 2024;12:45709–26.
+https://doi.org/10.1109/access.2024.3381999
+11. Bouhsissin S, Sael N, Benabbou F. Driver behavior classification: A systematic literature review.
+IEEE Access. 2023;11:14128–53.https://doi.org/10.1109/access.2023.3243865
+12. El-Nabi SA, Ibrahim AF, El-Rabaie E-SM, Hassan OF, Soliman NF, Ramadan KF, et al. Driver
+drowsiness detection using swin transformer and diffusion models for robust image denoising. IEEE
+Access. 2025;13:71880–907.https://doi.org/10.1109/access.2025.3561717
+13. Qu F, Dang N, Furht B, Nojoumian M. Comprehensive study of driver behavior monitoring systems
+using computer vision and machine learning techniques. J Big Data. 2024;11(1).
+https://doi.org/10.1186/s40537-024-00890-0
+14. Ray PP. A review on TinyML: State-of-the-art and prospects. J King Saud Univ – Comput Inform
+Sci. 2022;34(4):1595–623.https://doi.org/10.1016/j.jksuci.2021.11.019
+15. Kallimani R, Pai K, Raghuwanshi P, Iyer S, López OL. TinyML: Tools, applications, challenges, and
+future research directions. Multimed Tools Appl. 2024;83(10):29015–45.
+16. Li Z. Kolmogorov-Arnold networks are radial basis function networks. arXiv; 2024.
+17. Essahraui S, Lamaakal I, Maleh Y, El Makkaoui K, Bouami MF, Ouahbi I. Deep learning models for
+detecting cheating in online exams; 2025.
+PLOS One https://doi.org/10.1371/journal.pone.0332577 November 5, 2025 20/ 21
+ID: pone.0332577 — 2025/11/1 — page 21 — #21
+PLOS One FastKAN-DDD
+18. Lin N, Zuo Y. Advancing driver fatigue detection in diverse lighting conditions for assisted driving
+vehicles with enhanced facial recognition technologies. PLoS One. 2024;19(7):e0304669.
+https://doi.org/10.1371/journal.pone.0304669 PMID: 38985745
+19. Makhmudov F, Turimov D, Xamidov M, Nazarov F, Cho Y-I. Real-time fatigue detection algorithms
+using machine learning for yawning and eye state. Sensors (Basel). 2024;24(23):7810.
+https://doi.org/10.3390/s24237810 PMID: 39686347
+20. Tang X-X, Guo P-Y. Fatigue driving detection methods based on drivers wearing sunglasses. IEEE
+Access. 2024;12:70946–62.https://doi.org/10.1109/access.2024.3394218
+21. Bouhsissin S, Sael N, Benabbou F, Soultana A, Jannani A. SafeSmartDrive: Real-time traffic
+environment detection and driver behavior monitoring with machine and deep learning. IEEE
+Access. 2024;12:169499–517.https://doi.org/10.1109/access.2024.3498596
+22. Lamaakal I, Essahraui S, Maleh Y, Makkaoui KE, Ouahbi I, Bouami MF, et al. A comprehensive
+survey on tiny machine learning for human behavior analysis. IEEE Internet Things J.
+2025;12(16):32419–43. https://doi.org/10.1109/jiot.2025.3565688
+23. Lin J, Zhu L, Chen W-M, Wang W-C, Han S. Tiny machine learning: progress and futures [feature].
+IEEE Circuits Syst Mag. 2023;23(3):8–34.https://doi.org/10.1109/mcas.2023.3302182
+24. Chang GC, Zeng BH, Lin SC. Efficient eye state detection for driver fatigue monitoring using
+optimized YOLOv7-Tiny. Appl Sci. 2024;14:3497.
+25. Alajlan NN, Ibrahim DM. DDD TinyML: A TinyML-based driver drowsiness detection model using
+deep learning. Sensors (Basel). 2023;23(12):5696.https://doi.org/10.3390/s23125696 PMID:
+37420860
+26. Nguyen H-T, Mai N-D, Lee BG, Chung W-Y. Behind-the-ear EEG-based wearable driver drowsiness
+detection system using embedded tiny neural networks. IEEE Sensors J. 2023;23(19):23875–92.
+https://doi.org/10.1109/jsen.2023.3307766
+27. Frey S, Rapa PM, Amidei A, Benatti S, Guermandi M, Kartsch V, et al. Wearable, real-time
+drowsiness detection based on EEG-PPG sensor fusion at the edge. In: 2024 IEEE biomedical
+circuits and systems conference (BioCAS); 2024. p. 1–5.
+https://doi.org/10.1109/biocas61083.2024.10798380
+28. Uta-RLDD. https://sites.google.com/view/utarldd/home.
+29. Liu Z, Wang Y, Vaidya S, Ruehle F, Halverson J, Soljačić M. Kan: Kolmogorov-Arnold networks.
+arXiv; 2024.
+30. Liu Z, Ma P, Wang Y, Matusik W, Tegmark M. Liu Z, Ma P, Wang Y, Matusik W, Tegmark M. Kan
+2.0: Kolmogorov-Arnold networks meet science. arXiv; 2024.
+31. Somvanshi S, Javed SA, Islam MM, Pandit D, Das S. A survey on Kolmogorov-Arnold network.
+arXiv; 2024.
+32. Costa SS, Pato M, Datia N. An empirical study on the application of KANs for classification. In:
+Proceedings of the 2024 8th international conference on advances in artificial intelligence; 2024. p.
+308–14. https://doi.org/10.1145/3704137.3704166
+33. Shaushenova A, Kuznetsov O, Nurpeisova A, Ongarbayeva M. Implementation of
+Kolmogorov–Arnold networks for efficient image processing in resource-constrained internet of
+things devices. Technologies. 2025;13(4):155.https://doi.org/10.3390/technologies13040155
+34. Shafique M, Theocharides T, Reddy VJ, Murmann B. TinyML: Current progress, research
+challenges, and future roadmap. In: Proceedings of the 2021 58th ACM/IEEE design automation
+conference (DAC); 2021. p. 1303–6.
+35. Suwannaphong T, Jovan F, Craddock I, McConville R. Optimising TinyML with quantization and
+distillation of transformer and mamba models for indoor localisation on edge devices. Sci Rep.
+2025;15(1):10081. https://doi.org/10.1038/s41598-025-94205-9 PMID: 40128553
+36. Immonen R, Hämäläinen T. Tiny machine learning for resource-constrained microcontrollers. J
+Sensors. 2022;2022:1–11.https://doi.org/10.1155/2022/7437023
+PLOS One https://doi.org/10.1371/journal.pone.0332577 November 5, 2025 21/ 21
+
+--- END OF PAPER: journal.pone.0332577.pdf ---
+
+--- START OF PAPER: PDF.pdf ---
+Review
+Detection of Sleep Apnea Using Wearable AI: Systematic Review
+and Meta-Analysis
+Alaa Abd-alrazaq1, PhD; Hania Aslam1, MSc; Rawan AlSaad1, PhD; Mohammed Alsahli2, PhD; Arfan Ahmed1, PhD;
+Rafat Damseh3, PhD; Sarah Aziz1, MSc; Javaid Sheikh1, MD
+1AI Center for Precision Health, Weill Cornell Medicine-Qatar, Qatar Foundation, Doha, Qatar
+2Health Informatics Department, College of Health Science, Riyadh, Saudi Electronic university, Riyadh, Saudi Arabia
+3Department of Computer Science and Software Engineering, United Arab Emirates University, Al Ain, Abu Dhabi, United Arab Emirates
+Corresponding Author:
+Alaa Abd-alrazaq, PhD
+AI Center for Precision Health
+Weill Cornell Medicine-Qatar
+Qatar Foundation
+A31 Luqta street
+Education City
+Doha
+Qatar
+Phone: 974 55787845654
+Email: aaa4027@qatar-med.cornell.edu
+Abstract
+Background: Early detection of sleep apnea, the health condition where airflow either ceases or decreases episodically during
+sleep, is crucial to initiate timely interventions and avoid complications. Wearable artificial intelligence (AI), the integration of
+AI algorithms into wearable devices to collect and analyze data to offer various functionalities and insights, can efficiently detect
+sleep apnea due to its convenience, accessibility, affordability, objectivity, and real-time monitoring capabilities, thereby addressing
+the limitations of traditional approaches such as polysomnography.
+Objective: The objective of this systematic review was to examine the effectiveness of wearable AI in detecting sleep apnea,
+its type, and its severity.
+Methods: Our search was conducted in 6 electronic databases. This review included English research articles evaluating wearable
+AI’s performance in identifying sleep apnea, distinguishing its type, and gauging its severity. Two researchers independently
+conducted study selection, extracted data, and assessed the risk of bias using an adapted Quality Assessment of Studies of
+Diagnostic Accuracy-Revised tool. We used both narrative and statistical techniques for evidence synthesis.
+Results: Among 615 studies, 38 (6.2%) met the eligibility criteria for this review. The pooled mean accuracy, sensitivity, and
+specificity of wearable AI in detecting apnea events in respiration (apnea and nonapnea events) were 0.893, 0.793, and 0.947,
+respectively. The pooled mean accuracy of wearable AI in differentiating types of apnea events in respiration (normal, obstructive
+sleep apnea, central sleep apnea, mixed apnea, and hypopnea) was 0.815. The pooled mean accuracy, sensitivity, and specificity
+of wearable AI in detecting sleep apnea were 0.869, 0.938, and 0.752, respectively. The pooled mean accuracy of wearable AI
+in identifying the severity level of sleep apnea (normal, mild, moderate, and severe) and estimating the severity score
+(Apnea-Hypopnea Index) was 0.651 and 0.877, respectively. Subgroup analyses found different moderators of wearable AI
+performance for different outcomes, such as the type of algorithm, type of data, type of sleep apnea, and placement of wearable
+devices.
+Conclusions: Wearable AI shows potential in identifying and classifying sleep apnea, but its current performance is suboptimal
+for routine clinical use. We recommend concurrent use with traditional assessments until improved evidence supports its reliability.
+Certified commercial wearables are needed for effectively detecting sleep apnea, predicting its occurrence, and delivering proactive
+interventions. Researchers should conduct further studies on detecting central sleep apnea, prioritize deep learning algorithms,
+incorporate self-reported and nonwearable data, evaluate performance across different device placements, and provide detailed
+findings for effective meta-analyses.
+J Med Internet Res 2024 | vol. 26 | e58187 | p. 1https://www.jmir.org/2024/1/e58187
+(page number not for citation purposes)
+Abd-alrazaq et alJOURNAL OF MEDICAL INTERNET RESEARCH
+XSL•FO
+RenderX
+(J Med Internet Res 2024;26:e58187) doi: 10.2196/58187
+KEYWORDS
+sleep apnea; hypopnea; artificial intelligence; wearable devices; machine learning; systematic review; mobile phone
+Introduction
+Background
+Sleep apnea refers to a health condition where airflow either
+ceases or decreases episodically during sleep [1]. According to
+the American Academy of Sleep Medicine, sleep apnea is
+categorized as a sleep disorder wherein an individual
+experiences challenges pertaining to breathing when they are
+asleep [2]. Primarily, there are 3 kinds of sleep apnea. First,
+obstructive sleep apnea (OSA) is the consequence of issues with
+the operation of the upper respiratory tract and is considered a
+chronic breathing disorder associated with sleep [3]. By contrast,
+a condition where signals required to regulate breathing muscles
+are not generated or transmitted is referred to as central sleep
+apnea (CSA). Complex or mixed sleep apnea is a condition that
+involves a combination of both OSA and CSA [4]. It often
+begins as OSA and evolves into CSA [4].
+According to global estimates, approximately 936 million adults
+aged between 30 and 69 years experience OSA [5]. A systematic
+review showed that the global prevalence of OSA is between
+9% and 38% [6]. In the United States alone, the number of
+people struggling with sleep apnea may exceed 30 million, as
+per the American Medical Association [7]. Furthermore, studies
+showed that >80% of sleep apnea cases remain undiagnosed
+[7-10]. If not diagnosed and treated, sleep apnea may result in
+severe health issues, such as mood disorders [11-13],
+cardiovascular diseases [14,15], cognitive deterioration [16,17],
+increased risk of road accidents [18,19], and all-cause mortality
+[20,21]. Therefore, the timely detection of sleep apnea for
+prompt initiation of treatment is imperative.
+Conventionally, polysomnography is a comprehensive
+diagnostic test used in the field of sleep medicine to evaluate
+and monitor various physiological parameters during sleep to
+help diagnose sleep disorders, such as sleep apnea [22]. Despite
+being considered the gold standard for diagnosing sleep apnea,
+it does have some disadvantages and limitations: (1) it is
+relatively expensive; (2) access to sleep laboratories may be
+limited, particularly in certain geographic areas; (3) it can be
+inconvenient for patients, as they must spend a full night in a
+sleep laboratory with numerous sensors and electrodes attached
+to their body; (4) the physiological parameters recorded using
+polysomnography may not fully reflect the individual’s typical
+sleep behavior due to a first-night effect in a sleep laboratory,
+where sleep patterns are different from those at home due to the
+novelty of the environment; and (5) it is a subjective process,
+as analyzing polysomnography data depends on sleep clinicians’
+experience [22-24]. Hence, there is a dire need to develop and
+integrate automated technologies and tools that are more
+efficient and capable of addressing the challenges posed by the
+current system of diagnosing sleep apnea.
+One of the promising solutions that have been used to address
+the limitations of polysomnography is wearable artificial
+intelligence (AI), which refers to the integration of AI algorithms
+and techniques into wearable devices (eg, smartwatches, fitness
+trackers, and smart glasses) to collect and analyze data (eg, heart
+rate [HR], respiration rate, and oxygen saturation) to offer
+various functionalities and insights. Sleep apnea can be
+efficiently detected with wearable AI due to its convenience,
+accessibility, affordability, objectivity, and real-time monitoring
+capabilities. Various types of wearable devices can be used for
+gathering biomarkers associated with sleep apnea: on-body
+devices (worn directly on the body or skin), near-body devices
+(worn close to the body but not touching the skin), in-body
+devices (implanted within the body), and electronic textiles
+(clothes with built-in technology). Wearable AI can be used for
+(1) detecting apnea events in respiration, (2) identifying the
+type of apnea events in respiration (hypopnea, OSA, CSA, and
+mixed), (3) detecting patients with sleep apnea, and (4)
+estimating the severity of sleep apnea.
+Research Problem and Aim
+In the last decade, numerous investigations have been carried
+out to evaluate the effectiveness of wearable AI in detecting
+sleep apnea. Consolidating the results of these studies can
+contribute to forming more conclusive judgments regarding the
+effectiveness of wearable AI in detecting sleep apnea. Previous
+literature reviews attempted to summarize the evidence, but
+they were constrained by the following limitations. First, most
+previous reviews were literature reviews rather than systematic
+reviews [22-28]. Second, many reviews concentrated solely on
+OSA rather than considering all types of sleep apnea
+[22,23,25-29]. Third, some reviews focused on a specific type
+of data, such as HR variability [2,25] and electrocardiography
+[1,2,25], for sleep apnea detection. Fourth, main databases, such
+as Embase [1,2,22-29], ACM [1,2,22-29], IEEE [22-25,27-29],
+and Scopus [1,2,22-25,28], were not incorporated in the searches
+of previous reviews. Fifth, all prior reviews focused on the
+performance of various sensors rather than specifically
+addressing wearable devices [1,2,22-29]. Sixth, one of the
+reviews focused on non-AI tools for detecting sleep apnea [29].
+Seventh, the risk of bias was not taken into account in most of
+the reviews [1,2,22-28]. Finally, none of these reviews used
+statistical techniques (eg, meta-analysis) to aggregate findings
+from previous studies [1,2,22-29]. Hence, this review aimed to
+bridge all these identified gaps with a focus on examining the
+performance of wearable AI when it comes to both the detection
+and prediction of sleep apnea, thereby making it the first of its
+kind in this field.
+Methods
+Overview
+This review was undertaken and reported in line with the
+PRISMA-DTA (Preferred Reporting Items for Systematic
+Reviews and Meta-Analyses extension for Diagnostic Test
+Accuracy) guidelines [30]. Multimedia Appendix 1 provides
+J Med Internet Res 2024 | vol. 26 | e58187 | p. 2https://www.jmir.org/2024/1/e58187
+(page number not for citation purposes)
+Abd-alrazaq et alJOURNAL OF MEDICAL INTERNET RESEARCH
+XSL•FO
+RenderX
+this review’s PRISMA-DTA checklist. Its protocol has been
+registered with the PROSPERO (CRD42023495554).
+Search Strategy
+On December 7, 2023, a comprehensive search was performed
+across the following electronic repositories: MEDLINE (via
+Ovid), Embase (via Ovid), ACM Digital Library, Scopus, IEEE
+Xplore, and Google Scholar. MEDLINE and Embase were
+chosen due to their reputation as authoritative sources for
+biomedical and health sciences literature. ACM Digital Library
+and IEEE Xplore were selected for their status as leading
+repositories for publications in computing, information
+technology, electrical engineering, and electronics. Scopus was
+included because of its comprehensive coverage of scientific
+literature across multiple disciplines, including health sciences,
+engineering, computer science, and social sciences. Google
+Scholar was incorporated, as it indexes scholarly literature from
+diverse sources and serves as a valuable supplementary tool for
+identifying relevant studies and gray literature. We set an
+autoalert to run the search query biweekly for 3 months,
+concluding on March 6, 2024. Because Google Scholar returned
+a massive number of results, this review assessed only the first
+100 results (equivalent to 10 pages). To identify additional
+relevant studies, we examined the references cited in the studies
+already included (backward reference list checking) and studies
+that had cited the included studies (forward reference list
+checking).
+Relevant literature reviews were assessed, and 2 experts holding
+doctoral degrees in digital health and health informatics were
+consulted to compile and collate search terms [31]. The final
+search query combined three categories of search terms: (1)
+terms related to AI (eg, “artificial intelligence,” “machine
+learning,” and “deep learning”), (2) terms associated with
+wearable devices (eg, “wearable,” “smartwatch,” and
+“smartband”), and (3) terms linked to sleep apnea (eg, “sleep
+apnea” and “sleep aponea”). The Boolean operators “OR” and
+“AND” were used to combine terms within the same category
+and across different categories, respectively. The specific search
+query used for searching each database is detailed in Multimedia
+Appendix 2 for reference.
+Study Eligibility Criteria
+This review included studies that used AI algorithms to detect
+sleep apnea or predict its occurrence by leveraging data derived
+from wearable devices. The research articles deemed suitable
+for inclusion in this review were those that concentrated on
+individuals diagnosed with or suspected of having any type of
+sleep apnea. No limitations were imposed based on age, gender,
+or ethnicity. In addition, for inclusion in this review, studies
+were required to evaluate the performance of AI algorithms in
+detecting or predicting apnea events in respiration, identifying
+types of apnea events in respiration, detecting patients with
+sleep apnea, or estimating the severity of sleep apnea. The
+studies had to provide the confusion matrix or performance
+metrics (eg, accuracy, sensitivity, and specificity). Studies using
+AI solely for detecting sleep quality, sleep stages, or other sleep
+disorders or forecasting the outcomes of sleep apnea
+interventions were excluded. This review included studies that
+gathered data using, at a minimum, on-body wearable devices.
+Conversely, research papers exclusively relying on the following
+devices for data collection were not considered: nonwearable
+devices; handheld devices (eg, mobile phones); near-body
+wearable devices; in-body wearable devices; wearable devices
+physically connected to nonwearable devices; and wearable
+devices necessitating expert oversight, such as those demanding
+precise electrode placement. This review included only
+peer-reviewed journal articles, conference papers, and
+dissertations, without restrictions on study setting, study design,
+reference standard (ie, ground truth), year of publication, or
+country of study. However, papers not published in English
+were excluded from consideration. The decision to exclude
+studies not written in English was based on practical
+considerations related to resource constraints and the
+accessibility of non-English literature. While including studies
+in languages other than English may enhance the
+comprehensiveness of the review, it can also pose challenges
+in terms of language translation, interpretation, and the synthesis
+of findings. Furthermore, English is widely recognized as the
+dominant language of scholarly communication in many
+scientific disciplines, including health care and biomedical
+research. We have transparently acknowledged its implications
+for the review’s scope and findings in the Limitations section.
+We also excluded studies that fell into the categories of
+editorials, reviews, protocols, posters, conference abstracts, and
+research highlights. The decision to exclude these publication
+types was primarily guided by the need to maintain the focus
+and rigor of our review process. While editorials, reviews, and
+research highlights provide valuable insights into and
+perspectives on a topic, they typically do not present original
+research findings or empirical data that meet the objectives of
+our study. Similarly, protocols, posters, and conference abstracts
+often offer preliminary or incomplete results that may not
+undergo peer review or provide sufficient detail for a
+comprehensive analysis. This helps maintain the quality and
+reliability of the evidence synthesized in our review while
+minimizing the risk of bias introduced by including
+non–peer-reviewed or preliminary findings.
+Study Selection
+The study selection process comprised 3 key steps. Initially,
+the EndNote (version X9; Clarivate) software was used to
+eliminate any duplicate papers from the initial pool.
+Subsequently, 2 reviewers assessed the titles and abstracts of
+the remaining studies, separately deciding on their inclusion.
+Finally, the reviewers independently scrutinized the full texts
+of the remaining articles. Any discrepancies were deliberated
+upon and resolved through discussion. The level of agreement
+between the reviewers was substantial, indicated by a κ score
+of 0.92 for the evaluation of titles and abstracts and 0.95 for the
+examination of full texts.
+Data Extraction
+Initially, 5 studies were used to develop and test the data
+extraction form shown in Multimedia Appendix 3.
+Independently, 2 reviewers used Excel (Microsoft Corp) to
+extract metadata from the studies, participants’ characteristics,
+wearable devices’ specifications, and AI algorithms’ features.
+In addition to the previously mentioned extracted data, we
+J Med Internet Res 2024 | vol. 26 | e58187 | p. 3https://www.jmir.org/2024/1/e58187
+(page number not for citation purposes)
+Abd-alrazaq et alJOURNAL OF MEDICAL INTERNET RESEARCH
+XSL•FO
+RenderX
+
+[... MIDDLE PAGES OMITTED ...]
+
+58. Papini GB, Fonseca P, van Gilst MM, Bergmans JW, Vullings R, Overeem S. Wearable monitoring of sleep-disordered
+breathing: estimation of the apnea-hypopnea index using wrist-worn reflective photoplethysmography. Sci Rep. Aug 11,
+2020;10(1):13512. [FREE Full text] [doi: 10.1038/s41598-020-69935-7] [Medline: 32782313]
+59. Petrenko A. Breathmonitor: sleep apnea mobile detector. In: Proceedings of the 2nd International Conference on System
+Analysis & Intelligent Computing. 2020. Presented at: SAIC '20; October 5-9, 2020:1-4; Kyiv, Ukraine. URL: https:/
+/ieeexplore.ieee.org/document/9239236 [doi: 10.1109/saic51296.2020.9239236]
+60. Rossi M, Sala D, Bovio D, Salito C, Alessandrelli G, Lombardi C, et al. SLEEP-SEE-THROUGH: explainable deep learning
+for sleep event detection and quantification from wearable somnography. IEEE J Biomed Health Inform. Jul
+2023;27(7):3129-3140. [doi: 10.1109/jbhi.2023.3267087]
+61. Ryser F, Hanassab S, Lambercy O, Werth E, Gassert R. Respiratory analysis during sleep using a chest-worn accelerometer:
+a machine learning approach. Biomed Signal Process Control. Sep 2022;78:104014. [doi: 10.1016/j.bspc.2022.104014]
+62. Selvaraj N, Narasimhan R. Automated prediction of the apnea-hypopnea index using a wireless patch sensor. Annu Int
+Conf IEEE Eng Med Biol Soc. 2014;2014:1897-1900. [doi: 10.1109/EMBC.2014.6943981] [Medline: 25570349]
+63. Shen Q, Yang X, Zou L, Wei K, Wang C, Liu G. Multitask residual shrinkage convolutional neural network for sleep apnea
+detection based on wearable bracelet photoplethysmography. IEEE Internet Things J. Dec 15, 2022;9(24):25207-25222.
+[doi: 10.1109/jiot.2022.3195777]
+64. Strumpf Z, Gu W, Tsai C, Chen P, Yeh E, Leung L, et al. Belun Ring (Belun Sleep System BLS-100): deep learning-facilitated
+wearable enables obstructive sleep apnea detection, apnea severity categorization, and sleep stage classification in patients
+suspected of obstructive sleep apnea. Sleep Health. Aug 2023;9(4):430-440. [FREE Full text] [doi:
+10.1016/j.sleh.2023.05.001] [Medline: 37380590]
+65. Tsouti V, Kanaris A, Tsoutis K, Chatzandroulis S. Development of an automated system for obstructive sleep apnea
+treatment based on machine learning and breath effort monitoring. Microelectron Eng. Jul 2020;231:111376. [doi:
+10.1016/j.mee.2020.111376]
+66. van Steenkiste T, Groenendaal W, Dreesen P, Lee S, Klerkx S, de Francisco R, et al. Portable detection of apnea and
+hypopnea events using bio-impedance of the chest and deep learning. IEEE J Biomed Health Inform. Sep
+2020;24(9):2589-2598. [doi: 10.1109/jbhi.2020.2967872]
+67. Wang S, Xuan W, Chen D, Gu Y, Liu F, Chen J, et al. Machine learning assisted wearable wireless device for sleep apnea
+syndrome diagnosis. Biosensors (Basel). Apr 17, 2023;13(4):483. [FREE Full text] [doi: 10.3390/bios13040483] [Medline:
+37185558]
+68. Wang Z, Peng C, Li B, Penzel T, Liu R, Zhang Y, et al. Single-lead ECG based multiscale neural network for obstructive
+sleep apnea detection. Internet Things. Nov 2022;20:100613. [doi: 10.1016/j.iot.2022.100613]
+69. Wu HT, Wu J, Huang P, Lin T, Wang T, Huang Y, et al. Phenotype-based and self-learning inter-individual sleep apnea
+screening with a level IV-like monitoring system. Front Physiol. Jul 2, 2018;9:723. [FREE Full text] [doi:
+10.3389/fphys.2018.00723] [Medline: 30013479]
+70. Wu S, Chen M, Wei K, Liu G. Sleep apnea screening based on Photoplethysmography data from wearable bracelets using
+an information-based similarity approach. Comput Methods Programs Biomed. Nov 2021;211:106442. [doi:
+10.1016/j.cmpb.2021.106442] [Medline: 34624633]
+71. Xu Y, Ou Q, Cheng Y, Lao M, Pei G. Comparative study of a wearable intelligent sleep monitor and polysomnography
+monitor for the diagnosis of obstructive sleep apnea. Sleep Breath. Mar 26, 2023;27(1):205-212. [FREE Full text] [doi:
+10.1007/s11325-022-02599-x] [Medline: 35347656]
+72. Yeh E, Wong E, Tsai C, Gu W, Chen P, Leung L, et al. Detection of obstructive sleep apnea using Belun Sleep platform
+wearable with neural network-based algorithm and its combined use with STOP-Bang questionnaire. PLoS One. Oct 11,
+2021;16(10):e0258040. [FREE Full text] [doi: 10.1371/journal.pone.0258040] [Medline: 34634070]
+73. Yeo M, Byun H, Lee J, Byun J, Rhee HY, Shin W, et al. Respiratory event detection during sleep using electrocardiogram
+and respiratory related signals: using polysomnogram and patch-type wearable device data. IEEE J Biomed Health Inform.
+Feb 2022;26(2):550-560. [doi: 10.1109/jbhi.2021.3098312]
+74. Yüzer AH, Sümbül H, Nour M, Polat K. A different sleep apnea classification system with neural network based on the
+acceleration signals. Appl Acoust. Jun 2020;163:107225. [doi: 10.1016/j.apacoust.2020.107225]
+75. Zhang H, Fu B, Su K, Yang Z. Long-term sleep respiratory monitoring by dual-channel flexible wearable system and deep
+learning-aided analysis. IEEE Trans Instrum Meas. 2023;72:1-9. [doi: 10.1109/tim.2023.3289535]
+76. Zhou G, Zhou W, Zhang Y, Zeng Z, Zhao W. Automatic monitoring of obstructive sleep apnea based on multi-modal
+signals by phone and smartwatch. Annu Int Conf IEEE Eng Med Biol Soc. Jul 2023;2023:1-4. [doi:
+10.1109/EMBC40787.2023.10340237] [Medline: 38083356]
+77. Yeo M, Byun H, Lee J, Byun J, Rhee H, Shin W, et al. Robust method for screening sleep apnea with single-lead ECG
+using deep residual network: evaluation with open database and patch-type wearable device data. IEEE J Biomed Health
+Inform. Nov 2022;26(11):5428-5438. [doi: 10.1109/jbhi.2022.3203560]
+J Med Internet Res 2024 | vol. 26 | e58187 | p. 32https://www.jmir.org/2024/1/e58187
+(page number not for citation purposes)
+Abd-alrazaq et alJOURNAL OF MEDICAL INTERNET RESEARCH
+XSL•FO
+RenderX
+Abbreviations
+AI: artificial intelligence
+CNN: convolutional neural network
+CSA: central sleep apnea
+HR: heart rate
+ML: machine learning
+OSA: obstructive sleep apnea
+PRISMA-DTA: Preferred Reporting Items for Systematic Reviews and Meta-Analyses extension for Diagnostic
+Test Accuracy
+QUADAS-2: Quality Assessment of Studies of Diagnostic Accuracy-Revised
+Edited by A Mavragani; submitted 08.03.24; peer-reviewed by BS Ibrahim, K Dhou, A Wani; comments to author 26.04.24; revised
+version received 07.05.24; accepted 23.07.24; published 10.09.24
+Please cite as:
+Abd-alrazaq A, Aslam H, AlSaad R, Alsahli M, Ahmed A, Damseh R, Aziz S, Sheikh J
+Detection of Sleep Apnea Using Wearable AI: Systematic Review and Meta-Analysis
+J Med Internet Res 2024;26:e58187
+URL: https://www.jmir.org/2024/1/e58187
+doi: 10.2196/58187
+PMID: 39255014
+©Alaa Abd-alrazaq, Hania Aslam, Rawan AlSaad, Mohammed Alsahli, Arfan Ahmed, Rafat Damseh, Sarah Aziz, Javaid Sheikh.
+Originally published in the Journal of Medical Internet Research (https://www.jmir.org), 10.09.2024. This is an open-access
+article distributed under the terms of the Creative Commons Attribution License (https://creativecommons.org/licenses/by/4.0/),
+which permits unrestricted use, distribution, and reproduction in any medium, provided the original work, first published in the
+Journal of Medical Internet Research (ISSN 1438-8871), is properly cited. The complete bibliographic information, a link to the
+original publication on https://www.jmir.org/, as well as this copyright and license information must be included.
+J Med Internet Res 2024 | vol. 26 | e58187 | p. 33https://www.jmir.org/2024/1/e58187
+(page number not for citation purposes)
+Abd-alrazaq et alJOURNAL OF MEDICAL INTERNET RESEARCH
+XSL•FO
+RenderX
+
+--- END OF PAPER: PDF.pdf ---
+

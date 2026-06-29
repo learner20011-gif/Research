@@ -1,0 +1,733 @@
+--- START OF PAPER: zhu2021.pdf ---
+Vol.:(0123456789)
+https://doi.org/10.1007/s11280-021-00983-3
+1 3
+A lightweight automatic sleep staging method for children 
+using single‑channel EEG based on edge artificial 
+intelligence
+Liqiang Zhu1 · Changming Wang2,3 · Zhihui He4 · Yuan Zhang1
+Received: 27 July 2021 / Revised: 8 November 2021 / Accepted: 26 November 2021 / 
+© The Author(s), under exclusive licence to Springer Science+Business Media, LLC, part of Springer Nature 2021
+Abstract
+With the development of telemedicine and edge computing, edge artificial intelligence (AI) 
+will become a new development trend for smart medicine. On the other hand, nearly one-
+third of children suffer from sleep disorders. However, all existing sleep staging methods 
+are for adults. Therefore, we adapted edge AI to develop a lightweight automatic sleep 
+staging method for children using single-channel EEG. The trained sleep staging model 
+will be deployed to edge smart devices so that the sleep staging can be implemented on 
+edge devices which will greatly save network resources and improving the performance 
+and privacy of sleep staging application. Then the results and hypnogram will be uploaded 
+to the cloud server for further analysis by the physicians to get sleep disease diagnosis 
+reports and treatment opinions. We utilized 1D convolutional neural networks (1D-CNN) 
+and long short term memory (LSTM) to build our sleep staging model, named CSleep -
+Net. We tested the model on our childrens sleep (CS) dataset and sleep-EDFX dataset. 
+For the CS dataset, we experimented with F4-M1 channel EEG using four different loss 
+functions, and the logcosh performed best with overall accuracy of 83.06% and F1-score 
+of 76.50%. We used Fpz-Cz and Pz-Oz channel EEG to train our model in Sleep-EDFX 
+dataset, and achieved an accuracy of 86.41% without manual feature extraction. The exper-
+imental results show that our method has great potential. It not only plays an important 
+role in sleep-related research, but also can be widely used in the classification of other time 
+sequences physiological signals.
+Keywords Sleep staging · Edge AI · Deep learning · LSTM · EEG
+Liqiang Zhu and Changming Wang contributed equally to this work.
+This article belongs to the Topical Collection: Special Issue on Resource Management at the Edge for 
+Future Web, Mobile and IoT Applications
+ Guest Editors: Qiang He, Fang Dong, Chenshu Wu, and Yun Yang
+ * Yuan Zhang 
+ yuanzhang@swu.edu.cn
+Extended author information available on the last page of the article
+Published online: 30 December 2021
+World Wide Web (2022) 25:1883–1903
+1 3
+1 Introduction
+At present, most of the computing tasks of the remote sleep monitoring (such as sleep stag-
+ing) are deployed on platforms with large-scale computing resources such as computing 
+centers, which largely limit the convenience to people. With the advancement of Internet 
+of Things (IoT), the number of networking devices has increased dramatically, and the 
+total amount of data generated has increased accordingly. Data transmission from the end 
+to the cloud will bring huge bandwidth pressure and energy consumption, which makes 
+the traditional centralized processing unbearable, thus giving birth to the edge computing 
+and gradually developing to the edge AI [15, 25]. Sleep staging is a basic work of sleep 
+research, which requires the use of sleep records throughout the night. Automatic sleep 
+staging based on edge artificial intelligence can solve the problem of traditional remote 
+sleep monitoring that sleep staging on a cloud server consumes a lot of network resources.
+Sleep-induced diseases such as insomnia, drowsiness, obstructive sleep apnea (OSA) 
+and other sleep disorders are becoming more and more common and have become a major 
+medical challenge. For children, high-quality sleep helps children’s intellectual devel-
+opment and is closely related to children’s cognitive function, learning and attention. If 
+school-age children are not able to get enough and good sleep, it will affect their mental 
+development and cause emotional, behavioral, and attention problems. However, nearly 
+one-third of children suffer from sleep disorders [11].
+Polysomnography (PSG) recordings is used to diagnose sleep-related diseases, which 
+include electroencephalogram (EEG), electrooculogram (EOG), electrocardiogram (ECG), 
+electromyogram (EMG), breathing exercises (chest and abdominal), oral and nasal air -
+flow, body movement, blood oxygen saturation (SaO2) and other physiological parameters. 
+Sleep stage scoring is to divide the physiological parameters in the polysomnography chart 
+into 30 s continuous epochs according to the time axis, and divide these epochs into differ -
+ent sleep stages according to the American Academy of Sleep Medicine (AASM) rules [4]. 
+Sleep stage scoring can be performed using single-channel EEG or multiple physiologi-
+cal parameters. The hypnogram obtained from the results of sleep staging can intuitively 
+reflect the sleep of subjects throughout the night, and is used to evaluate sleep quality and 
+sleep-related problems [6].
+The AASM manual was first published in 2007 [4]. In the AASM rules, all sleep record-
+ings are divided into 5 stages. They include Wake (W), Rapid Eye Movement (REM) and 
+Non-Rapid Eye Movement (NREM) , where the NREM includes N1 (transition stage), N2 
+(light sleep) and N3 (deep sleep). Age may be the most critical factor in differentiating the 
+sleep pattern between children and adults, due to the EEG variation reflected by PSG mor -
+nitoring [10]. The AASM rules also include sleep stage scoring methods for children.
+Technicians need to spend a lot of time and efforts to monitor the changes of different 
+physiological signals in the PSG for sleep stage scoring. In addition, the quality of sleep 
+stage scoring depends on the experience and fatigue of technicians, and the agreement 
+between the technicians is usually less than 90% [28]. In addition, the existing automatic 
+sleep stage classification methods are for adults by default. Therefore, it is necessary to 
+develop an automatic sleep staging method for children.
+To perform automatic sleep staging on a cloud server, it is necessary to upload the col-
+lected sleep recordings of the whole night(usually hundreds of MB or even more than 1GB 
+size) to the cloud, which takes a long time to respond, puts a lot of pressure on network 
+bandwidth and may leak user privacy. Edge AI trains and deploys deep learning mod-
+els at the edge of the network closer to users and data sources, thereby improving the 
+1884 World Wide Web (2022) 25:1883–1903
+1 3
+performance and privacy of AI applications [25]. Therefore, we develop a lightweight auto-
+matic sleep staging method for children using single-channel EEG based on edge AI. The 
+sleep staging performed on edge devices, and the results and hypnogram will be uploaded 
+to the cloud server for physicians to further analyze. Users will get analysis reports and 
+some useful suggestions.
+COVID-19 has made a huge impact on people’s work, study and life [2]. The rapid 
+development of wearable computing technologies has led to an increased involvement of 
+wearable devices in the daily lives of people, and promoted the development of telemedi-
+cine [26, 33]. Telemedicine can effectively reduce the risk of being infected with new coro-
+nary pneumonia and other diseases. Our proposed approach can perform sleep monitoring 
+at home instead of in the hospital. It both provides better protection for children and their 
+families, and eases the strain on medical resources.
+We conducted experiments on our CS dataset and public dataset sleep-EDFX and 
+achieved satisfactory results. We summarize our contributions as follows:
+• We design our automatic sleep staging model for children that utilizes 1D-CNN and 
+LSTM. The 1D-CNN can be trained to learn and extract features from raw single-chan-
+nel EEG, while the LSTM can be trained to learn temporal information such as sleep 
+stages transition rules.
+• We develop a lightweight automatic sleep staging method for children based on edge 
+intelligence. The sleep staging process is carried out on the intelligence terminals, 
+thereby improving the performance and privacy of sleep staging application.
+The remaining parts of this paper are organized as follows: First, we review the related 
+works of edge intelligence and automatic sleep staging in Section  2. Then, the automatic 
+sleep staging method for children based on edge AI is proposed in Section  3. Section  4 
+describes datasets, data processing, the experiments and analysis results. Finally, Section 5 
+presents the conclusion and future work.
+2  Related works
+2.1  A pplications of edge AI
+At present, edge AI has been applied in many fields such as autonomous driving, emotion 
+recognition, object detection and object recognition. Rincon et  al. [23] adapted edge AI 
+technologies for the classification of emotions for humans. Uddin et  al. [30] proposed a 
+novel emotion recognition method using audio speech and machine learning (ML). And 
+they pushed the processing of data and making decisions towards where data sources. Liu 
+et  al. [21] proposed a relay-based data distribution scheme for cell-assisted autonomous 
+driving based on edge AI. Khandewale et al. [20] applied edge AI and neural compute to 
+develop an object detection system for visually impaired people, and the system will sup-
+port them for person recognition in future. Huang et al. [18] adopted the edge AI philoso-
+phy distributing supervised machine learning, data processing and decision-making tasks 
+among the physical layer, edge layer and cloud layer. They proposed a Digital Twin-driven 
+anomaly detection framework to enable industrial systems to perform anomaly detection in 
+real-time. Zhen et al. [35] proposed a application framework for edge AI, called CareEdge 
+and built an ECG-based heartbeat detection system through it. Their experimental result 
+1885World Wide Web (2022) 25:1883–1903
+
+[... MIDDLE PAGES OMITTED ...]
+
+1 3
+ 21. Liu, L., L u, Z., Wang, L., Chen, X., Wen, X.: Large-volume data dissemination for cellular-assisted 
+automated driving with edge intelligence. J. Netw. Comput. Appl. 155(2) (2020). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1016/j.
+ 
+jnca.
+ 
+2020.
+ 
+102535
+ 22.
+ R
+eschtchaffen, A., Kales, A.: A manual of standardized terminology, techniques and scoring system 
+for sleep stages of human subjects. Electroencephalography and Clinical Neurophysiology 26(2), 644 
+(1969). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1016/
+ 
+0013-
+ 
+4694(69)
+ 
+90021-2
+ 23.
+ Rincon, J.A
+., Julian, V., Carrascosa, C.: Towards the edge intelligence: robot assistant for the detection 
+and classification of human Emotions. In: De La Prieta, F., et al. (eds) Highlights in Practical Applica-
+tions of Agents, Multi-Agent Systems, and Trust-worthiness. The PAAMS Collection. PAAMS 2020. 
+Communications in Computer and Information Science, 1233, 31-41, Springer, Cham (2020). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1007/
+ 
+978-3-
+ 
+030-
+ 
+51999-5_3
+ 24.
+ See A
+.R., Liang C.K.: A study on sleep EEG using sample entropy and power spectrum analysis. In: 
+2011 Defense Science Research Conference and Expo (DSR), pp. 1–4 (2011). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1109/
+ 
+DSR.
+ 
+2011.
+ 
+60268
+ 
+02
+ 25.
+ Shi, 
+W., Cao, J., Zhang, Q., Li, Y., Xu, L.: Edge Computing: Vision and Challenges. IEEE Internet of 
+Things Journal 3(5), 637–646 (2016). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1109/
+ 
+JIOT.
+ 
+2016.
+ 
+25791
+ 
+98
+ 26.
+ Song, Z., Cao, Z., Li, Z., W
+ang, J., Liu, Y.: Inertial Motion Tracking on Mobile and Wearable Devices: 
+Recent Advancements and Challenges. Tsinghua Science and Technology 26(5), 692–705 (2021)
+ 27.
+ Sors, A
+., Bonnet, S., Mirek, S., Vercueil, L., Payen, J.: A convolutional neural network for sleep stage 
+scoring from raw single-channel EEG. Biomedical Signal Processing and Control 42, 107–114 (2018). 
+https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1016/j.
+ 
+bspc.
+ 
+2017.
+ 
+12.
+ 
+001
+ 28.
+ S
+tepnowsky, C., Levendowski, D., Popovic, D., Ayappa, I., Rapoport, D.M.: Scoring accuracy of auto-
+mated sleep staging from a bipolar electroocular recording compared to manual scoring by multiple 
+raters. Sleep Medicine 14(11), 1199–1207 (2013). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1016/j.
+ 
+sleep.
+ 
+2013.
+ 
+04.
+ 
+022
+ 29.
+ Supr
+atak, A., Hao, D., Chao, W., Guo, Y.: DeepSleepNet: A Model for Automatic Sleep Stage Scoring 
+Based on Raw Single-Channel EEG. IEEE Transactions on Neural Systems and Rehabilitation Engi-
+neering 25(11), 1998–2008 (2017). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1109/
+ 
+TNSRE.
+ 
+2017.
+ 
+27211
+ 
+16
+ 30.
+ Uddin, M.Z., Nilsson, E.G.: Emo
+tion recognition using speech and neural structured learning to facili-
+tate edge intelligence - ScienceDirect. Eng. Appl. Artif. Intell. 94 (2020). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1016/j.
+ 
+eng
+ap
+ 
+pai.
+ 
+2020.
+ 
+103775
+ 31.
+ Zhang, J., W
+u, Y.: Competition convolutional neural network for sleep stage classification. Biomed. 
+Signal Process. Control 64 (2021). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1016/j.
+ 
+bspc.
+ 
+2020.
+ 
+102318
+ 32.
+ Zhang, J., Y
+an, W.: A New Method for Automatic Sleep Stage Classification. IEEE Transactions on 
+Biomedical Circuits and Systems 11(5), 1097–1110 (2017). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1109/
+ 
+TBCAS.
+ 
+2017.
+ 
+27196
+ 
+31
+ 33.
+ Zhang, Z., Cong, X., F
+eng, W., Zhang, H., Fu, G., Chen, J.: WAEAS: An Optimization Scheme of 
+EAS Scheduler for Wearable Applications. Tsinghua Science and Technology 26(1), 72–84 (2021)
+ 34.
+ Zhang, C., Liu, S., Han, F
+., Nie, Z., Lo, B., Zhang, Y.: Hybrid manifold-deep convolutional neural net-
+work for sleep staging. Methods (2021). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1016/j.
+ 
+ymeth.
+ 
+2021.
+ 
+02.
+ 
+014
+ 35.
+ Zhen, P
+., Han, Y., Dong, A., Yu, J.: CareEdge: A Lightweight Edge Intelligence Framework for ECG-
+Based Heartbeat Detection. Procedia Computer Science 187, 329–334 (2021). https://
+ 
+doi.
+ 
+org/
+ 
+10.
+ 
+1016/j.
+ 
+procs.
+ 
+2021.
+ 
+04.
+ 
+070
+Publisher’s note
+ Spr
+inger Nature remains neutral with regard to jurisdictional claims in published maps and 
+institutional affiliations.
+1902 World Wide Web (2022) 25:1883–1903
+1 3
+Authors and Affiliations
+Liqiang Zhu1 · Changming Wang2,3 · Zhihui He4 · Yuan Zhang1
+ Changming W ang 
+ 
+superwcm@163.com
+ Zhihui He 
+ 
+hezhihui726@sina.com
+1 Colleg e of Electronic and Information Engineering, Southwest University, Chongqing 400715, 
+China 
+2 Depar tment of Neurosurgery, Xuanwu Hospital, Capital Medical University, Beijing 100053, 
+China 
+3 Br ain-inspired Intelligence and Clinical Translational Research Center, Beijing 100176, China 
+4 Depar tment of Pediatric Respiration, Chongqing Ninth People’s Hospital, Chongqing 400700, 
+China
+1903World Wide Web (2022) 25:1883–1903
+
+--- END OF PAPER: zhu2021.pdf ---
+
+--- START OF PAPER: zsae187.pdf ---
+SLEEP, 2025, 48, 1–14
+https://doi.org/10.1093/sleep/zsae187
+Advance access publication 19 August 2024
+Original Article
+© The Author(s) 2024. Published by Oxford University Press on behalf of Sleep Research Society.
+This is an Open Access article distributed under the terms of the Creative Commons Attribution-NonCommercial License (http://creativecommons.org/
+licenses/by-nc/4.0/), which permits non-commercial re-use, distribution, and reproduction in any medium, provided the original work is properly cited. 
+For commercial re-use, please contact reprints@oup.com for reprints and translation rights for reprints. All other permissions can be obtained through our 
+RightsLink service via the Permissions link on the article page on our site—for further information please contact journals.permissions@oup.com.
+Submitted for publication: March 19, 2024; Revised: July 17, 2024
+Original Article
+What radio waves tell us about sleep!
+Hao He1,*,‡, Chao Li1,*,‡, , Wolfgang Ganglberger2,3,5, , Kaileigh Gallagher5, Rumen Hristov6, , Michail Ouroutzoglou1, , Haoqi Sun2,5, 
+Jimeng Sun4, , M. Brandon Westover2,3,5 and Dina Katabi1,6,*
+1Department of Electrical Engineering and Computer Science, Massachusetts Institute of Technology, Cambridge, MA, USA, 
+2McCance Center for Brain Health, Massachusetts General Hospital, Boston, MA, USA, 
+3Division of Sleep Medicine, Harvard Medical School, Boston, MA, USA, 
+4Computer Science Department, University of Illinois Urbana-Champaign, Urbana, IL, USA, 
+5Department of Neurology, Beth Israel Deaconess Medical Center, Boston, MA, USA and 
+6Emerald Innovations Inc., Cambridge, MA, USA
+‡These authors contributed equally to this work.
+*Corresponding author. Hao He, Department of Electrical Engineering and Computer Science, Massachusetts Institute of Technology, Cambridge, MA 02139, USA. 
+Email haohe@mit.edu; Chao Li, Department of Electrical Engineering and Computer Science, Massachusetts Institute of Technology, Cambridge, MA 02139, USA. 
+Email chaoli@mit.edu; Dina Katabi, Department of Electrical Engineering and Computer Science, Massachusetts Institute of Technology, Cambridge, MA 02139, 
+USA. Email dk@mit.edu.
+Abstract 
+The ability to assess sleep at home, capture sleep stages, and detect the occurrence of apnea (without on-body sensors) simply by 
+analyzing the radio waves bouncing off people’s bodies while they sleep is quite powerful. Such a capability would allow for longi -
+tudinal data collection in patients’ homes, informing our understanding of sleep and its interaction with various diseases and their 
+therapeutic responses, both in clinical trials and routine care. In this article, we develop an advanced machine-learning algorithm 
+for passively monitoring sleep and nocturnal breathing from radio waves reflected off people while asleep. Validation results in com-
+parison with the gold standard (i.e. polysomnography; n = 880) demonstrate that the model captures the sleep hypnogram (with an 
+accuracy of 80.5% for 30-second epochs categorized into wake, light sleep, deep sleep, or REM), detects sleep apnea (AUROC = 0.89), 
+and measures the patient’s Apnea–Hypopnea Index (ICC  =  0.90; 95% CI  =  [0.88,  0.91]). Notably, the model exhibits equitable perfor -
+mance across race, sex, and age. Moreover, the model uncovers informative interactions between sleep stages and a range of diseases 
+including neurological, psychiatric, cardiovascular, and immunological disorders. These findings not only hold promise for clinical 
+practice and interventional trials but also underscore the significance of sleep as a fundamental component in understanding and 
+managing various diseases.
+Key words: polysomnography; sleep hypnogram; apnea; machine learning; artificial intelligence; contactless at-home sleep 
+monitoring
+Downloaded from https://academic.oup.com/sleep/article/48/1/zsae187/7735723 by guest on 29 June 2026
+2 | SLEEP, 2025, Vol. 48, No. 1
+Graphical Abstract 
+Statement of Significance
+Our research presents an important advancement in sleep medicine, achieving accurate contactless sleep staging and detection of 
+respiratory events (compared to PSG), through contactless radio wave measurements. Demonstrating robust and consistent perfor-
+mance across diverse age groups, genders, races, and health conditions in a large population of sleep clinic patients, our method-
+ology facilitates daily, passive, at-home sleep assessment. This advancement holds promise for enhancing clinical care and clinical 
+trials by providing longitudinal, at-home, cost-effective alternatives to traditional in-laboratory sleep studies. Our findings have 
+the potential to transform the long-term monitoring of sleep-related health issues, contributing to a more personalized, accessible, 
+and data-driven approach to healthcare.
+Sleep monitoring is proven pivotal in understanding diseases 
+and drug response. Sleep is implicated in almost all neurologi-
+cal diseases and inflammatory conditions [ 1, 2] Sleep alterations 
+in patients with depression include reduced REM latency and 
+increased REM density [3, 4], and popular depression drugs, such 
+as SSRI and SNRI, counter these effects increasing REM latency 
+and reducing REM density [5]. Slow waves during deep sleep cor-
+relate with high activity of the glymphatic system and reduced 
+slow waves have been associated with a greater β-amyloid costs, 
+a hallmark of Alzheimer’s disease [6]. Past work has also shown 
+that disrupted sleep can aggravate inflammatory pathways pres-
+ent in conditions like Rheumatoid Arthritis (RA) and inflamma -
+tory bowel disease [7]. These examples emphasize the importance 
+of sleep monitoring and assessment for both clinical trials and 
+patient care.
+The gold standard for sleep assessment is polysomnography 
+(PSG) [8], which requires patients to sleep in the clinic with a 
+plethora of electrodes and sensors on their bodies ( Figure 1A). A 
+key output of a PSG is the sleep hypnogram, which reports for 
+each 30-second epoch the patient’s sleep stage ( Figure 1B). PSG 
+studies are also used to assess irregular breathing patterns like 
+apnea (cessation of breathing for more than 10 seconds) and 
+hypopnea (shallow breathing for more than 10 seconds; Figure 
+1B). However, PSG is costly and incurs a high patient impacts [ 9, 
+10]. Furthermore, sleeping in an unfamiliar environment with 
+many on-body sensors (as shown in Figure 1A) can bias the 
+assessment [11, 12]. These challenges are exacerbated in longi-
+tudinal studies where changes in sleep and nocturnal breathing 
+are tracked over months or years. As a result, both clinical tri -
+als and clinical care rarely use PSG but rather rely on subjective 
+and insensitive self-reports of sleep quality (e.g. via Sleep NRS) by 
+patients [13, 14].
+Both clinical trials and patient care would benefit from an 
+objective, sensitive, and low-impacts solution for in-home 
+Downloaded from https://academic.oup.com/sleep/article/48/1/zsae187/7735723 by guest on 29 June 2026
+He et al. | 3
+assessment of sleep hypnogram and nocturnal breathing. Indeed, 
+the last decade has witnessed increasing use of wearable devices 
+[15–18] and in-mattress sensors for measuring sleep at home 
+in clinical trials [ 19–21]. However, wearable solutions typically 
+require multiple on-body sensors to concurrently track sleep 
+and respiratory signals [ 16–18], which imposes a relatively high 
+impacts in longitudinal trials, and can be cumbersome to wear 
+during sleep. Mattress sensors can similarly affect a person’s 
+sleep and have relatively low accuracy [19–21].
+Recently, an alternative completely passive a pproach was pro-
+posed (by our lab and others [ 22–26]: a radio device similar to a 
+WiFi router is placed in the bedroom of the patient). It transmits 
+very low-power radio waves (1000 times lower power than home 
+WiFi) and analyzes their reflections using neural networks to 
+infer the sleep hypnogram and the respiration signal (Figure 1D). 
+This approach is referred to as radio frequency (RF)-based sleep 
+monitoring (as it leverages RF signals) and is as safe as having a 
+WiFi router at home.
+RF-based sleep monitoring promises to benefit both clinical 
+trials and clinical care by allowing longitudinal sleep and apnea 
+monitoring of patients in their own homes for months or even 
+years, at zero overhead to patients. Furthermore, it concurrently 
+measures sleep metrics and nocturnal breathing signals. Yet, 
+achieving this potential depends on whether RF-based monitor -
+ing works well for patients across diverse demographics and dif -
+ferent health statuses. Past work on RF-based sleep monitoring 
+Figure 1. Illustration of traditional and RF-based sleep assessment. (A) PSG sensors during a sleep study. (B) Illustration of the output of sleep 
+studies showing an example sleep hypnogram with 5 distinct sleep stages, and examples of respiratory signals with hypopnea and apnea events. (C) 
+Illustration of our RF-based sleep and apnea monitoring system. Our sensor operates like a low-power radar. It transmits wireless signals that are 
+1/1000 the power of a home Wi-Fi router and collects their reflections from nearby people. The breathing signal is extracted from such reflections, and 
+the sleep hypnogram and respiratory events are then predicted from each night of the nocturnal breathing signal.
+Downloaded from https://academic.oup.com/sleep/article/48/1/zsae187/7735723 by guest on 29 June 2026
+
+[... MIDDLE PAGES OMITTED ...]
+
+He et al. | 13
+10. Kaditis A, Kheirandish-Gozal L, Gozal D.  Pediatric OSAS: 
+Oximetry can provide answers when polysomnography is 
+not available. Sleep Med Rev. 2016;27:96–105. doi: 10.1016/j.
+smrv.2015.05.008
+11. Mosquera-Lopez C, Leitschuh J, Condon J, et al. Design and eval-
+uation of a non-contactbed-mounted sensing device for auto-
+mated in-home detection of obstructive sleep apnea: A Pilot 
+Study. Biosensors. 2019;9(3):90. doi: 10.3390/bios9030090
+12. Harrison EI, Roth RH, Lobo JM, et al. Sleep time and efficiency in 
+patients undergoing laboratory-based polysomnography. J Clin 
+Sleep Med. 2021;17(8):1591–1598. doi: 10.5664/jcsm.9252
+13. Narla S, Silverberg JI.  Which clinical measurement tools 
+for atopic dermatitis severity make the most sense in clin -
+ical practice? Dermatitis. 2024;35((S1):S13–S23. doi: 10.1089/
+derm.2022.0087
+14. Frase L, Nissen C, Spiegelhalder K, Feige B.  The importance 
+and  limitations of polysomnography in insomnia disorder-a 
+critical appraisal. J Sleep Res. 2023;32(6):e14036. doi: 10.1111/
+jsr.14036
+15. de Zambotti M, Cellini N, Goldstone A, Colrain IM, Baker 
+FC. Wearable sleep technology in clinical and research set -
+tings. Med Sci Sports Exerc.  2019;51(7):1538–1557. doi: 10.1249/
+MSS.0000000000001947
+16. Zavanelli N, Kim H, Kim J, et al. At-home wireless monitoring 
+of acute hemodynamic disturbances to detect sleep apnea and 
+sleep stages via a soft sternal patch. Sci Adv. 2021;7(52):eabl4146. 
+doi: 10.1126/sciadv.abl4146
+17. Walch O, Huang Y , Forger D, Goldstein C.  Sleep stage predic-
+tion with raw acceleration and photoplethysmography heart 
+rate data derived from a consumer wearable device. Sleep. 
+2019;42(12). doi: 10.1093/sleep/zsz180
+18. Boe AJ, McGee Koch LL, O’Brien MK, et al. Automating sleep stage 
+classification using wireless, wearable sensors. NPJ Digit Med. 
+2019;2:131. doi: 10.1038/s41746-019-0210-1
+19. Mitsukura Y , Sumali B, Nagura M, Fukunaga K, Yasui M. Sleep 
+stage estimation from bed leg ballistocardiogram sensors. 
+Sensors (Basel). 2020;20(19):5688. doi: 10.3390/s20195688
+20. Ding F, Cotton-Clay A, Fava L, et al. Polysomnographic valida -
+tion of an under-mattress monitoring device in estimating sleep 
+architecture and obstructive sleep apnea in adults. Sleep Med. 
+2022;96:20–27. doi: 10.1016/j.sleep.2022.04.010
+21. Siyahjani F, Garcia Molina G, Barr S, Mushtaq F.  Performance 
+Evaluation of a Smart Bed Technology against Polysomnography. 
+Sensors (Basel). 2022;22(7):2605. doi: 10.3390/s22072605
+22. Yue S, He H, Wang H, Rahul H, Katabi D. Extracting multi- person 
+respiration from entangled RF signals. Proc ACM Interact Mob 
+Wear Ubiquit Technol. 2018;2(2):1–22. doi: 10.1145/3214289
+23. Adib FM, Mao H, Kabelac Z, Katabi D, Miller R. Smart Homes that 
+Monitor Breathing and Heart Rate. Proceedings of the 33rd Annual 
+ACM Conference on Human Factors in Computing Systems. 
+2015.
+24. Yu B, Wang Y , Niu K, et al. (2021). WiFi-Sleep: sleep stage mon-
+itoring using commodity Wi-Fi devices. IEEE Internet Things J. 
+1390;8(18):0–13913. doi: 10.1109/JIOT.2021.3068798
+25. Lee JH, Nam H, Kim DH, et al. Developing a deep learning model 
+for sleep stage prediction in obstructive sleep apnea cohort 
+using 60 GHz frequency-modulated continuous-wave radar. J 
+Sleep Res. 2024;33(1):e14050. doi: 10.1111/jsr.14050
+26. Yoo Y-K, Jung C-W , Shin H-C. Unsupervised detection of multiple 
+sleep stages using a single FMCW radar. Appl Sci. 2023;13(7):4468. 
+doi: 10.3390/app13074468
+27. Zhao M, Yue S, Katabi D, Jaakkola TS, Bianchi MT; amp. Learning 
+Sleep Stages from Radio Signals: A Conditional Adversarial 
+Architecture. Proceedings of the 34th International Conference 
+on Machine Learning, in Proceedings of Machine Learning 
+Research. 2017;70:4100–4109. https://proceedings.mlr.press/
+v70/zhao17d.html
+28. Xue Z, Gao Z, Ren S, Zhao H. The modality focusing hypothesis: 
+towards understanding crossmodal knowledge distillation. In: 
+The Eleventh International Conference on Learning Representations , 
+September 2022.
+29. Hinton G, Vinyals O, Dean J. Distilling the Knowledge in a Neural 
+Network. Stat. 2015;1050:9.
+30. Kang B, Xie S, Rohrbach M, et al. Decoupling representa -
+tion and classifier for long-tailed recognition. arXiv preprint 
+2019:1910.09217.
+31. Cohen J. A coefficient of agreement for nominal scales. Educ Psychol 
+Measure. 1960;20(1):37–46. doi: 10.1177/001316446002000104
+32. Freedman D, Pisani R, Purves R. Statistics (international student 
+edition). Pisani, R. Purves, 4th edn. NY: WW Norton & Company; 
+2007.
+33. Koo TK, Li MY . A guideline of selecting and reporting intraclass 
+correlation coefficients for reliability research. J Chiroprac Med. 
+2016;15(2):155–163. doi: 10.1016/j.jcm.2016.02.012
+34. McKnight PE, Najab J.  Mann-Whitney U Test. In: Weiner IB, 
+Craighead WE, eds. The Corsini Encyclopedia of Psychology . Wiley; 
+2010. doi: 10.1002/9780470479216.corpsy0524
+35. Jobson JD. Multiple linear regression. In: Applied Multivariate 
+Data Analysis. New York, NY: Springer; 1991:219–398. doi: 
+10.1007/978-1-4612-0955-3_4
+36. Liu GR, Lin TY , Wu HT, et al. Large-scale assessment of consis-
+tency in sleep stage scoring rules among multiple sleep centers 
+using an interpretable machine learning algorithm. J Clin Sleep 
+Med. 2021;17(2):159–166.
+37. Ruehland WR, Rochford PD, O’Donoghue FJ, Pierce RJ, Singh P, 
+Thornton AT. The new AASM criteria for scoring hypopneas: 
+impact on the apnea hypopnea index. Sleep. 2009;32(2):150–157. 
+doi: 10.1093/sleep/32.2.150
+38. Berry RB, Brooks R, Gamaldo C, et al. AASM scoring manual 
+updates for 2017 (version 2.4). J Clin Sleep Med. 2017;13(5):665–666.
+39. Sibilano E, Brunetti A, Buongiorno D, et al. An attention-based 
+deep learning approach for the classification of subjective cog -
+nitive decline and mild cognitive impairment using resting-  
+state EEG. J Neural Eng. 2023;20(1):016048.
+40. Supratak A, Dong H, Wu C, Guo Y . DeepSleepNet: a model for 
+automatic sleep stage scoring based on raw single-channel EEG. 
+IEEE Trans Neural Syst Rehabil Eng.  2017;25(11):1998–2008. doi: 
+10.1109/TNSRE.2017.2721116
+41. Sors A, Bonnet S, Mirek S, Vercueil L, Payen JF. A convolutional 
+neural network for sleep stage scoring from raw single-channel 
+EEG. Biomed Signal Proc Control.  2018;42:107–114. doi: 10.1016/j.
+bspc.2017.12.001
+42. Horie K, Ota L, Miyamoto R, et al. Automated sleep stage scor -
+ing employing a reasoning mechanism and evaluation of its 
+explainability. Sci Rep. 2022;12(1):12799.
+43. Lee YJ, Lee JY , Cho JH, Choi JH. Interrater reliability of sleep stage 
+scoring: a meta-analysis. J Clin Sleep Med.  2022;18(1):193–202. 
+doi: 10.5664/jcsm.9538
+44. Magalang UJ, Chen NH, Cistulli PA, et al.; SAGIC Investigators. 
+Agreement in the scoring of respiratory events and sleep among 
+international sleep centers. Sleep. 2013;36(4):591–596. doi: 
+10.5665/sleep.2552
+45. Danker‐Hopfe H, Kunz D, Gruber G, et al. Interrater reliabil -
+ity  between scorers from eight European sleep laborato -
+ries in subjects with different sleep disorders. J Sleep Res.  
+2004;13(1):63–69.
+Downloaded from https://academic.oup.com/sleep/article/48/1/zsae187/7735723 by guest on 29 June 2026
+14 | SLEEP, 2025, Vol. 48, No. 1
+46. Mandereau-Bruno L, Leger D, Delmas MC.  Obstructive sleep 
+apnea: a sharp increase in the prevalence of patients treated 
+with nasal CPAP over the last decade in France. PLoS One. 
+2021;16(1):e0245392. doi: 10.1371/journal.pone.0245392
+47. Patel AK, Reddy V , Shumway KR, et al. Physiology, Sleep Stages. 
+[Updated 2024 Jan 26]. In: StatPearls [Internet]. Treasure Island 
+(FL): StatPearls Publishing; 2024 https://www.ncbi.nlm.nih.gov/
+books/NBK526132/
+48. Somers VK, Dyken ME, Clary MP, Abboud FM.  Sympathetic 
+neural mechanisms in obstructive sleep apnea. J Clin Invest. 
+1995;96(4):1897–1904. doi: 10.1172/JCI118235
+49. Zhang Y , Pi B, Xu X, et al. Sleep characteristics and influencing 
+factors of sleep quality in patients with inflammatory bowel 
+disease-peripheral arthritis. Front Med. 2020;6:190. doi: 10.3389/
+fmed.2019.00190
+50. Ju YE, Larson-Prior L, Duntley S. Changing demographics in REM 
+sleep behavior disorder: possible effect of autoimmunity and 
+antidepressants. Sleep Med. 2011;12(3):278–283. doi: 10.1016/j.
+sleep.2010.07.022
+51. Anderson KN, Bradley AJ.  Sleep disturbance in mental health 
+problems and neurodegenerative disease. Nat Sci Sleep. 
+2013;5:61–75. doi: 10.2147/NSS.S34842
+52. Wilson S, Argyropoulos S. Antidepressants and sleep: a quali-
+tative review of the literature. Drugs. 2005;65(7):927–947. doi: 
+10.2165/00003495-200565070-00003
+53. Monti JM.  Disturbances of sleep and wakefulness asso -
+ciated with  the use of antihypertensive agents. Life Sci. 
+1987;41(17):1979–1988. doi: 10.1016/0024-3205(87)90471-1
+54. Singh R, Juarez PD, Redline S, Jackson CL.  Shortage of sleep  
+medicine specialists in federally qualified health centers: an 
+illustrative example of differential access to care. J Clin Sleep 
+Med. 2023;19(10):1849–1850. doi: 10.5664/jcsm.10688
+55. What to know about an at-home sleep test . Johns 
+Hopkins Medicine. 2022, https://www.hopkins-
+medicine.org/health/wellness-and-prevention/
+what-to-know-about-an-at-home-sleep-test
+56. At-home sleep apnea tests . Sleep Foundation. 2024, https://www.
+sleepfoundation.org/sleep-studies/at-home-sleep-apnea-test
+57. Douglas NJ, White DP, Pickett CK, Weil JV , Zwillich CW . Respiration 
+during sleep in normal man . Thorax. 1982;37(11):840–844. doi: 
+10.1136/thx.37.11.840
+58. BULOW K. Respiration and wakefulness in man. Acta Physiol 
+Scand Suppl. 1963;209:1–110.
+59. Sun H, Ganglberger W , Panneerselvam E, et al. Sleep staging 
+from electrocardiography and respiration with deep learning. 
+Sleep. 2020;43(7). doi: 10.1093/sleep/zsz306
+60. Younes M, Kuna ST, Pack AI, et al. Reliability of the American 
+Academy of Sleep Medicine rules for assessing sleep depth 
+in clinical practice. J Clin Sleep Med. 2018;14(2):205–213. doi: 
+10.5664/jcsm.6934
+Downloaded from https://academic.oup.com/sleep/article/48/1/zsae187/7735723 by guest on 29 June 2026
+
+--- END OF PAPER: zsae187.pdf ---
+

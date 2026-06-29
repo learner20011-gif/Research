@@ -1,0 +1,2108 @@
+--- START OF PAPER: A_Smart_System_for_Sleep_Monitoring_by_Integrating_IoT_With_Big_Data_Analytics.pdf ---
+Received May 2, 2018, accepted May 28, 2018, date of publication June 22, 2018, date of current version July 19, 2018.
+Digital Object Identifier 10.1 109/ACCESS.2018.2849822
+A Smart System for Sleep Monitoring by
+Integrating IoT With Big Data Analytics
+DIANA C. YACCHIREMA
+ 1,2, DAVID SARABIA-JÁCOME2,
+CARLOS E. PALAU2, (Senior Member, IEEE), AND MANUEL ESTEVE2
+1Departamento de Informática y Ciencias de la Computación, Escuela Politécnica Nacional, Quito 17-01-2759, Ecuador
+2Communication Department, Universitat Politècnica de València, 46022 Valencia, Spain
+Corresponding author: Diana C. Yacchirema (diayac1@doctor.upv.es)
+This work was supported in part by the European Union’s Horizon 2020 Research and Innovation Programme through the Interoperability
+of Heterogeneous IoT Platforms Project (INTER-IoT) under Grant 687283, in part by the Escuela Politécnica Nacional, Ecuador, and in
+part by the Secretaría Nacional de Educación Superior, Ciencia, Tecnología e Innovación (SENESCYT), Ecuador.
+ABSTRACT Obtrusive sleep apnea (OSA) is one of the most important sleep disorders because it has a
+direct adverse impact on the quality of life. Intellectual deterioration, decreased psychomotor performance,
+behavior, and personality disorders are some of the consequences of OSA. Therefore, a real-time monitoring
+of this disorder is a critical need in healthcare solutions. There are several systems for OSA detection.
+Nevertheless, despite their promising results, these systems not guiding their treatment. For these reasons,
+this research presents an innovative system for both to detect and support of treatment of OSA of elderly
+people by monitoring multiple factors such as sleep environment, sleep status, physical activities, and
+physiological parameters as well as the use of open data available in smart cities. Our system architecture
+performs two types of processing. On the one hand, a pre-processing based on rules that enables the sending
+of real-time notiﬁcations to responsible for the care of elderly, in the event of an emergency situation. This
+pre-processing is essentially based on a fog computing approach implemented in a smart device operating
+at the edge of the network that additionally offers advanced interoperability services: technical, syntactic,
+and semantic. On the other hand, a batch data processing that enables a descriptive analysis that statistically
+details the behavior of the data and a predictive analysis for the development of services, such as predicting
+the least polluted place to perform outdoor activities. This processing uses big data tools on cloud computing.
+The performed experiments show a 93.3% of effectivity in the air quality index prediction to guide the OSA
+treatment. The system’s performance has been evaluated in terms of latency. The achieved results clearly
+demonstrate that the pre-processing of data at the edge of the network improves the efﬁciency of the system.
+INDEX TERMS Internet-of-Things, big data, interoperability, sleep monitoring, health monitoring, open
+data, fog computing, cloud computing.
+I. INTRODUCTION
+Over the years, we human beings experience changes in our
+bodies and in our lives. One of these changes is the alteration
+of sleep that occurs with age. In particular, obstructive sleep
+apnea syndrome (OSA) is one of the most common and
+dangerous respiratory disorders that occur during sleep. OSA
+consists of the obstruction or partial blockage of the upper
+respiratory tract for at least 10 seconds and that prevents
+proper oxygenation of the blood [1], even over 20-30 times an
+hour of sleep. According to number of interruptions per hour
+and by using the apnea-hypopnea index (AHI), OSA can be
+classiﬁed into 3 categories from higher to lower severity; if
+these interruptions occur between 5 and 15 times per hour as
+‘‘mild’’, if these interruptions occur between 15 and 30 times
+per hour as ‘‘moderate’’, and if these respiratory interruptions
+occur more than 30 times per hour as ‘‘severe’’ [2].
+The sleep fragmentation produced by these respiratory
+interruptions have clinical consequences associated including
+depressive disorders, irritability, intellectual deterioration,
+decreased psychomotor performance, behavior and person-
+ality disorders [3]. As a result, the quality of life (QoL) can
+be signiﬁcantly decreased and thereby increase the associated
+health problems and medical costs. Sleep apnea affects 21%
+of the US population (∼70 million people), and account
+for an estimated $16 billion in health care expenses each
+year [4].
+35988 This work is licensed under a Creative Commons Attribution 3.0 License. For more information, see http://creativecommons.org/licenses/by/3.0/VOLUME 6, 2018
+D. C. Yacchiremaet al.: Smart System for Sleep Monitoring by Integrating IoT
+OSA at any age is a major concern due to the health
+problems it can cause, but it is even more problematic for
+older people who are more likely to have respiratory problems
+at night, but are less likely to be diagnosed; (more than
+∼80–90%) are not diagnosed or simply diagnosed as snoring.
+Research reveals that between 13 and 32% of people over
+65 suffer from OSA [5] and it is a growing problem in
+developed countries, which are average life expectancy has
+increased.
+The difﬁculty or trouble falling asleep, combined with the
+lack of deep sleep, results in a poor QoL and a greater health
+risk for elderly people. In addition, the long-term implications
+of chronic sleep disorders include an association with an
+increased risk of death [6].
+Nowadays, the main reference tool for the diagnosis of
+OSA is a conventional polysomnography (PSG) study. PSG is
+an examination that lasts all night in a specialized clinic or in
+hospitals under constant medical surveillance, which means
+that the patients must go to a medical facility frequently,
+which will inevitably increase the burden on hospitals. Addi-
+tionally, this method incorporates many sensors on a person’s
+body, which is considered intrusive and, in turn, can disturb
+sleep [7]. In addition, the high cost of PSG makes it a very
+impractical monitoring method to be implemented in the long
+term.
+On the other hand, there are many approaches available
+for OSA treatment, including weight loss, sleep hygiene
+techniques, positional and continuous open airway ther-
+apy (COAT), continuous positive airway pressure (CPAP)
+and surgical interventions. CPAP is an effective treatment for
+OSA [8], nevertheless adherence to treatment is suboptimal
+because to low perceived disease risk by the patients. This
+in turn may bring discomfort to the patients and lead them
+to interrupt therapy. Therefore, there is a signiﬁcant need
+to provide an unobtrusive real-time- systems that not only
+allows for the detection of the OSA but also supports its
+treatment at home.
+Several researches have proposed a variety of systems to
+detect OSA episodes, generally using wearable sensors incor-
+porated in smart devices such as bands, bracelets, watches,
+and telephones. These systems achieve near real-time detect-
+ing of the OSA based on especially monitoring of physiolog-
+ical parameters such as the respiratory rate, the heart rate, and
+the oxygen saturation through wireless technologies such as
+Bluetooth [9]–[12], Wi-Fi [13], and ZigBee [14] with promis-
+ing results. Nevertheless, as far as we know, these systems
+do not support the long-term treatment of this syndrome.
+In addition, almost all existing systems cannot work without
+a smartphone, which is used as a receiver and a processor of
+the data [9], [14]. Therefore, such proposals are unsuitable
+to monitor OSA patients at home, since the complex tasks of
+data processing can have a great impact on the daily use of
+the smartphone and thus in operating the system. The effects
+of sleep apnea and its complications have heightened the
+urgency for the patient to have not only a rapid diagnosis but
+also treatment.
+In this work, an architecture of an OSA monitoring sys-
+tem based on the Internet of Things (IoT) and Big Data
+is proposed. The three-layered architecture integrates Fog
+and Cloud Computing capabilities to support both diagnosis
+and treatment of sleep apnea by creating of various services
+including remote monitoring, real-time alert notiﬁcations,
+data analysis and information visualization. The proposed
+system envisions assisting health professionals in medical
+decision-making.
+The system performs the monitoring of the OSA har-
+nessing advantage of the combined use of different tech-
+nologies, components, and complementary open standards
+such as 6LoWPAN, ZigBee, BLE, Smart IoT Gateway,
+FIWARE [15] and lightweight and secure IoT protocols such
+as MQTT and CoAP.
+The data related to the physical activities of the elderly,
+the sleep environment, the sleep status, the physiological
+parameters, and the context information collected are trans-
+mitted directly to a Smart IoT Gateway operating at the
+Fog Computing level using different Low Power Wireless
+Networks such as Bluetooth 4.0, ZigBee, and 6LowPAN.
+The different types of interoperability provided (technical,
+syntactic, and semantic) by the Smart IoT Gateway allows
+seamless interoperability between the different networks and
+communication protocols used.
+In order to guarantee an immediate response from the
+system in emergency situations with low latency, the pre-
+processing of the data independently is also implemented in
+the Fog Computing level. The pre-processed data is stored
+and made available to users at the Cloud Computing level
+through a generic enabler which can greatly improve the
+administration and availability of the data.
+Additionally, at this level, an analyzer based on Big Data is
+implemented to support the processing of data by extracting
+and analyzing the data coming from both the Fog Computing
+level and the open data catalog available in smart cities,
+in particular, from the city of Valencia. To do so, the big
+data architecture is based on Lambda architecture because
+it provides a fault-tolerance, scalable and reliable system.
+Using the batch layer described on the lambda architecture,
+the historical data is stored in a Hadoop Distributed File
+System (HDFS) cluster and exploited by using the Apache
+Spark platform. Despite lambda architecture proposes a speed
+layer to real-time processing, this is not considered in the Big
+Data architecture proposed because the real-time processing
+is implemented in the fog layer. In the same level, a web-
+based graphical user interface (GUI) is also implemented that
+enables health professionals, caregivers, and emergency med-
+ical centers to remotely access the data on elders’ physical
+activity, sleep stage, sleep environment, and medical condi-
+tion in order to assess whether treatment needs to be changed,
+as well as to contact them when in need. The proposed system
+has been successfully implemented and its real feasibility in
+the monitoring and treatment of OSA has been fully tested.
+The rest of the article is structured as follows.
+Section 2 reviews the current literature related to this ﬁeld
+VOLUME 6, 2018 35989
+D. C. Yacchiremaet al.: Smart System for Sleep Monitoring by Integrating IoT
+of research, highlighting the key points of the research devel-
+opment. Next, Section 3 presents the high-level architecture
+of the proposed system, as well as its implementation. Next,
+Section 4 describes the main components built and used in
+the experimental Testbed and Section 5 describes the results
+of the experiments and evaluations conducted in order to
+validate the functionality of the system. Finally, Section 6
+concludes the paper and presents directions for our further
+work.
+II. RELATED WORK
+In the literature, there are several works available related to
+OSA which are mainly focused on detecting OSA through the
+monitoring of different physiological parameters. For exam-
+ple, Bsoul et al.[9] proposed a low-cost system that enables
+the detection and recognition of OSA episodes in real time,
+based on the measurements of a single-channel electrocardio-
+gram (ECG) using a support vector machine classiﬁer (SVM)
+that runs on a smartphone. The communication between the
+ECG sensor and the Smartphone is done through Bluetooth.
+A similar investigation was proposed by Sannino et al.[10],
+the authors proposed a mobile system in real time to detect
+the OSA based on the automatic extraction of a set of rules
+(IF . . .THEN), which contained typical parameters derived
+from the analysis of the heart rate variability obtained from
+an electrocardiogram (ECG). The authors use the Zephyr
+BioHarnessTMBH3 physiological sensor attached to the
+patient’s chest to record the ECG signals. The data were trans-
+mitted to a mobile device (for example, a smartphone or PDA)
+for processing using Bluetooth technology.
+Zhu et al.[11] proposed an automatic system for the long-
+term monitoring of the quality of sleep of the elderly in a
+residence. The system uses a piezoelectric transducer placed
+under a mattress to measure the heart rate, respiration, and the
+parameters of the body movement of older adults at the time
+of sleep. The collected data is transmitted to database servers
+through the Internet.
+Similarly, a non-intrusive system for quantifying sleep
+quality was proposed by Nam et al. [14] The system was
+equipped with multimodal sensors, which included a three-
+axis accelerometer and a pressure sensor. Multimodal sensors
+monitor various physiological parameters, such as the respi-
+ratory rate, the heart rate, and the body activity, as well as the
+posture of older adults during sleep. The data collected from
+the system is transmitted over a wireless network of sensors
+based on ZigBee technology to a portable recording device
+and to a PC.
+Finally, Rofouei et al. [12] proposed a portable non-
+invasive ‘‘neck-cuff’’ system to monitor several physiological
+signals related to sleep quality in real time. These signals were
+generated from various sensors incorporated into a collar used
+by the patient during sleep: an oximetry sensor to monitor
+the level of oxygen saturation in the blood, a microphone to
+capture breath sounds, and an accelerometer to monitor body
+movements. The sleep data was sent wirelessly via Bluetooth
+to a cell phone or PC for processing and storage.
+Although, several important parameters have been moni-
+tored (mostly physiological) to determine sleep quality and
+detect OSA. Other factors such as, for example, the sleep
+environment, also have an impact on OSA, since it allows
+to assess whether the environment is comfortable to sleep.
+In this context, a non-invasive IoT-based system to improve
+the well-being of people with sleep disorders was proposed by
+Lobato et al.[13], which allows for the monitoring of several
+environmental parameters that contribute to the lack of sleep
+such as temperature, humidity, noise, and luminosity. The
+system acquires the data through multimodal technologies
+such as smart devices (telephones, watches) and electronic
+health monitors. The collected data is sent through a Wi-Fi
+access point to a ‘‘Sleep mon’’ middleware, for analysis and
+processing. Additionally, the system offers advice throughout
+the day with health behaviors that can improve the quality of
+sleep, such as reminders to practice exercises.
+Although the aforementioned research shows its advan-
+tages in the detection of OSA, there are still many limita-
+tions. For example, most systems are not based on IoT and
+Big Data-based architectures. An IoT system consists of IoT
+devices (sensors and actuators), communication interfaces,
+IoT protocols, algorithms and cloud interfaces. In addition,
+the pre-processing of data is carried out on devices such
+as smartphones; whose main constraint is relatively high
+energy consumption, so these systems could only be active
+for a short period of time. Others studies perform the pre-
+processing of data on servers located in the cloud using a
+Cloud Computing approach; where the delay in the latency
+caused by the transfer of data from the sensors to the cloud is
+unacceptable in latency-sensitive solutions, as in the case of
+healthcare solutions.
+Additionally, as a consequence, these systems are not able
+to notify health professionals in real-time in emergency situa-
+tions which elders might experience. Likewise, the analyzed
+works do not address the interoperability of heterogeneous
+devices working and operating with different protocols and
+communication technologies, which must be guaranteed in
+any IoT solution.
+Unlike the previous works, the main motivation of this
+work is to propose a system based on IoT and Big Data that
+not only focuses on the detection of OSA, but also in guiding
+the treatment of this syndrome, based on the use of open data
+processing available in smart cities as well as multiple factors
+that directly affect OSA such as sleep environment, sleep
+status, physical activities, and physiological parameters. The
+system performs two types of processing: (i) a pre-processing
+based on rules that enable the sending of real-time notiﬁca-
+tions to health professionals and emergency services, in the
+event of an emergency situation relating to OSA that affects
+the health of the elderly. This pre-processing is essentially
+based on a Fog Computing approach implemented in a Smart
+IoT Gateway operating at the edge of the network that addi-
+tionally offers advanced interoperability services: technical,
+syntactic, and semantic; and (ii) a batch data processing to
+perform a descriptive analysis that statistically details the
+35990 VOLUME 6, 2018
+
+[... MIDDLE PAGES OMITTED ...]
+
+D. C. Yacchiremaet al.: Smart System for Sleep Monitoring by Integrating IoT
+V. CONCLUSIONS
+QoL has become a need in society that will continue to be
+even more important if we consider that in the future the
+number of older adults will represent more than 14% of the
+world’s population. OSA is one of the diseases that most
+compromises the QoL of the adults who suffer from it and
+causes important complications that can affect their health.
+The continuous monitoring and the processing of multiple
+parameters related to OSA will lead to the alerting of health
+professionals, emergency centers, caregivers, and relatives of
+adults at the right time so as to be assisted on time, in order
+to improve their QoL, and in some cases, even preserve their
+lives.
+Innovative technologies such as IoT and Big Data have
+been gradually developed to create intelligent and pervasive
+systems focused on the healthcare of adults and, in general,
+on medical care. More precisely, IoT can be used as a tool to
+support the monitoring and control within a health ecosystem,
+whereas data analysis technologies can be used to support
+decision-making.
+A system based on a 3-level architecture for supporting
+real-time monitoring of OSA in elderly people and guiding
+their treatment has been proposed and implemented. The sys-
+tem is implemented using heterogeneous and non-intrusive
+devices, IoT protocols, components of standard platforms,
+low-power technologies, big data technologies, and fog and
+Cloud computing approaches.
+At the fog layer, an efﬁcient processing on a smart IoT
+gateway has been implemented and evaluated for processing
+the snoring level and data of the of multiple factors that
+directly affect OSA (sleep environment, sleep status, physical
+activities, and physiological parameters), detect the episodes
+of the OSA and unusual events, and alert the health profes-
+sionals and caregivers in time. With the IoT vision in mind,
+at the fog layer also the technical, syntactic and semantic
+interoperability has been implemented, so as to allow the
+communication and data sharing among heterogeneous IoT
+devices as well as the transfer of data from the IoT layer to
+the Cloud layer.
+Taking advantage of the Big Data tools, a batch data pro-
+cessing at the Cloud layer has been implemented. It is able
+to perform a descriptive analysis that statistically details the
+behavior of the data from the smart IoT gateway and predict
+the least polluted place based on the pollutant’s data available
+in smart cities in order to guide the treatment of OSA. The
+analyzed data are delivered to a server, which display the
+information in a Web IU, so the healthcare professionals
+involved in the care of the elderly people can easily access
+from anywhere at any time and from any device.
+Several experiments were conducted to validate the pro-
+posed system. The usability evaluation of the system showed
+that the UIs of the system provides suitable information to
+help to the healthcare professionals to infer OSA context-
+awareness and support the medical decision-making on
+their treatment. In addition, the results demonstrate that the
+non-intrusive devices used to monitor and the predictions of
+the less polluted places on the city could lead to facilitate
+adherence to the prescribed medical treatment. The prediction
+of the AQI provides a 93.3% effectiveness. Given that the
+AQI prediction error is 6.7%, it is concluded that such AQI
+prediction provides an acceptable level of conﬁdence and that
+the machine learning model can be used for supporting the
+OSA treatment. The performance evaluation of the proposed
+system is evaluated in terms of latency. The results demon-
+strate that the detection of apnea episodes making at the Fog
+layer reduces the latency on the communication infrastructure
+compared to at the Cloud layer. In the future, we will focus
+on integrating the system with other solutions applied to
+the healthcare domain derived from Inter-IoT project with
+the aim of facilitate the delivery of elderly smart healthcare
+services. In addition, a future evaluation with more patients
+will provide both useful lessons learned and results to be used
+to further enhance the proposed system.
+REFERENCES
+[1] K. P. Strohl and S. Redline, ‘‘Recognition of obstructive sleep apnea,’’
+Amer. J. Respiratory Critical Care Med., vol. 154, no. 2, pp. 279–289,
+1996.
+[2] E. J. Olson, W. R. Moore, T. I. Morgenthaler, P. C. Gay, and B. A. Staats,
+‘‘Obstructive sleep apnea-hypopnea syndrome,’’Mayo Clin. Proc., vol. 78,
+no. 12, pp. 1545–1552, 2003.
+[3] M. H. Bonnet and D. L. Arand, ‘‘Clinical effects of sleep fragmentation
+versus sleep deprivation,’’Sleep Med. Rev., vol. 7, no. 4, pp. 297–310, 2003.
+[4] National Institutes of Health Sleep Disorders Research Plan, Nat. Inst.
+Health, Bethesda, MD, USA, 2011.
+[5] M. Glasser, N. Bailey, A. McMillan, E. Goff, and M. J. Morrell, ‘‘Sleep
+apnoea in older people,’’ Breathe, vol. 7, no. 3, pp. 248–256, 2011.
+[6] H. K. Yaggi, J. Concato, W. N. Kernan, J. H. Lichtman, L. M. Brass,
+and V . Mohsenin, ‘‘Obstructive sleep apnea as a risk factor for stroke and
+death,’’New England J. Med., vol. 353, no. 19, pp. 2034–2041, 2005.
+[7] A. S. Karunajeewa, U. R. Abeyratne, and C. Hukins, ‘‘Multi-feature snore
+sound analysis in obstructive sleep apnea–hypopnea syndrome,’’ Physiol.
+Meas., vol. 32, no. 1, p. 83, 2011.
+[8] A. Cartwright et al., ‘‘0510 use of a personalized video to enhance PAP
+adherence: Preliminary report from a randomized clinical trial,’’ Sleep,
+vol. 40, no. 1, p. A190, Apr. 2017, doi: 10.1093/sleepj/zsx050.509.
+[9] M. Bsoul, H. Minn, and L. Tamil, ‘‘Apnea MedAssist: Real-time sleep
+apnea monitor using single-lead ECG,’’ IEEE Trans. Inf. Technol. Biomed.,
+vol. 15, no. 3, pp. 416–427, May 2011.
+[10] G. Sannino, I. De Falco, and G. De Pietro, ‘‘Monitoring Obstructive Sleep
+Apnea by means of a real-time mobile system based on the automatic
+extraction of sets of rules through Differential Evolution,’’ J. Biomed.
+Inform., vol. 49, pp. 84–100, Jun. 2014.
+[11] X. Zhu, X. Zhou, W. Chen, K.-I. Kitamura, and T. Nemoto, ‘‘Estimation of
+sleep quality of residents in nursing homes using an Internet-based auto-
+matic monitoring system,’’ in Proc. IEEE 11th Int. Conf. Ubiquitous Intell.
+Comput., IEEE 11th Int. Conf. Autonomic Trusted Comput., IEEE 14th
+Int. Conf. Scalable Comput. Commun. Associated Workshops, Dec. 2014,
+pp. 659–665.
+[12] M. Rofouei et al., ‘‘A non-invasive wearable neck-cuff system for real-
+time sleep monitoring,’’ in Proc. Int. Conf. Body Sensor Netw., 2011,
+pp. 156–161.
+[13] F. M. F. Lobato, D. C. O. de Resende, R. P. do Nascimento,
+A. L. C. Siqueira, A. F. L. Jacob, Jr., and A. L. de Santana, ‘‘Multimodal
+low-invasive system for sleep quality monitoring and improvement,’’ in
+Beyond the Internet of Things: Everything Interconnected, J. M. Batalla,
+G. Mastorakis, C. Mavromoustakis, and E. Pallis, Eds. Cham, Switzerland:
+Springer, 2017, pp. 223–242.
+[14] Y . Nam, Y . Kim, and J. Lee, ‘‘Sleep monitoring based on a tri-axial
+accelerometer and a pressure sensor,’’ Sensors, vol. 16, no. 5, p. 750,
+May 2016.
+[15] (2017). FIWARE. Accessed: May 1, 2017. [Online]. Available:
+https://www.ﬁware.org/tag/iot/
+36000 VOLUME 6, 2018
+D. C. Yacchiremaet al.: Smart System for Sleep Monitoring by Integrating IoT
+[16] M. Kay et al., ‘‘Lullaby: A capture & access system for understanding
+the sleep environment,’’ in Proc. ACM Conf. Ubiquitous Comput., 2012,
+pp. 226–234.
+[17] M.-A. Martínez-García et al., ‘‘Cardiovascular mortality in obstructive
+sleep apnea in the elderly: Role of long-term continuous positive airway
+pressure treatment: A prospective observational study,’’ Amer. J. Respira-
+tory Critical Care Med., vol. 186, no. 9, pp. 909–916, 2012.
+[18] T. Penzel, J. W. Kantelhardt, L. Grote, J. H. Peter, and A. Bunde, ‘‘Compar-
+ison of detrended ﬂuctuation analysis and spectral analysis for heart rate
+variability in sleep and sleep apnea,’’ IEEE Trans. Biomed. Eng., vol. 50,
+no. 10, pp. 1143–1151, Oct. 2003.
+[19] A. S. Gami, D. E. Howard, E. J. Olson, and V . K. Somers, ‘‘Day–night
+pattern of sudden death in obstructive sleep apnea,’’ New England J. Med.,
+vol. 352, no. 12, pp. 1206–1214, Mar. 2005.
+[20] N. Maimon and P. J. Hanly, ‘‘Does snoring intensity correlate with the
+severity of obstructive sleep apnea?’’ J. Clin. Sleep Med., vol. 6, no. 5,
+pp. 475–478, Oct. 2010.
+[21] H. Igelström et al., ‘‘Improvement in obstructive sleep apnea after a tai-
+lored behavioural sleep medicine intervention targeting healthy eating and
+physical activity: A randomised controlled trial,’’ Sleep Breathing, pp. 1–9,
+Dec. 2017. doi: 10.1007/s11325-017-1597-z.
+[22] R. Wolk, A. S. M. Shamsuzzaman, and V . K. Somers, ‘‘Obesity, sleep
+apnea, and hypertension,’’ Hypertension, vol. 42, no. 6, pp. 1067–1074,
+2003.
+[23] E. B. Martha et al., ‘‘Relationship of air pollution to sleep disruption:
+The multi-ethnic study of atherosclerosis (MESA) sleep and MESA-air
+studies,’’B20 Big Data Comes Sleep Med., p. A2930, May 2017.
+[24] A. V . Dastjerdi and R. Buyya, ‘‘Fog computing: Helping the Internet
+of Things realize its potential,’’ Computer, vol. 49, no. 8, pp. 112–116,
+Aug. 2016.
+[25] D. C. Yacchirema and C. Palau, ‘‘Smart IoT gateway for heteroge-
+neous devices interoperability,’’ IEEE Latin Amer. Trans., vol. 14, no. 8,
+pp. 3900–3906, Aug. 2016.
+[26] Valencia SmartCity. Plataforma Valencia. Accessed: Sep. 27, 2017.
+[Online]. Available: https://portal.vlci.valencia.es/#/
+[27] A. E. de Meteorología. Agencia Estatal de Meteorología- AEMET.
+Gobierno de España. Accessed: Oct. 16, 2017. [Online]. Available:
+http://www.aemet.es/es/portada
+DIANA C. YACCHIREMA received the M.Sc.
+degree (Hons.) in management of communica-
+tions and information technology from the Escuela
+Politécnica Nacional (EPN), Quito, Ecuador,
+in 2009, and the M.Sc. degree in communica-
+tions technologies, systems and networks from the
+Universitat Politècnica de Valéncia, Valencia,
+Spain, in 2011, where she is currently pursuing the
+Ph.D. degree in telecommunications engineering
+with the Distributed Real Time Systems and Appli-
+cations Research Group. Her research activities and interests include a wide
+range of subjects related to Internet of Things, sensor networks, big data,
+cloud computing, edge computing, and network security. She received the
+Best Academic Record Award from EPN in 2009.
+DAVID SARABIA-JÁCOME received the M.Sc.
+degree in communications technologies, systems
+and networks from the Universitat Politécnica de
+Valéncia, Spain, in 2016, where he is currently pur-
+suing the Ph.D. degree with the Escuela Técnica
+Superior de Ingenieros de Telecomunicación. His
+research activities and interests cover Internet of
+Things, big data, cloud computing, fog computing,
+and virtualization.
+CARLOS E. PALAU(SM’17) received the M.Sc.
+and Ph.D. (Dr.-Ing.) degrees in telecommunica-
+tion engineering from the Universitat Politècnica
+de València in 1993 and 1997, respectively.
+He is currently a Full Professor with the Escuela
+Técnica Superior de Ingenieros de Telecomuni-
+cación, Universitat Politècnica de València. He has
+over 20 years of experience in the ICT research
+area in the ﬁeld of networking. He has collabo-
+rated extensively in the research and development
+of multimedia streaming, security, networking, and wireless communica-
+tions for government agencies, defense, and European Commission as a
+Main Researcher of EU-FP6, EU-FP7, and EU-H2020 Programs. He has
+authored or co-authored over 120 research papers. He is a TPC Member of
+several IEEE, ACM, and IFIP conferences.
+MANUEL ESTEVE received the M.Sc. degree in
+computer engineering and the Ph.D. (Dr.-Ing.)
+degree in telecommunication engineering from
+the Universitat Politècnica de València (UPVLC)
+in 1989 and 1994, respectively. He is currently
+a Full Professor with the Escuela Técnica Supe-
+rior de Ingenieros de Telecomunicación, UPVLC,
+where he is also the Leader of the Distributed
+Real-Time Systems Research Group. He has over
+25 years of experience in the ICT research area in
+the area of networking. He is managing several research and development
+projects at regional, national, and international levels. He has collaborated
+extensively in the research and development of projects for the government
+agencies and defense, and EU-FP6, EU-FP7, and EU-H2020 Programs as
+the Chairman of the agreement between Spanish MoD and UPVLC. He has
+authored or co-authored over 100 research papers.
+VOLUME 6, 2018 36001
+
+--- END OF PAPER: A_Smart_System_for_Sleep_Monitoring_by_Integrating_IoT_With_Big_Data_Analytics.pdf ---
+
+--- START OF PAPER: bioengineering-12-01191-v2.pdf ---
+Academic Editor: Luca Mesin
+Received: 14 October 2025
+Revised: 28 October 2025
+Accepted: 30 October 2025
+Published: 31 October 2025
+Citation: Mogavero, M.P .; Lanza, G.;
+Bruni, O.; Ferini-Strambi, L.; Silvani,
+A.; Faraguna, U.; Ferri, R. Beyond the
+Sleep Lab: A Narrative Review of
+Wearable Sleep Monitoring.
+Bioengineering 2025, 12, 1191. https://
+doi.org/10.3390/bioengineering12111191
+Copyright: © 2025 by the authors.
+Licensee MDPI, Basel, Switzerland.
+This article is an open access article
+distributed under the terms and
+conditions of the Creative Commons
+Attribution (CC BY) license
+(https://creativecommons.org/
+licenses/by/4.0/).
+Review
+Beyond the Sleep Lab: A Narrative Review of Wearable
+Sleep Monitoring
+Maria P . Mogavero1,2,†
+ , Giuseppe Lanza 3,4,†
+ , Oliviero Bruni 5
+ , Luigi Ferini-Strambi 1,2
+ ,
+Alessandro Silvani 6
+ , Ugo Faraguna 7,8
+ and Raffaele Ferri 3, *
+1 Vita-Salute San Raffaele University, 20132 Milan, Italy; paola_mogavero@libero.it (M.P .M.);
+ferinistrambi.luigi@hsr.it (L.F.-S.)
+2 Division of Neuroscience, Sleep Disorders Center, San Raffaele Scientific Institute, 20127 Milan, Italy
+3 Oasi Research Institute-IRCCS, 94018 Troina, Italy; glanza@oasi.en.it
+4 Department of Surgery and Medical-Surgical Specialties, University of Catania, 95100 Catania, Italy
+5 Department of Human Neurosciences, Sapienza University, 00100 Rome, Italy; oliviero.bruni@uniroma1.it
+6 Department of Biomedical and Neuromotor Science, University of Bologna, Ravenna Campus,
+48100 Ravenna, Italy; alessandro.silvani3@unibo.it
+7 Department of Translational Research and of New Surgical and Medical Technologies, University of Pisa,
+56100 Pisa, Italy; ugo.faraguna@unipi.it
+8 Department of Developmental Neuroscience, Istituto di Ricovero e Cura a Carattere Scientifico (IRCCS)
+Foundation Stella Maris, Calambrone, 56128 Pisa, Italy
+* Correspondence: rferri@oasi.en.it
+† These authors contributed equally to this work.
+Abstract
+Sleep is a fundamental biological process essential for health and homeostasis. Traditionally
+investigated through laboratory-based polysomnography (PSG), sleep research has under-
+gone a paradigm shift with the advent of wearable technologies that enable non-invasive,
+long-term, and real-world monitoring. This review traces the evolution from early analog
+and actigraphic methods to current multi-sensor and AI-driven wearable systems. We
+summarize major technological milestones, including the transition from movement-based
+to physiological and biochemical sensing, and the growing role of edge computing and
+deep learning in automated sleep staging. Comparative studies with PSG are discussed,
+alongside the strengths and limitations of emerging devices such as wristbands, rings,
+headbands, and camera-based systems. The clinical applications of wearable sleep moni-
+tors are examined in relation to remote patient management, personalized medicine, and
+large-scale population research. Finally, we outline future directions toward integrating
+multimodal biosensing, transparent algorithms, and standardized validation frameworks.
+By bridging laboratory precision with ecological validity, wearable technologies promise to
+redefine the gold standard for sleep monitoring, advancing both individualized care and
+population-level health assessment.
+Keywords: wearable sleep monitors; sleep monitoring technology; sleep trackers;
+polysomnography; actigraphy; sleep stage classification; remote patient monitoring
+1. Introduction
+Sleep is critical for a wide range of physiological and cognitive functions, including
+memory consolidation [1], metabolic regulation [2], immune function [3], and emotional stabil-
+ity [4]. Disrupted or insufficient sleep has been linked to numerous adverse health outcomes,
+ranging from cardiovascular disease and diabetes to depression and cognitive decline [2,4,5].
+Bioengineering 2025, 12, 1191 https://doi.org/10.3390/bioengineering12111191
+Bioengineering 2025, 12, 1191 2 of 18
+The profound impact of sleep on overall well-being has driven decades of techno-
+logical innovation aimed at understanding and monitoring sleep quality and architecture.
+Historically, polysomnography (PSG), considered the gold standard for sleep assessment,
+has offered comprehensive insights into sleep stages, including wakefulness, rapid eye
+movement (REM) sleep, and non-REM sleep (N1, N2, N3) [6]. PSG involves the recording
+of multiple physiological parameters, such as electroencephalography (EEG), electroocu-
+lography (EOG), electromyography (EMG), and electrocardiography (ECG), during an
+overnight stay in a sleep laboratory [6]. While PSG provides rich data, its high cost, com-
+plexity, and the artificial environment of the sleep lab limit its practicality for widespread
+and long-term sleep monitoring. These limitations have necessitated the development
+of more accessible and convenient alternatives for sleep assessment. Recent advances in
+wearable technology, including advancements in sensor technology, data processing, and
+miniaturization, have opened avenues for longitudinal, non-invasive sleep assessment in
+naturalistic settings, outside the confines of a sleep laboratory [7,8]. These devices, from
+wrist actigraphy to smart headbands/smartwatches, offer the potential to capture sleep-
+related data over extended periods, providing a more comprehensive and ecologically
+valid picture of an individual’s sleep patterns. This review aims to provide an in-depth
+narrative on the evolution, current state, and prospective future of wearable sleep monitors,
+exploring the various types of devices, their underlying technologies, and their accuracy in
+assessing sleep parameters. Furthermore, the review will address the potential clinical and
+research implications of these emerging technologies, including their role in diagnosing
+sleep disorders, monitoring treatment efficacy, and advancing our understanding of sleep
+physiology and its relationship to health and disease.
+2. Historical Evolution of Sleep Monitoring
+2.1. Early Foundations: Polysomnography
+The rigorous scientific exploration of sleep began in the 1950s, with PSG emerging
+as the gold-standard method for evaluating sleep disorders and architecture [9,10]. PSG
+integrates multiple physiological recordings—electroencephalography (EEG) to track brain
+waves, electrooculography (EOG) for eye movements, electromyography (EMG) for muscle
+tone, and additional measurements such as electrocardiography (ECG) and respiratory
+monitoring. This multifaceted approach allow clinicians to distinguish between distinct
+sleep stages: NREM stages (N1, N2, N3) and REM sleep [6].
+Despite its high diagnostic value, PSG has limitations. The method is resource-
+intensive, requires specialized equipment and expert interpretation, and is conducted
+in environments (sleep laboratories) that might not reflect an individual’s typical sleep
+patterns [ 5]. These factors spurred the search for more user-friendly, cost-effective
+monitoring methods.
+PSG is widely recognized as the gold standard for diagnosing some sleep disorders,
+according to the International Classification Sleep Disorder 3rd Edition TR (ICSD 3rd Ed-
+TR 2023) [11], but its effective use demands a high degree of specialized expertise. The
+assessment and scoring of PSG require professionals who are adept at interpreting a
+complex array of physiological signals—including EEG, EOG, EMG, ECG, and respiratory
+patterns—to accurately differentiate sleep stages and identify subtle abnormalities. This
+intricate process often involves manual scoring that can take several hours per study,
+contributing substantially to personnel costs. In addition, the sophisticated and high-quality
+equipment required for acquiring and processing these signals represents a significant
+financial investment, further restricting PSG to specialized sleep centers. Together, these
+factors underscore the challenges and resource intensiveness of PSG [12].
+Bioengineering 2025, 12, 1191 3 of 18
+2.2. The Advent of Actigraphy
+Early telemetric mobility recordings in humans paved the way for wrist-worn activity
+monitors; seminal studies first demonstrated feasibility in free-living conditions [13] and then
+showed strong correspondence between wrist activity and PSG-derived sleep metrics [14].
+In the 1970s, actigraphy emerged as an alternative to PSG. Actigraphy uses a wrist-
+worn accelerometer to record movement, inferring sleep and wake states from periods of
+inactivity and activity. Actigraphy allowed for extended monitoring in the patient’s natural
+environment, making it invaluable for assessing circadian rhythms and sleep patterns over
+days or weeks [15,16].
+Actigraphy is a practical, non-invasive tool that employs wrist-worn accelerometers to
+record movement patterns over extended periods, enabling the assessment of sleep–wake
+cycles in natural environments. It is particularly useful for long-term clinical and re-
+search applications, including the evaluation of insomnia, circadian rhythm disorders, and
+large-scale epidemiological studies that would be prohibitively expensive and logistically
+challenging with PSG [15,17,18].
+Several studies have demonstrated that actigraphy correlates well with PSG when it
+comes to estimating fundamental sleep parameters [19]. For instance, total sleep time (TST),
+sleep efficiency (SE), and sleep onset latency (SOL) can be measured reliably with actigraphy
+in individuals with relatively regular sleep patterns. In clinical settings, actigraphy has been
+validated for monitoring patients with insomnia and circadian rhythm sleep disorders,
+where its ability to capture longitudinal sleep patterns provides valuable insights into
+habitual sleep behavior. This capability has been particularly beneficial in studies involving
+shift workers and individuals with irregular sleep schedules [19,20].
+However, while actigraphy excels in quantifying overall sleep duration and general
+sleep–wake transitions, it has significant limitations [19]. Its reliance on movement data
+means that it cannot differentiate between various sleep stages—such as REM and non-
+REM sleep—nor can it reliably detect brief arousals or micro-awakenings that are critical
+for detailed sleep architecture analysis. For example, in patients who experience minimal
+movement during periods of wakefulness, actigraphy may erroneously classify these inter-
+vals as sleep, leading to an overestimation of sleep quality and duration [20]. Furthermore,
+the device’s accuracy can be compromised in populations with atypical movement patterns,
+such as children or individuals with movement disorders.
+For instance, in the management of shift-work sleep disorder, actigraphy helps clini-
+cians monitor changes in sleep timing and duration, providing crucial data that informs
+behavioral interventions and treatment adjustments [21].
+Recently, clinical practice guidelines have been established for the use of actigraphy
+in clinical settings, recommending its application in both the diagnosis and follow-up of
+certain sleep disorders in both pediatric and adult populations. These include conditions
+such as insomnia and circadian rhythm disorders [ 17]. Additionally, recent guidelines
+extend its use to monitoring adults with sleep apnea syndrome, assessing suspected sleep
+deprivation in adults, and tracking both adult and pediatric patients prior to undergoing
+the Multiple Sleep Latency Test (MSLT) [17].
+In summary , while actigraphy is a highly valuable tool for assessing general sleep–wake
+patterns over extended periods, its limitations in resolving the complexity of sleep architecture
+mean that it cannot fully replace PSG when detailed physiological data are required. Instead,
+actigraphy is best regarded as a complementary method—ideal for capturing habitual sleep
+behaviors in large and diverse populations, yet insufficient for diagnosing complex sleep
+disorders that necessitate in-depth electrophysiological analysis [15,19,20].
+It should be noted, however, that modern research-grade actigraphs have advanced
+well beyond simple accelerometry. Contemporary devices integrate additional sensors,
+
+[... MIDDLE PAGES OMITTED ...]
+
+Bioengineering 2025, 12, 1191 17 of 18
+34. Nechyporenko, A.; Frohme, M.; Strelchuk, Y.; Omelchenko, V .; Gargin, V .; Ishchenko, L.; Alekseeva, V . Galvanic Skin Response
+and Photoplethysmography for Stress Recognition Using Machine Learning and Wearable Sensors. Appl. Sci. 2024, 14, 11997.
+[CrossRef]
+35. de Zambotti, M.; Rosas, L.; Colrain, I.M.; Baker, F.C. The Sleep of the Ring: Comparison of the OURA Sleep Tracker Against
+Polysomnography. Behav. Sleep Med. 2019, 17, 124–136. [CrossRef] [PubMed]
+36. Perez-Pozuelo, I.; Posa, M.; Spathis, D.; Westgate, K.; Wareham, N.; Mascolo, C.; Brage, S.; Palotti, J. Detecting sleep outside the
+clinic using wearable heart rate devices. Sci. Rep. 2022, 12, 7956. [CrossRef]
+37. Breda, M.; Lucchini, M.; Barnett, N.; Bruni, O. A cross-sectional study on the relationship between infant sleep, temperament, and
+bedtime practices. J. Clin. Sleep Med. 2024, 20, 1965–1974. [CrossRef]
+38. Breda, M.; Lucchini, M.; Barnett, N.; Bruni, O. Early identification of sleep phenotypes in infants by videosomnography: A
+cross-sectional study. J. Clin. Sleep Med. 2025, 21, 867–874. [CrossRef]
+39. Tikotzky, L.; Ran-Peled, D.; Ben-Zion, H. A preliminary study on the performance of the Nanit auto-videosomnography scoring
+system against observed video scoring and actigraphy to estimate sleep-wake states in infants. Sleep Health 2023, 9, 611–617.
+[CrossRef]
+40. Liang, M.; Cai, Z.; Zhang, H.; Huang, C.; Meng, Y.; Zhao, L.; Li, D.; Ma, X.; Zhao, X. Machine Learning-based Analysis of Rectal
+Cancer MRI Radiomics for Prediction of Metachronous Liver Metastasis. Acad. Radiol. 2019, 26, 1495–1504. [CrossRef]
+41. Li, C.; Qi, Y.; Ding, X.; Zhao, J.; Sang, T.; Lee, M. A Deep Learning Method Approach for Sleep Stage Classification with EEG
+Spectrogram. Int. J. Environ. Res. Public Health 2022, 19, 6322. [CrossRef]
+42. Chen, W.; Cai, Y.; Li, A.; Su, Y.; Jiang, K. Single-Channel Sleep EEG Classification Method Based on LSTM and Hidden Markov
+Model. Brain Sci. 2024, 14, 1087. [CrossRef]
+43. Wang, Y.; Ye, S.; Xu, Z.; Chu, Y.; Zhang, J.; Yu, W. Research on Sleep Staging Based on Support Vector Machine and Extreme
+Gradient Boosting Algorithm. Nat. Sci. Sleep 2024, 16, 1827–1847. [CrossRef] [PubMed]
+44. Sri, T.R.; A, R.R.; Madala, J.; Duddukuru, S.L.; Reddipalli, R.; Polasi, P .K. A Systematic Review on Deep Learning Models for Sleep
+Stage Classification. In Proceedings of the 2022 6th International Conference on Trends in Electronics and Informatics (ICOEI),
+Tirunelveli, India, 28–30 April 2022; pp. 1505–1511.
+45. Purnell, L.; Sierra, M.; Lisker, S.; Lim, M.S.; Bailey, E.; Sarkar, U.; Lyles, C.R.; Nguyen, K.H. Acceptability and Usability of a
+Wearable Device for Sleep Health Among English- and Spanish-Speaking Patients in a Safety Net Clinic: Qualitative Analysis.
+JMIR Form. Res. 2023, 7, e43067. [CrossRef] [PubMed]
+46. Van de Water, A.T.; Holmes, A.; Hurley, D.A. Objective measurements of sleep for non-laboratory settings as alternatives to
+polysomnography—A systematic review. J. Sleep Res. 2011, 20, 183–200. [CrossRef] [PubMed]
+47. de Zambotti, M.; Baker, F.C.; Colrain, I.M. Validation of Sleep-Tracking Technology Compared with Polysomnography in
+Adolescents. Sleep 2015, 38, 1461–1468. [CrossRef] [PubMed]
+48. Chinoy, E.D.; Cuellar, J.A.; Huwa, K.E.; Jameson, J.T.; Watson, C.H.; Bessman, S.C.; Hirsch, D.A.; Cooper, A.D.; Drummond, S.P .A.;
+Markwald, R.R. Performance of seven consumer sleep-tracking devices compared with polysomnography. Sleep 2021, 44, zsaa291.
+[CrossRef]
+49. Miller, D.J.; Sargent, C.; Roach, G.D. A Validation of Six Wearable Devices for Estimating Sleep, Heart Rate and Heart Rate
+Variability in Healthy Adults. Sensors 2022, 22, 6317. [CrossRef]
+50. Grandner, M.A.; Rosenberger, M.E. Chapter 12—Actigraphic sleep tracking and wearables: Historical context, scientific appli-
+cations and guidelines, limitations, and considerations for commercial sleep devices. In Sleep and Health; Grandner, M.A., Ed.;
+Academic Press: Cambridge, UK, 2019; pp. 147–157. [CrossRef]
+51. Menghini, L.; Cellini, N.; Goldstone, A.; Baker, F.C.; de Zambotti, M. A standardized framework for testing the performance of
+sleep-tracking technology: Step-by-step guidelines and open-source code. Sleep 2021, 44, zsaa170. [CrossRef]
+52. Hamill, K.; Jumabhoy, R.; Kahawage, P .; de Zambotti, M.; Walters, E.M.; Drummond, S.P .A. Validity, potential clinical utility and
+comparison of a consumer activity tracker and a research-grade activity tracker in insomnia disorder II: Outside the laboratory. J.
+Sleep Res. 2020, 29, e12944. [CrossRef]
+53. Imtiaz, S.A. A Systematic Review of Sensing Technologies for Wearable Sleep Staging. Sensors 2021, 21, 1562. [CrossRef]
+54. de Zambotti, M.; Goldstein, C.; Cook, J.; Menghini, L.; Altini, M.; Cheng, P .; Robillard, R. State of the science and recommendations
+for using wearable technology in sleep and circadian research. Sleep 2024, 47, zsad325. [CrossRef]
+55. Benedetti, D.; Menghini, L.; Vallat, R.; Mallett, R.; Kiss, O.; Faraguna, U.; Baker, F.C.; de Zambotti, M. Call to action: An
+open-source pipeline for standardized performance evaluation of sleep-tracking technology. Sleep 2023, 46, zsac304. [CrossRef]
+56. Coelho, J.; Pecune, F.; Levavasseur, Y.; De Sevin, E.; D’Incau, E.; Sagaspe, P .; Sanchez-Ortuno, M.M.; Micoulaud-Franchi, J.A.;
+Philip, P . From improved sleep regularity to reduced sleep complaints and mental health conditions: A population-based
+interventional study using a smartphone-based virtual agent. Sleep 2023, 46, zsad165. [CrossRef] [PubMed]
+Bioengineering 2025, 12, 1191 18 of 18
+57. Vohra, K.P .; Johnson, K.G.; Dalal, A.; Ibrahim, S.; Krishnan, V .; Abbasi-Feinberg, F.; Abreu, A.R.; Bandyopadhyay, A.; Gurubhaga-
+vatula, I.; Kuhlmann, D.; et al. Recommendations for permanent sleep telehealth: An American Academy of Sleep Medicine
+position statement. J. Clin. Sleep Med. 2025, 21, 401–404. [CrossRef]
+58. Palmese, F.; Druda, Y.; Benintende, V .; Fuda, D.; Sicbaldi, M.; Di Florio, P .; Butt, A.H.; Bedogni, G.; Chiari, L.; Silvani, A.; et al.
+Wearable sensors for monitoring caregivers of people with dementia: A scoping review. Eur. Geriatr. Med. 2024, 16, 473–483.
+[CrossRef] [PubMed]
+59. Garbarino, S.; Bragazzi, N.L. Revolutionizing Sleep Health: The Emergence and Impact of Personalized Sleep Medicine. J. Pers.
+Med. 2024, 14, 598. [CrossRef]
+60. Charlton, P .H.; Allen, J.; Bailon, R.; Baker, S.; Behar, J.A.; Chen, F.; Clifford, G.D.; Clifton, D.A.; Davies, H.J.; Ding, C.; et al. The
+2023 wearable photoplethysmography roadmap. Physiol. Meas. 2023, 44, 111001. [CrossRef]
+61. Vural, B.; Uludag, I.; Ince, B.; Ozyurt, C.; Ozturk, F.; Sezginturk, M.K. Fluid-based wearable sensors: A turning point in
+personalized healthcare. Turk. J. Chem. 2023, 47, 944–967. [CrossRef]
+62. AbbasiMoradi, F.; Mogavero, M.P .; Palomino, M.; Ferri, R.; DelRosso, L.M. Age related disparities in sleep apnea diagnosis using
+a wearable device: Implications of 4% vs. 3% hypopnea scoring criteria. Sleep Med. 2024, 118, 88–92. [CrossRef] [PubMed]
+63. Jaiswal, S.J.; Pawelek, J.B.; Warshawsky, S.; Quer, G.; Trieu, M.; Pandit, J.A.; Owens, R.L. Using New Technologies and Wearables
+for Characterizing Sleep in Population-based Studies. Curr. Sleep Med. Rep. 2024, 10, 82–92. [CrossRef]
+64. Willetts, M.; Hollowell, S.; Aslett, L.; Holmes, C.; Doherty, A. Statistical machine learning of sleep and physical activity phenotypes
+from sensor data in 96,220 UK Biobank participants. Sci. Rep. 2018, 8, 7961. [CrossRef] [PubMed]
+65. Denny, J.C.; Rutter, J.L.; Goldstein, D.B.; Philippakis, A.; Smoller, J.W.; Jenkins, G.; Dishman, E. The “All of Us” Research Program.
+N. Engl. J. Med. 2019, 381, 668–676. [CrossRef]
+66. Del Pozo Cruz, B.; McGregor, D.E.; Del Pozo Cruz, J.; Buman, M.P .; Palarea-Albaladejo, J.; Alfonso-Rosa, R.M.; Chastin, S.F .M. Integrating
+Sleep, Physical Activity , and Diet Quality to Estimate All-Cause Mortality Risk: A Combined Compositional Clustering and Survival
+Analysis of the National Health and Nutrition Examination Survey 2005–2006 Cycle.Am. J. Epidemiol.2020, 189, 1057–1064.[CrossRef]
+[PubMed]
+67. Mennella, C.; Maniscalco, U.; De Pietro, G.; Esposito, M. Ethical and regulatory challenges of AI technologies in healthcare: A
+narrative review. Heliyon 2024, 10, e26297. [CrossRef] [PubMed]
+Disclaimer/Publisher’s Note: The statements, opinions and data contained in all publications are solely those of the individual
+author(s) and contributor(s) and not of MDPI and/or the editor(s). MDPI and/or the editor(s) disclaim responsibility for any injury to
+people or property resulting from any ideas, methods, instructions or products referred to in the content.
+
+--- END OF PAPER: bioengineering-12-01191-v2.pdf ---
+
+--- START OF PAPER: engproc-78-00003-v2.pdf ---
+Citation: Srivastava, P .; Shah, N.;
+Jaiswal, K. Microcontroller-Based
+EdgeML: Health Monitoring for Stress
+and Sleep via HRV. Eng. Proc.2024,
+78, 3. https://doi.org/10.3390/
+engproc2024078003
+Academic Editor: Po-Liang Liu
+Published: 4 December 2024
+Copyright: © 2024 by the authors.
+Licensee MDPI, Basel, Switzerland.
+This article is an open access article
+distributed under the terms and
+conditions of the Creative Commons
+Attribution (CC BY) license (https://
+creativecommons.org/licenses/by/
+4.0/).
+Proceeding Paper
+Microcontroller-Based EdgeML: Health Monitoring for Stress
+and Sleep via HRV †
+Priyanshu Srivastava ‡
+ , Namita Shah ‡ and Kavita Jaiswal *
+Department of Computer Science and Engineering, International Institute of Information Technology,
+Naya Raipur 493661, India; priyanshu22101@iiitnr.edu.in (P .S.); namita22101@iiitnr.edu.in (N.S.)
+* Correspondence: kavita@iiitnr.edu.in
+† Presented at the 1st International Conference on AI Sensors & the 10th International Symposium on Sensor
+Science, Singapore, 1–4 August 2024.
+‡ These authors contributed equally to this work.
+Abstract: The healthcare sector is undergoing a transformation with the integration of cutting-
+edge technologies such as machine learning (ML), the Internet-of-Things (IoT), and Cyber–Physical
+Systems (CPS). However, traditional ML systems often face challenges in real-time processing and
+resource efficiency, limiting their application in life-critical scenarios. This research explores the
+potential of edge ML, particularly TinyML with TensorFlow Lite, implemented on microcontroller-
+based AI sensors for real-time health monitoring. By leveraging model quantization, the system
+analyzes heart rate variability (HRV) data to deliver continuous and personalized insights into stress
+levels and sleep quality. Trained on SWELL and ISRUC datasets, the system is highly energy-efficient,
+consuming 33 mW in idle mode, 66 mW during data collection, and 99 mW during real-time inference,
+making it suitable for resource-constrained environments. Performance analysis reveals significant
+demographic variations: younger individuals (18–25) achieved 90% accuracy due to higher HRV
+and lower baseline stress, while middle-aged (26–50) and older adults (50+) demonstrated declining
+HRV , reducing accuracy to 82% for the latter. Gender differences were also observed, with males
+exhibiting greater stress response sensitivity and better accuracy (89%) compared to females. This
+study underscores the transformative potential of TinyML for real-time, energy-efficient health
+monitoring and emphasizes the need for demographic-specific optimizations to enhance system
+reliability and accessibility.
+Keywords: TinyML; EdgeML; AI sensors; microcontrollers; healthcare
+1. Introduction
+The healthcare sector is experiencing a profound transformation driven by the integra-
+tion of cutting-edge technologies such as machine learning (ML), the Internet-of-Things
+(IoT), and Cyber–Physical Systems (CPS). While these innovations have spurred the de-
+velopment of solutions across various health sectors, many rely heavily on traditional
+ML infrastructure [ 1], which can be resource-intensive and lacks real-time capabilities.
+Moreover, cloud-based solutions often fail to meet the stringent requirements of life-critical
+healthcare applications due to latency, bandwidth, and privacy concerns. Traditional ML
+systems also suffer from the need for continuous cloud connectivity, which can result in
+data privacy risks and inefficiencies in bandwidth usage. In response to these challenges,
+edge computing has emerged as a compelling alternative, offering the capability to perform
+computations closer to the source of data generation, thereby reducing dependence on
+continuous cloud connectivity. By leveraging edge computing, healthcare applications [2,3]
+can benefit from improved latency, bandwidth efficiency, and data privacy. Several studies
+have explored the potential of edge computing in real-time health monitoring tasks, such
+as electrocardiogram (ECG) analysis and fall detection. For example, Khaled et al. (2022)
+Eng. Proc.2024, 78, 3. https://doi.org/10.3390/engproc2024078003 https://www.mdpi.com/journal/engproc
+Eng. Proc.2024, 78, 3 2 of 8
+examined the use of TinyML for continuous blood pressure estimation on the extreme
+edge [4]. However, existing solutions still face challenges such as high power consumption,
+lack of scalability, and limited real-time capabilities.
+The focus of our project lies in harnessing the potential of embedded ML, specifically
+TinyML, to address the growing demand for real-time health monitoring solutions. TinyML
+refers to the deployment of machine learning models on resource-constrained embedded
+devices [5,6], enabling them to perform inference tasks locally without relying on cloud in-
+frastructure. Our project aims to leverage TinyML technology to create a real-time platform
+for stress and sleep monitoring using heart rate variability(HRV), with the overarching
+goal of enhancing personalized health interventions.
+While machine learning techniques have been widely applied to health monitoring
+tasks, including HRV analysis [7], stress monitoring [8], and disease prediction, existing
+solutions often rely on cloud-based architectures. These systems face challenges such as
+high power consumption, delayed data processing, and privacy concerns due to cloud
+dependency. Moreover, many existing designs focus on general population models and
+fail to personalize their health interventions. For instance, Li et al. (2013) used wavelet
+analysis and a support vector machine classifier to detect driver drowsiness based on
+heart rate variability [ 9], while Radha et al. (2019) performed sleep stage classification
+from HRV using long short-term memory neural networks [10]. These systems, however,
+did not address the real-time processing challenges associated with resource-constrained
+environments. By integrating TinyML with HRV metrics, our system seeks to overcome
+these limitations by providing a low-power, real-time solution that ensures data privacy and
+personalized health monitoring. The comparison table provided in Table 1 highlights the
+novelty of our proposed approach compared with published works. The table provides a
+detailed comparison based on model architecture, quantization techniques, system latency,
+power consumption, and cloud dependency. Our TinyML-based system offers unique
+advantages, such as real-time inference on embedded devices, lower power consumption,
+and improved latency, which are crucial for wearable health-monitoring applications.
+Table 1. Comparisonwith existing approaches.
+Study Model Used HRV Metrics Quantization
+Technique
+Cloud
+DependencyLatency Power
+ConsumptionContribution
+[9] Li et al.
+(2013)
+SVM (Support Vector
+Machine)
+Time-domain
+(SDNN, RMSSD) None Yes High High
+Drowsiness detection
+using HRV for drivers,
+cloud-based, no real-time
+capabilities.
+[10]
+Radha et al.
+(2019)
+LSTM (Long
+Short-Term Memory)
+Time-domain and
+Frequency-domain
+(LF/HF)
+None Yes Medium High
+Sleep stage classification
+from HRV , limited
+real-time functionality,
+requires cloud processing.
+[4]
+Khaled et al.
+(2022)
+TinyML (Regression)Continuous Blood
+Pressure EstimationYes No Low Low
+Edge-based BP
+monitoring using TinyML,
+reduced cloud reliance
+but limited to blood
+pressure estimation.
+Our Approach
+TensorFlow Lite
+(TFLite) and custom
+feedforward neural
+network
+Time-domain,
+Frequency-domain,
+Non-linear
+Yes (Post-
+Training) No Low Very Low
+Real-time stress and sleep
+analysis using HRV
+metrics, personalized
+interventions,
+energy-efficient and fully
+cloud-independent.
+2. Materials and Methods
+This section describes the methodology followed in this research, outlining data
+collection, model development, deployment, and evaluation. The process flow of the entire
+methodology is depicted in Figure 1.
+Eng. Proc.2024, 78, 3 3 of 8
+Figure 1. Flowchart of the proposed methodology.
+2.1. Data Collection and Preprocessing
+The HRV data utilized in this study were obtained from the ISRUC and SWELL
+datasets, both widely used for sleep and stress prediction. These datasets provide over
+30 HRV metrics, including time-domain features such as Standard Deviation of Normal-to-
+Normal Intervals (SDNN), Root Mean Square of Successive Differences (RMSSD), and Per-
+centage of successive RR intervals differing by more than 50 ms (pNN50), as well as
+frequency-domain features like Low Frequency (LF), High Frequency (HF), and LF-HF
+ratios. Preprocessing involved removing noise and artifacts using signal filtering meth-
+ods, normalizing the data to account for sensor variations, and segmenting it into epochs
+corresponding to activities such as sleep and stress for targeted analysis.
+2.2. Model Development and Optimization
+The machine learning model was a custom feedforward neural network designed
+for stress classification using 34 HRV features (e.g., RR intervals, RMSSD, pNN50, LF/HF
+ratios). The architecture included an input layer with 34 nodes, 2 hidden layers (20 and
+10 nodes with ReLU activation), and a softmax output layer for classifying stress levels into
+low, moderate, and high categories. The model was trained using categorical cross-entropy
+loss and the Adam optimizer (learning rate 0.0001). Techniques such as data augmentation
+and cross-validation improved generalization and robustness. Quantization reduced the
+model size by converting weights from 64-bit floats to 32-bit floats, enabling efficient
+deployment on edge devices.
+2.3. Implementation on Microcontroller
+The trained model was deployed on the Raspberry Pi Pico microcontroller (Manufac-
+tured by Raspberry Pi Ltd, based in Cambridge, UK), which features 256 kB SRAM and
+2 MB storage. The microcontroller was set up using the Pico SDK (versionv1.4.0) , and a
+compatible heart rate sensor was integrated to provide real-time HRV data. Optimiza-
+tion techniques such as quantization and pruning reduced the computational complexity
+and memory footprint, ensuring efficient inference within the resource constraints of the
+hardware. To protect user privacy, all health data processing occurred locally on the micro-
+controller. Encryption ensured the confidentiality of sensitive information during storage
+and transmission.
+
+[... MIDDLE PAGES OMITTED ...]
+
+Eng. Proc.2024, 78, 3 7 of 8
+Figure 5. Heart rate variations for different stages.
+The results of this study align with prior research on using edge devices for health
+monitoring, such as TinyCare, which deployed TinyML for blood pressure estimation on
+constrained devices. HRV metrics have proven effective for stress and fatigue detection,
+such as in driver drowsiness studies.
+This study underscores the potential of TinyML for personalized health monitoring,
+particularly in applications requiring privacy and low latency. By keeping all computations
+on the edge device, the model eliminates the need for cloud infrastructure, thereby securing
+sensitive heart rate data from third-party access. Although this research focused on stress
+prediction, similar methods could be applied to sleep monitoring. Running two models
+simultaneously in the same environment was beyond the scope of this study, but this
+remains a promising area for future research. The aim of this study to optimize health-
+related models for deployment on edge devices was successfully realized.
+4. Conclusions and Future Work
+This paper demonstrates the successful deployment of a stress prediction model on a
+resource-constrained microcontroller, showing that advanced machine learning models can
+be effectively run on low-powered hardware without compromising accuracy. By operating
+entirely on the edge, this approach eliminates the need for cloud infrastructure, thereby
+reducing latency and enhancing privacy by keeping sensitive data local. The results
+reinforce the potential of TinyML for personalized health monitoring, specifically in stress
+and sleep analysis. The use of a microcontroller such as the RPi Pico further validates
+the feasibility of running health-related models on devices with limited memory and
+processing power, making this an important step towards more efficient and private health
+monitoring systems.
+Future research could focus on optimizing the current model to handle additional
+health parameters, such as sleep stage classification, in the same environment. Energy
+efficiency improvements are also essential for ensuring long-term deployment, particularly
+on wearable devices. Expanding the system to integrate multiple sensors would enhance the
+model’s capabilities for more comprehensive health monitoring, covering a broader range
+of metrics like physical activity and environmental factors. Additionally, investigating
+adaptive learning techniques for personalized health models on edge devices could further
+improve accuracy and user experience.
+Author Contributions: Conceptualization, P .S. and N.S.; methodology, P .S.; writing—original draft
+preparation, N.S.; writing—review and editing, K.J. and N.S.; supervision, K.J. All authors have read
+and agreed to the published version of the manuscript.
+Funding: This research received no external funding.
+Eng. Proc.2024, 78, 3 8 of 8
+Institutional Review Board Statement: Not applicable
+Informed Consent Statement: Not applicable.
+Data Availability Statement: Data are contained within the article.
+Acknowledgments: The authors wish to acknowledge that this research was conducted without
+any external funding or support. The research work was carried out at the International Institute
+of Information Technology (IIIT), Naya Raipur, Chhattisgarh, India. We extend our gratitude to the
+institute for providing the necessary infrastructure and environment for this work.
+Conflicts of Interest: The authors declare that they have no conflicts of interest to disclose in relation
+to this research. All authors have adhered to ethical guidelines and have no financial or personal
+relationships that could be perceived as influencing the research.
+References
+1. Du, G. Vision-Based Fatigue driving recognition method integrating heart rate and facial features. IEEE Trans. Intell. Transp. Syst.
+2021, 22, 3089–3100. [CrossRef]
+2. Farida, S.; Tamer, E.; Wadha, L.; Khawla, A.; Qutaibah, M. Machine Learning for Healthcare Wearable Devices: The Big Picture.
+J. Healthc. Eng.2022, 2022, 4653923.
+3. Mamta, B.; Pradnya, V .K.; Rashmi, R.; Sarika, B.; Ruhi, P . TinyML applications and use cases for healthcare. InTinyML for Edge
+Intelligence in IoT and LPWAN Networks; Academic Press: Cambridge, MA, USA, 2024.
+4. Ahmed, K. tinyCare: A tinyML-based Low-Cost Continuous Blood Pressure Estimation on the Extreme Edge. In Proceedings
+of the 2022 IEEE 10th International Conference on Healthcare Informatics (ICHI), Rochester, MN, USA, 11–14 June 2022; IEEE:
+lPiscataway, NJ, USA, 2022.
+5. Element 14. Available online: https://community.element14.com/challenges-projects/design-challenges/pi-fest/b/blog/posts/
+songspire---running-tensorflow-lite-in-a-microcontroller-such-as-pico (accessed on 13 February 2024).
+6. MJRoBot. Available online: https://mjrobot.org/2021/03/12/tinyml-motion-recognition-using-raspberry-pi-pico/ (accessed on
+25 March 2024).
+7. Sajjadieh, A.; Shahsavari, A.; Safaei, A.; Penzel, T.; Schoebel, C.; Fietze, I.; Mozafarian, N.; Amra, B.; Kelishadi, R. The Association
+of Sleep Duration and Quality with Heart Rate Variability and Blood Pressure. Tanaffos 2020, 19, 135. [PubMed]
+8. Kim, H.G.; Cheon, E.J.; Bai, D.S.; Lee, Y.H.; Koo, B.H. Stress and Heart Rate Variability: A Meta-Analysis and Review of the
+Literature. Tanaffos 2018, 15, 235. [CrossRef] [PubMed]
+9. Li, G.; Chung, W. Detection of driver drowsiness using Wavelet analysis of heart rate variability and a support vector machine
+classifier. Sensors 2013, 13, 16494–16511. [CrossRef] [PubMed]
+10. Radha, M.; Fonseca, P .; Moreau, A.; Ross, M.; Cerny, A.; Anderer, P .; Long, X.; Aarts, R.M. Sleep stage classification from heart-rate
+variability using long short-term memory neural networks. Sci. Rep.2019, 9, 14149. [CrossRef] [PubMed]
+Disclaimer/Publisher’s Note: The statements, opinions and data contained in all publications are solely those of the individual
+author(s) and contributor(s) and not of MDPI and/or the editor(s). MDPI and/or the editor(s) disclaim responsibility for any injury to
+people or property resulting from any ideas, methods, instructions or products referred to in the content.
+
+--- END OF PAPER: engproc-78-00003-v2.pdf ---
+
+--- START OF PAPER: Federated-Learning-for-Sleep-Stage-Classification-on-Edge-Devices-via-a-Model-Agnostic-Meta.pdf ---
+XXX-X-XXXX-XXXX-X/XX/$XX.00 ©20XX IEEE 
+Federated Learning for Sleep Stage Classification 
+on Edge Devices via a Model-Agnostic             
+Meta-Learning-Based Pre-Trained Model 
+SungHwan Moon  
+Department of Software Convergence  
+Kyung Hee University  
+Yongin, Republic of Korea 
+msh2044@khu.ac.kr 
+Tae Seong Kim 
+Department of Software Convergence  
+Kyung Hee University  
+Yongin, Republic of Korea 
+ahgmfrghvk@khu.ac.kr 
+Won Hee Lee* 
+Department of Software Convergence  
+Kyung Hee University 
+Yongin, Republic of Korea 
+whlee@khu.ac.kr 
+Jihye Ryu 
+Department of Software Convergence  
+Kyung Hee University  
+Yongin, Republic of Korea 
+istella@khu.ac.kr 
+Abstract—Sleep stage classification using physiological data 
+obtained from consumer wearable devices has gained significant 
+attention. However, data privacy regulations prevent the 
+collection of individual data for training the models. Federated 
+learning (FL) enables collaborative training across distributed 
+networks of edge devices without sharing private data. This 
+paper presents a federated learning approach that leverages 
+computational resources of Internet of Thing (IoT) edge devices 
+for sleep stage classification. Given the limited computational 
+power and resources on edge devices, we evaluate the impact of 
+model initialization in FL using pre-trained weights of model-
+agnostic meta-learning (MAML) models. We evaluate the 
+performance of on-device sleep stage classification by 
+comparing local models to different FL settings initialized with 
+random weights (FL-Random) and pre-trained weights (FL-
+ML). FL-ML enables faster model convergence, yielding better 
+classification performance (up to 22.6%) in a small number of 
+training rounds, compared to local models. Starting from FL-
+ML reduces the training time required to reach a target 
+accuracy and allows for the training of more accurate models, 
+compared to initializing FL from random weights or using local 
+models. Our study highlights the feasibility of FL initialized with 
+pre-trained weights in real-world IoT settings for sleep stage 
+classification on edge devices. 
+Keywords— Edge device, Federated learning, Meta 
+learning, Sleep stage classification 
+I. INTRODUCTION 
+Sleep is a critical aspect of human life that significantly 
+impacts our daily activities [1], overall health [2], and work 
+productivity [3]. The quality and duration of sleep have 
+profound effects on various physiological activities. 
+Detecting sleep stages, such as nighttime wakefulness 
+(Wake), rapid-eye movement (REM), and non-REM (NREM) 
+sleep, is important for understanding the intricate patterns of 
+human brain activity [4] and metabolism [5] during different 
+phases of sleep. Previous studies have shown sleep detection 
+methods for monitoring sleep quality and stages [6]. At 
+present, polysomnography (PSG) is considered the gold 
+standard technique for assessing sleep quality and states 
+following the technical specifications outlined by the 
+American Academy of Sleep Medicine (AASM) [7]. During 
+a designated sleep time, sleep specialists use PSG to record 
+various physiological signals such as electroencephalogram 
+(EEG), electrocardiogram (ECG), electrooculogram (EOG), 
+and electromyography (EMG). Sleep specialists manually 
+score these signals to determine the different sleep stages. 
+However, this manual procedure is indeed resource-intensive 
+and time-consuming. Thus, automated methods for sleep 
+stage classification have been developed using machine 
+learning approaches [8], which can significantly reduce the 
+manual effort required. 
+In recent years, consumer wearable devices have provided 
+the capability to measure physiological signals by wearing 
+them on the body such as on the wrist or fingers [9-11]. These 
+devices have become increasingly popular for monitoring 
+various health and wellness parameters, including heart rate, 
+sleep patterns, physical activity, and more [9, 12]. These 
+physiological signals have served as an alternative resource 
+to the labor-intensive PSG approach [8] for sleep stage 
+classification using machine learning approaches [13, 14]. 
+They provide a more convenient and less burdensome means 
+of gathering sleep-related data [14]. While the cost of 
+classifying sleep stages reduces when using consumer 
+wearable devices for data collection, the limited 
+computational performance and storage capacity of edge 
+devices, such as smartphones and smartwatches, still pose 
+challenges in training models on these devices for widespread 
+adoption. The hardware constraints can impact crucial 
+aspects of model training, including low computation 
+performance and limited storage capacity, thus necessitating 
+careful consideration when developing and deploying such 
+models on edge devices.  
+Strict data privacy regulations, such as The EU General 
+Data Protection Regulation (GDPR) [15] and the Health 
+Insurance Portability and Accountability Act (HIPAA) [16], 
+present challenges in collecting a sufficient amount of 
+individual data from consumer wearable devices for training 
+machine learning models. To tackle this challenge, we take 
+the first step towards integrating a pre-trained model into 
+federated learning (FL) for sleep stage classification on 
+Internet of Thing (IoT) edge devices. FL is a privacy-
+preserving machine learning approach that enables training 
+models across multiple decentralized devices while keeping 
+the data localized and private. 
+Leveraging meta-learning can be highly beneficial for FL 
+on edge devices with heterogenous training data [17, 18] and 
+constrained resources [19]. We applied a model-agnostic 
+meta-learning (MAML) approach to generate pre-trained 
+weights, which were then used as model initialization in FL 
+2023 IEEE 13th International Conference on Consumer Electronics - Berlin (ICCE-Berlin)
+/23/$31.00 ©2023 IEEE 188
+2023 IEEE 13th International Conference on Consumer Electronics - Berlin (ICCE-Berlin) | 979-8-3503-2415-0/23/$31.00 ©2023 IEEE | DOI: 10.1109/ICCE-BERLIN58801.2023.10375664
+
+ 
+to improve the efficiency and accuracy of sleep stage 
+classification on edge devices while ensuring data privacy 
+and decentralization.  
+In this work, we aimed to investigate the feasibility and 
+potential of using pre-trained weights to initialize FL for 
+classifying sleep stages in limited recourse settings on edge 
+devices. The main contributions of this paper can be 
+summarized as follows: 1) FL initialized with pre-trained 
+weights from a MAML model across distributed edge devices 
+outperforms the locally trained models without sharing 
+individual data; 2) Initializing FL from pre-trained weights 
+leads to faster convergence, improved performance, and 
+efficient utilization of limited resources in edge computing 
+settings, compared to FL initialized with random weights and 
+the local models.  
+II. MATERIALS AND METHODS  
+A. Datasets 
+We utilized raw acceleration data and heart rate from the 
+Apple Watch worn by participants undergoing PSG [13]. The 
+data collection process involved using an app synchronized 
+with the Apple Watch, which recorded motion, heart rate, and 
+a proxy for the circadian clock. A total of 39 subjects were 
+recruited, and they wore the Apple Watch for a duration of 1 
+to 2 weeks to collect ambulatory steps data. On the final day 
+of the study period, the participants’ acceleration and heart 
+rate were recorded during an eight-hour sleep period. PSG 
+signals were sampled at a frequency of 256 Hz and scored 
+according to the standard scoring criteria by AASM. Sleep 
+stages were identified as wake, stage 1, stage 2, and stage 3 
+of non-REM sleep, and REM sleep based on 30-second 
+epochs while the subjects were in bed. For the classification 
+task in this study, the stage 1, 2, and 3 of non-REM sleep were 
+merged into a single category called NREM. Simultaneously 
+with PSG recording, the raw acceleration and heart rate data 
+were also recorded using the Apple Watch. The acceleration 
+data was measured using a triaxial MEMS accelerometer, 
+which captured acceleration in the x, y, and z directions and 
+was measured in units of g (9.8 m/s 2). The heart rate was 
+measured using photoplethysmography, which was recorded 
+on the dorsal aspect of the wrist. 
+Out of the initial 39 subjects, eight were excluded from the 
+analysis due to transmission errors and the presence of sleep 
+disorders. As a result, the final dataset used in this study 
+consisted of data from 31 subjects. The data included heart 
+rate measurements obtained through photoplethysmography 
+and acceleration data captured by the Apple Watch's triaxial 
+MEMS accelerometer.  
+B. Data processing 
+1) Heart rate: The heart rate measurements were initially 
+acquired in beats per minute and sampled at intervals of 
+several seconds. Following the methodology employed by 
+Walch et al. [13], we performed interpolation on the recorded 
+heart rate data, which allowed us to obtain values at a higher 
+frequency, specifically at 1-second intervals. Smoothing and 
+filtering were applied to enhance the heart rate signal and 
+emphasize periods of significant change Specifically, we 
+convolved the interpolated heart rate data with a difference of 
+Gaussians filter using parameters σ 1 = 120 s and σ 2 = 600 s.  
+Furthermore, we used a normalization approach to ensure 
+relative comparability across subjects and mitigate the 
+influence of individual differences in heart rate. We 
+normalized the interpolated heart rate values by dividing 
+them by the 90th percentile of the absolute difference 
+between each heart rate measurement and the mean heart rate 
+over the entire sleep period. 
+2) Acceleration: The acceleration data recorded by the 
+Apple Watch was sampled at a frequency of 50 Hz, except 
+for two cases where the frequency decreased due to power-
+saving mode or server-side connection issues. To address the 
+missing acceleration data in those two cases, we used 
+interpolation, following the same methodology as described 
+in [13]. Then, we generated activity counts with 1-second 
+intervals, following the approach proposed by Lindert et al. 
+[20]. 
+C. Sleep Stage Classification with Convolutional Neural 
+Network  
+We applied a convolutional neural network (CNN) [21] 
+as the model for sleep stage classification. We used 1D 
+convolution layers to capture temporal patterns from the input 
+data. To enhance the model’s capability in extracting specific 
+features and reduce computational complexity, we employed 
+grouped convolution, where input channels were divided into 
+multiple groups. This approach promoted interactions within 
+each channel group, enabling the extraction of specialized 
+features while reducing the number of model parameters [22]. 
+Our input data is composed of two channels: heart rate and 
+activity counts. By employing grouped convolution, we 
+captured modality-specific features and enhance 
+computational and memory efficiency. The output of the 
+grouped convolution layer served as the input to the patch 
+embedding process. Patch embedding involved dividing the 
+input into patches and transforming each patch into a vector 
+representation through convolutional operations [23]. This 
+technique reduced the input resolution, thereby lowering 
+computational and memory requirements while efficiently 
+utilizing information from the entire input. Finally, the 
+embedding vectors were passed through three fully-
+connected layers to classify the sleep stage. 
+D. Model-Agnostic Meta-Learning 
+In this work, we proposed a new initialization strategy for 
+FL based on MAML. MAML is capable of learning both 
+model weights and meta weights, which facilitate the 
+initialization of weights that can be easily adapted to new 
+subject data by considering the potential changes learned 
+from the meta weights [19]. Essentially, the weights obtained 
+from MAML are trained to quickly converge to the global 
+optimum when faced with new tasks or data. 
+In our work, we used the T 1 – T 2 MAML model [24], 
+which involved the turning of continuous hyperparameters of 
+the model using the gradient of the performance on a 
+validation data called T2. For each outer update of the models 
+using the training data, denoted as T 2 the hyperparameters of 
+the L2 penalty, were fine-tuned using stochastic gradient 
+descent (SGD) to minimize the validation cost. This approach 
+ensured that the models were optimized without succumbing 
+to the negative effects of overfitting. After identifying the 
+hyperparameters through random initialization, the model 
+underwent retraining using fixed hyperparameters derived 
+from the final values obtained from T1 – T2. 
+2023 IEEE 13th International Conference on Consumer Electronics - Berlin (ICCE-Berlin)
+189
+
+ 
+Fig. 1. An edge computing system using Raspberry Pi 4B (black case) and 
+Raspberry Pi 3B+ (green board) 
+E. Federated Learning 
+We considered two initialization strategies: random 
+initialization (FL-Random) and MAML-based pre-training 
+(FL-ML). The FL-Random model started from randomly 
+initialized parameters that were identical to the parameters of 
+the local model. On the other hand, FL-ML begins with pre-
+trained parameters obtained from the MAML model. Once 
+initialized, each client in the FL framework started training 
+their respective models using the weights received along with 
+their local data. After completing the local training, the 
+clients transmitted their updated models back to the server. 
+To aggregate the models from all clients, the server employed 
+the FedAvg algorithm [25], which generates an aggregated 
+model by averaging the models’ parameters. The aggregated 
+model was then distributed back to each client to serve as the 
+starting point for the subsequent round of training. The 
+iterative training process continued for a predefined number 
+of rounds, as determined by our experimental setup. 
+III. EXPERIMENTS  
+A. Implementation  
+We implemented an edge computing training system to 
+simulate real-world conditions. The system comprised five 
+Raspberry Pi 4B and five Raspberry Pi 3B+ as client devices 
+(Fig. 1) and a GPU server as a central server in the FL setup. 
+The specifications of the edge devices used in our experiments 
+are detailed in Table I. To facilitate communication between 
+the edge devices and the server in the FL framework, we 
+employed FedML [26], an open-source library for FL tasks. 
+For the transmission of model weights between the servers 
+and the clients, we used Message Queuing Telemetry 
+Transport (MQTT) protocol [27], which is a widely adopted 
+standard for IoT messaging. MQTT ensured reliable and 
+lightweight messaging, allowing for an efficient exchange of 
+model weights during the FL process.  
+B. Training, Validation, and Testing  
+We evaluated model performance for sleep stage 
+classification using three different models: local, FL-Random, 
+and FL-ML. Among a total of 31 subjects, we selected 10 
+subjects as a reference dataset. Each subject had unbalanced 
+class labels (Table II). To ensure a fair comparison between 
+the models, we split the dataset of the 10 selected subjects 
+into training and testing sets using an 8:2 ratio. In addition, 
+out of the remaining 21 subjects, 19 subjects were used as the 
+pre-training dataset for inner optimization in the meta- 
+TABLE I.  SPECIFICATION OF THE EDGE DEVICES 
+learning process. The last two subjects served a dual role, 
+acting as the validation dataset for selecting the best model 
+and the pre-training dataset for outer optimization in the 
+meta-learning process. 
+We trained all three models using the same configurations 
+with a learning rate of 0.001, weight decay of 0.0001, batch 
+size of 128, and the SGD optimization strategy. For the local 
+model, we trained individual models for each client using 
+only their respective data. During the training process, we 
+recorded the performance at every epoch using a test dataset 
+specific to each client. 
+For the meta-learning, we initiated an L2 penalty of 0.01 
+and updated the meta-weights using a learning rate of 0.0001. 
+By using a pre-training dataset comprising 19 subjects, the 
+meta-learning model was updated on specific tasks in the 
+inner optimization process [17]. In the outer optimization 
+process, we optimized the initial parameters of the meta-
+learning model across subjects. Specifically, we used two 
+subjects for the optimization process. During the meta-
+learning process, we assessed the performance of the models 
+to select the best-performing model. 
+For a fair comparison among the three models, we 
+employed one epoch per round in FL training to match the 
+number of updates in local training. In both FL-Random and 
+FL-ML, clients trained their individual models using their 
+respective training datasets. After each round of training, the 
+server aggregated the local models from all clients. We 
+evaluated the performance of the models across clients using 
+the aggregated model at every round. The models were 
+updated until the F1-score of the FL-ML model matched that 
+of the local model, allowing us to compare the effectiveness 
+of improving model performance for the number of updates.  
+The training process for all models, except the pre-
+training ML model, was conducted using five Raspberry Pi 
+4B and five Raspberry Pi 3B+ devices, representing the 
+clients' edge devices. However, for training the ML model, 
+we utilized a single GeForce RTX 3090 GPU server instead 
+of an edge device to handle the computational requirements. 
+C. Performance Evaluation Metrics 
+We evaluated the classification performance of the models 
+on sleep stage classification using the area under the receiver 
+operating characteristic (ROC) curve (AUC) and macro F1-
+score. We reported the mean and standard deviation of the 
+AUC and macro F1-score values across all clients or devices. 
+IV. RESULTS 
+Fig. 2 shows the classification performance of local and 
+FL models initialized with random weights (FL-Random) and 
+pre-trained weights (FL-ML) on sleep stage classification.  
+ Raspberry Pi 3B+ Raspberry Pi 4B 
+CPU 
+Broadcom BCM2837B0, 
+Cortex-A53 64-bit SoC @ 
+1.4GHz  
+Broadcom BCM2711, 
+quad-core Cortex-A72 64-
+bit SoC @ 1.5GHz 
+RAM LPDDR2 1GB LPDDR4 8GB 
+GPU N/A  N/A 
+Ethernet 2.4GHz and 5.0GHz IEEE 
+802.11 ac wireless 
+2.4 GHz and 5.0 GHz 
+IEEE 802.11ac wireless 
+2023 IEEE 13th International Conference on Consumer Electronics - Berlin (ICCE-Berlin)
+190
+
+ 
+TABLE II.  THE NUMER OF CLASSES FOR EACH CLIENT 
+ 
+ 
+Fig. 2. Performance comparions of different models on sleep stage 
+classificaiton: local (blue), FL-Random (green), and FL-ML (red). Lines and 
+shaded bands indicate the mean and standard error of mean (SEM) of AUC 
+(left) and F1-scores (right) across 10 edge devices. FL-ML consistently 
+performes better than the local model in both AUC and F1-score throughout 
+the five epochs/rounds. However, FL-Random shows better performance 
+than FL-ML after the third epochs/rounds in terms of AUC and after the 
+second epochs/rounds in terms of F1-score. 
+Compared to the local models, FL-ML achieved better 
+performance in terms of AUC and F1-score by 12.1% and 
+58.2% on the first training round and 7.6% and 0.7% on the 
+fifth round, respectively. These findings suggest that FL-ML 
+is more effective in improving model performance during the 
+early stages of training when compared to the local model.  
+FL-Random outperformed FL-ML during the second and 
+third rounds. Specifically, FL-Random improved AUC and 
+F1-score by 6.2% and 1.0%, respectively. These results 
+indicate that FL-Random could provide better performance 
+during some specific training rounds compared to FL-ML. 
+FL-ML performed better than the local model throughout 
+most of the training rounds. However, FL-Random 
+outperformed FL-ML in specific training rounds (3-5 rounds). 
+Overall, FL-ML demonstrates effectiveness in improving 
+model performance during the early stages of training, but 
+there might be specific scenarios or training rounds where 
+FL-Random could provide better performance for sleep stage 
+classification.  
+Table III shows the training time to train one epoch for the 
+local model and one round for FL-Random and FL-ML. In 
+addition, Fig. 3 shows the classification performance of 
+different models (local, FL-Random, and FL-ML) on sleep 
+stage classification at the first training round. Our results show 
+that FL-ML outperformed both the local and FL-Random 
+models at a fixed training duration for sleep stage 
+classification. It took about 238 s for 7 epochs on Raspberry 
+Pi 4B devices when the local models were trained. FL-ML had  
+TABLE III.  TRAINING TIME FOR EACH MODEL 
+Model Raspberry Pi 4B Raspberry Pi 3B+ 
+Local 34 sec (Epoch 1) 73 sec (Epoch 1) 
+FL-Random 199 sec (Round 1) 
+FL-ML 224 sec (Round1) 
+ 
+Fig. 3. Performance comparions of different models on sleep stage 
+classificaiton at the first training round (224 s) : local (blue), FL-Random 
+(green), and FL-ML (red). Lines and shaded bands indicate the mean and 
+standard error of mean (SEM) of AUC (left) and F1-scores (right) across 10 
+edge devices. The local models took 238 s (epoch 7) on Raspberry Pi 4B and 
+219 s (epoch 3) on Raspberry Pi 3B+ for training. FL-M achieves the highest 
+perfomrance in terms of AUC and F1-score compared to the local and FL-
+Random at the first traninig round. 
+a higher AUC performance by 3.8% and an improved F1-
+score of 7.6%, compared to the local model. These results 
+highlight the effectiveness of FL-ML in achieving better 
+performance on Raspberry Pi 4B devices for sleep stage 
+classification. On Raspberry Pi 3B+, the local models were 
+trained only for 3 epochs (about 219 s) due to resource 
+limitations. On this device, FL-ML shows even more 
+improvements in classification performance by 4.5% and 22.6% 
+of AUC and F1-socre, respectively, compared to the local 
+model. FL-ML shows superior performance by 3.4% and 8.1% 
+in terms of AUC and F1-score, respectively, compared to FL-
+Random. These results demonstrate the superiority of FL-ML 
+over FL-Random in achieving better performance on low-
+resource edge devices.  
+V. DISCUSSION AND CONCLUSIONS 
+In this study, we investigated the impact of initialization 
+strategies in FL for sleep stage classification, considering the 
+limited computational resources of edge devices. We 
+compared locally trained models, FL models with random 
+initialization, and FL models initialized with pre-trained 
+weights from the MAML model. Our findings demonstrated 
+that FL models, despite their decentralized training nature, 
+generally exhibited superior performance compared to locally 
+trained models. Furthermore, we showed that initializing FL 
+models with pre-trained weights from the MAML model 
+yielded faster and more accurate performance in sleep stage 
+classification, compared to both the local and the FL-Random 
+models. Our proposed FL-ML approach showed the best 
+performance, achieving up to a 22.6% improvement within the 
+same training time compared to the other models (local and 
+FL-Random). 
+The increasing availability of consumer wearable devices 
+presents opportunities for individualized AI-driven services. 
+However, data privacy regulations and limited computational 
+resources of edge devices pose challenges to the widespread 
+utilization of models. In this context, our proposed FL-ML 
+approach, which combines FL with pre-trained MAML 
+weights, may offer a promising solution. By transferring 
+Client No. # of Wake # of NREM # of REM 
+1 2,490 10,650 3,420 
+2 510 8,820 4,830 
+3 2,460 19,890 6,990 
+4 2,760 18,150 5,970 
+5 5,340 13,740 9,270 
+6 2,760 18,660 6,240 
+7 3,090 18,720 6,750 
+8 2,490 20,730 5,400 
+9 300 21,810 6,600 
+10 600 20,490 7,500 
+2023 IEEE 13th International Conference on Consumer Electronics - Berlin (ICCE-Berlin)
+191
+
+ 
+knowledge from the pre-trained models, the FL-ML approach 
+achieved faster convergence and improved accuracy within 
+the limited computational resources of edge devices. 
+While our study focused on sleep stage classification, our 
+proposed FL-ML approach can be applied to various tasks 
+relevant to edge devices. By leveraging FL with an efficient 
+model initialization strategy from a pre-trained MAML 
+model, we can effectively overcome the limitations of edge 
+devices and extend the utility of models in resource-
+constrained environments. 
+In conclusion, our study presents the significance of 
+initialization strategies in FL and highlights the efficacy of 
+pre-trained models for improved performance in sleep stage 
+classification. Our approach holds promise for addressing data 
+privacy concerns, accommodating limited resources, and 
+enabling a range of AI applications on edge devices.  
+ACKNOWLEDGMENT  
+This work was supported by the National Research 
+Foundation of Korea (NRF) grant funded by the Korea 
+government (MSIT) (No. 2021R1C1C1009436), the Institute 
+for Information and Communications Technology Promotion 
+(IITP) grant funded by the Korean government (MSIT) (No. 
+2017-0-00655), the Korea Health Technology R&D Project 
+through the Korea Health Industry Development Institute 
+(KHIDI), funded by the Ministry of Health and Welfare, 
+Republic of Korea (grant number: HI22C0108), and the 
+Institute for Information and Communications Technology 
+Planning & Evaluation (IITP) grant funded by the Korea 
+government (MSIT) (No. RS-2022-00155911, Artificial 
+Intelligence Convergence Innovation Human Resources 
+Development (Kyung Hee University)). 
+REFERENCES 
+[1] G. Medic, M. Wille, and M. E. Hemels, "Short-and long-term health 
+consequences of sleep disruption," Nature and science of sleep, pp. 
+151-161, 2017. 
+[2] F. S. Luyster, P. J. Strollo Jr, P. C. Zee, and J. K. Walsh, "Sleep: a 
+health imperative," Sleep, vol. 35, no. 6, pp. 727-734, 2012. 
+[3] A. J. Krause et al., "The sleep-deprived human brain," Nature Reviews 
+Neuroscience, vol. 18, no. 7, pp. 404-418, 2017. 
+[4] R. Hastie and B. Park, "The relationship between memory and 
+judgment depends on whether the judgment task is memory-based or 
+on-line," Psychological review, vol. 93, no. 3, p. 258, 1986. 
+[5] S. Sharma and M. Kavuru, "Sleep and metabolism: an overview," 
+International journal of endocrinology, vol. 2010, 2010. 
+[6] V. Ibáñez, J. Silva, and O. Cauli, "A survey on sleep assessment 
+methods," PeerJ, vol. 6, p. e4849, 2018. 
+[7] R. B. Berry, R. Brooks, C. E. Gamaldo, S. M. Harding, C. Marcus, and 
+B. V. Vaughn, "The AASM manual for the scoring of sleep and 
+associated events," Rules, Terminology and Technical Specifications, 
+Darien, Illinois, American Academy of Sleep Medicine, vol. 176, p. 
+2012, 2012. 
+[8] I. Perez-Pozuelo et al., "The future of sleep health: a data-driven 
+revolution in sleep science and medicine," NPJ digital medicine, vol. 3, 
+no. 1, p. 42, 2020. 
+[9] D. J. Miller, C. Sargent, and G. D. Roach, "A validation of six wearable 
+devices for estimating sleep, heart rate and heart rate variability in 
+healthy adults," Sensors, vol. 22, no. 16, p. 6317, 2022. 
+[10] H. G. van Lier et al., "A standardized validity assessment protocol for 
+physiological signals from wearable technology: Methodological 
+underpinnings and an application to the E4 biosensor," Behavior 
+research methods, vol. 52, pp. 607-629, 2020. 
+[11] N. Oliver and F. Flores-Mangas, "HealthGear: a real-time wearable 
+system for monitoring and analyzing physiological signals," in 
+International Workshop on Wearable and Implantable Body Sensor 
+Networks (BSN'06), 2006: IEEE, pp. 4 pp.-64.  
+[12] S. Saganowski, B. Perz, A. Polak, and P. Kazienko, "Emotion 
+recognition for everyday life using physiological signals from 
+wearables: A systematic literature review," IEEE Transactions on 
+Affective Computing, 2022. 
+[13] O. Walch, Y. Huang, D. Forger, and C. Goldstein, "Sleep stage 
+prediction with raw acceleration and photoplethysmography heart rate 
+data derived from a consumer wearable device," Sleep, vol. 42, no. 12, 
+p. zsz180, 2019. 
+[14] S. Djanian, A. Bruun, and T. D. Nielsen, "Sleep classification using 
+Consumer Sleep Technologies and AI: A review of the current 
+landscape," Sleep Medicine, 2022. 
+[15] P. Voigt and A. Von dem Bussche, "The eu general data protection 
+regulation (gdpr)," A Practical Guide, 1st Ed., Cham: Springer 
+International Publishing, vol. 10, no. 3152676, pp. 10-5555, 2017. 
+[16] G. J. Annas, "HIPAA regulations: a new era of medical-record 
+privacy?," New England Journal of Medicine, vol. 348, p. 1486, 2003. 
+[17] C. Finn, P. Abbeel, and S. Levine, "Model-agnostic meta-learning for 
+fast adaptation of deep networks," in International conference on 
+machine learning, 2017: PMLR, pp. 1126-1135.  
+[18] J. Buckelmüller, H.-P. Landolt, H. Stassen, and P. Achermann, "Trait-
+like individual differences in the human sleep electroencephalogram," 
+Neuroscience, vol. 138, no. 1, pp. 351-356, 2006. 
+[19] F. Chen, M. Luo, Z. Dong, Z. Li, and X. He, "Federated meta-learning 
+with fast convergence and efficient communication," arXiv preprint 
+arXiv:1802.07876, 2018. 
+[20] B. H. Te Lindert and E. J. Van Someren, "Sleep estimates using 
+microelectromechanical systems (MEMS)," Sleep, vol. 36, no. 5, pp. 
+781-789, 2013. 
+[21] K. O'Shea and R. Nash, "An introduction to convolutional neural 
+networks," arXiv preprint arXiv:1511.08458, 2015. 
+[22] Y. Ioannou, D. Robertson, R. Cipolla, and A. Criminisi, "Deep roots: 
+Improving cnn efficiency with hierarchical filter groups," in 
+Proceedings of the IEEE conference on computer vision and pattern 
+recognition, 2017, pp. 1231-1240.  
+[23] A. Dosovitskiy et al., "An Image is Worth 16x16 Words: Transformers 
+for Image Recognition at  Scale," 2020-10-22T17:55:59 2020. 
+[24] J. Luketina, M. Berglund, K. Greff, and T. Raiko, "Scalable gradient-
+based tuning of continuous regularization hyperparameters," in 
+International conference on machine learning, 2016: PMLR, pp. 2952-
+2960.  
+[25] C. Wu, F. Wu, L. Lyu, Y. Huang, and X. Xie, "Communication-
+efficient federated learning via knowledge distillation," Nature 
+Communications, vol. 13, no. 1, 2022-04-19 2022, doi: 
+10.1038/s41467-022-29763-x. 
+[26] C. He et al., "Fedml: A research library and benchmark for federated 
+machine learning," arXiv preprint arXiv:2007.13518, 2020. 
+[27] U. Hunkeler, H. L. Truong, and A. Stanford-Clark, "MQTT-S—A 
+publish/subscribe protocol for Wireless Sensor Networks," in 2008 3rd 
+International Conference on Communication Systems Software and 
+Middleware and Workshops (COMSWARE'08), 2008: IEEE, pp. 791-
+798.  
+ 
+2023 IEEE 13th International Conference on Consumer Electronics - Berlin (ICCE-Berlin)
+192
+
+
+--- END OF PAPER: Federated-Learning-for-Sleep-Stage-Classification-on-Edge-Devices-via-a-Model-Agnostic-Meta.pdf ---
+
+--- START OF PAPER: j.1365-2869.2011.00944.x.pdf ---
+Validation of an automated wireless system to monitor sleep in
+healthy adults
+JOHN R. SHAMBROOM 1 , STEPHAN E. FA ´ BREGAS 1 and JACK JOHNSTONE 2
+1Zeo Sleep Research Center, Zeo, Inc., Newton, MA, USA and 2Valley Sleep Center, Burbank, CA, USA
+Keywords
+actigraphy, ambulatory, automated, inter-rater
+agreement, sleep scoring, wireless
+Correspondence
+John R. Shambroom, Shambroom Associates,
+LLC, 384 Edmands Road, Framingham, MA
+01701, USA.
+Tel.: 781-929-5807;
+fax: 508-877-6102;
+e-mail: jshambroom@verizon.net
+Accepted in revised form 3 July 2011; received
+9 March 2011
+DOI: 10.1111/j.1365-2869.2011.00944.x
+SUMMARY
+The availability of a reliable system to record sleep stage measures
+easily and automatically in ambulatory settings could be of utility for
+research and clinical work. The aim of this study was to evaluate a novel
+wireless system (WS) that does not require skilled preparation for the
+automatic collection and scoring of human sleep. Twenty-nine healthy
+adults underwent concurrent sleep measurement via the WS, polysom-
+nography (PSG) and an actigraph (ACT) in a sleep laboratory for one
+assessment night preceded by an acclimation night. The PSG recordings
+were scored by two experienced trained technicians from separate
+laboratories. Each recording was scored by both technicians to Rechts-
+chaffen and Kales (R&K) criteria. The WS and ACT were compared with
+each of the PSG scores and a consensus PSG score, and the PSG
+scores were compared with each other. Inter-rater agreement was
+assessed for each pair over all pooled epochs by percentage agreement,
+Cohen/C213s kappa and intraclass correlation coefﬁcient. The WS agreement
+with each of the two PSG scores for sleep stages was 75.8 and 74.7%,
+respectively. WS agreement with each of the two PSG scores for
+sleep ⁄ wakefulness was 92.6 and 91.1%, ACT agreement with PSG was
+86.3 and 85.7%. The PSG scorers /C213agreement with each other for sleep
+stages was 83.2%, and for sleep ⁄ wakefulness was 95.8%. The ﬁndings
+from the current study indicate that the WS may provide an easy to use
+and accurate complement to other established technologies for measur-
+ing sleep in healthy adults.
+INTRODUCTION
+The ability to investigate the sleep of individuals is of
+scientiﬁc and clinical interest. Sleep patterns have most
+commonly been examined with polysomnography (PSG),
+wrist actigraphy and subjective self-report instruments. Each
+method of measuring sleep has strengths and limitations.
+PSG is the gold standard assessment methodology for sleep
+and it provides detailed information on sleep staging, laten-
+cies to sleep and speciﬁc sleep stages, as well as the number
+of arousals from sleep.
+Actigraphy is an alternative to PSG as an objective indirect
+measurement of sleep and wakefulness (Ancoli-Israel et al.,
+2003; Paquet et al., 2007). Actigraphy has the advantages
+that it is less costly and less intrusive than PSG, is relatively
+easy to use in ambulatory settings, and utilizes automated
+scoring algorithms that reduce the need for manual interpre-
+tation of the recordings. These advantages enable its use for
+multiple nights in longitudinal studies of sleep ⁄ wakefulness
+patterns. However, there is no set standard for the collection
+or scoring of sleep using actigraphy, making interpretation of
+data from different systems difﬁcult (Acebo and LeBourgeois,
+2006). In addition, because actigraphy uses movement as a
+surrogate for wakefulness, it is limited almost exclusively to
+the detection of sleep and wakefulness, and its correlation
+with PSG is moderate. Moreover, actigraphy tends to
+overestimate total sleep time (TST) in healthy and sleep-
+disordered subjects because actigraphy is prone to misinter-
+preting quiet wakefulness (e.g. lying in bed) as sleep
+(Kushida et al., 2001; Pollak et al., 2001).
+Subjective sleep assessments are a common method for
+obtaining information about the sleep of subjects in research
+and clinical populations. Although sleep diaries and ques-
+tionnaires offer a way to monitor sleep and habits easily and
+affordably over long periods of time (such as days or weeks),
+such instruments suffer limitations. The data collected by
+J. Sleep Res.(2012) 21, 221–230 Wireless system to monitor sleep
+ª 2011 European Sleep Research Society 221
+such means are subjective, and may not always be accurate
+reports of sleep in both healthy and sleep-disordered popu-
+lations (Feige et al., 2008; Lichstein et al., 2006; Means
+et al., 2003). In addition, sleep diaries are limited to sleep and
+wakefulness with no ability to monitor sleep stage informa-
+tion. Subjective measures of sleep also, by nature, require
+subjects to schedule the time and effort to input data
+manually onto a form, making compliance challenging. The
+instruments used for subjective sleep assessments also vary
+widely within the literature, making comparisons between
+reports difﬁcult.
+The development and validation of low-cost, easy-to-use,
+portable sleep recording devices, with automated algorithms
+to distinguish among sleep stages and wakefulness, has
+important implications for sleep medicine and research. We
+evaluated a novel wireless system (WS), developed for
+monitoring sleep in the home and other environments (Zeo,
+Inc., Newton, MA, USA). The system utilizes a dry fabric
+headband for collecting a single-channel signal from the
+forehead, which is transmitted wirelessly to a base station
+where sleep stages are scored in real time by an automated
+algorithm. The resulting sleep stage information is available
+in summarized form at the conclusion of the night. The aim of
+the present study was to validate the WS prospectively by
+comparing sleep stage and sleep ⁄ wakefulness assessments
+to those measured by PSG and an actigraph (ACT) in the
+laboratory.
+METHODS
+Subjects
+Twenty-nine subjects were enrolled and completed the
+protocol. However, three consecutive sleep recordings were
+lost due to a technician error. Of the 26 remaining subjects,
+50% were female and the average age [± standard deviation
+(SD)] was 38 (± 13) years, ranging from 19 to 60 years.
+Inclusion criteria were as follows: healthy adults (18–
+65 years), with no physical or mental health complaints, with
+a body mass index between 18.6 and 30.0, and a willingness
+to abstain from alcohol, nicotine and illicit drugs for the 24 h
+prior to each recording. Reported presence of any sleep
+disorder, excessive daytime sleepiness, recent shift work or
+travel outside of the time zone within the prior month and
+pregnancy were exclusionary. The study protocol was
+approved by the Western Institutional Review Board of
+Olympia, Washington. Subjects provided written informed
+consent and were compensated for their participation in the
+study.
+Protocol
+Polysomnographic WS and ACT data were collected simul-
+taneously for each subject for two nights occurring within a
+1-week period. The ﬁrst night was an acclimation night for
+subjects to adjust to sleeping with the equipment in a
+laboratory setting.
+The wireless system
+The wireless system uses proprietary dry silver-coated fabric
+sensors in a headband (
+Fig. 1) to collect electrophysiological
+signals from the forehead with a single bi-polar channel
+located at approximately Fp1–Fp2. The electrophysiological
+signal includes contributions from the electroencephalogram
+(EEG), eye movements and the frontalis muscle. The
+headband is fully adjustable to accommodate use by different
+individuals and is worn such that it is tight enough to be
+secure, but loose enough to minimize discomfort.
+The headband contains a 12-bit analog to digital converter
+and preprocessing unit which ampliﬁes and ﬁlters the
+electrophysiological signal. The signal is captured at 128
+samples per second and ﬁltered within a second-order
+bandpass frequency of 2–47 Hz. The use of the dry sensor
+necessitates the use of a low frequency cut-off that is higher
+than the recommended 0.3 Hz, as the spectrum below 2 Hz
+is contaminated by excessive noise. The resulting signal is
+transmitted to a base station using an ultra-low-power
+propriety wireless protocol at 2.4 GHz.
+A microprocessor within the base station calculates the
+sleep stage from the signal in real time utilizing artiﬁcial
+neural network technology. The neural network uses a
+combination of time and frequency dependent features
+derived from the signal to create a best estimate of sleep
+stage corresponding to those described by Rechtschaffen
+and Kales (R&K). A reduced set of sleep stages are reported
+Figure 1. The headband, about the size of a
+tennis headband, is comprised of three dry
+silvercoated fabric sensors and a sealed
+plastic enclosure containing electronics for
+signal sampling and transmission to a base
+station for processing.
+222 J. R. Shambroomet al.
+ª 2011 European Sleep Research Society
+that include: wakefulness, rapid eye movement (REM) sleep,
+light sleep (combined Stages 1 and 2), and deep sleep
+(combined Stages 3 and 4) (Rechtschaffen and Kales, 1968).
+Prior to training, the neural network does not have a priori
+information about the correlation of any time or frequency
+feature with sleep stage. Optimization of the algorithm
+through training compensates for the lack of information
+below 2 Hz by the inclusion of available features in the
+determination of sleep stage. A sleep stage is assigned to
+each 2-s interval of recording; these are then smoothed using
+a 2-min moving average window, and a result is reported
+once every 30 s.
+A previously collected independent data set of nocturnal
+sleep recordings from 18 healthy adults, aged 21–60 years
+(33% female), was used for the training and optimization of
+the algorithm by iteratively improving the correlation between
+the algorithm output and the determination made by a human
+sleep scorer using R&K guidelines. The present analysis was
+conducted on a new data set using new sleep scorers. None
+of the subjects in the training set were included in the present
+analysis, and neither of the PSG scorers was involved in
+algorithm training.
+Procedure
+Polysomnography (Cadwell Easy III; Cadwell Laboratories
+Inc., Kennewick, WA, USA) was recorded using the standard
+10–20 system electrode placement with a referential system
+montage (with the reference electrode placed at Cz). The
+sleep scoring montage included six EEG channels that were
+derived for ofﬂine scoring (F3-A2, F4-A1, C3-A2, C4-A1, O1-
+A2, O2-A1), left electro-oculogram (LOC-A2), right electro-
+oculogram (ROC-A1), a bi-polar submental electromyogram
+(EMG1–EMG2) and a respiration belt. The EEG and EMG
+channels were recorded at 200 samples s
+)1 and ﬁltered
+within a bandpass frequency of 0.3–35 Hz. An ACT (Acti-
+watch 64; Mini Mitter Philips ⁄ Respironics, Bend, OR, USA)
+was placed on the subject /C213s non-dominant wrist and the
+wireless system headband was undocked from the bedside
+display and placed on the subject /C213s head. A sleep technician
+monitored each recording session by closed-circuit television
+with audio and streaming data from the PSG. Subjects were
+required to stay in bed for a minimum of 6 h and either awoke
+spontaneously or were awakened in the morning at their
+requested rise time. Lights out and lights on times were
+noted.
+The three recording systems (PSG, WS and ACT) were
+time-synchronized before each recording. Polysomnography
+records were scored manually in 30-s epochs according to
+standard R&K criteria by two sleep scorers (PSG1 and
+PSG2). The two scorers were trained in separate laborato-
+ries: one is a registered polysomnographic technologist
+trained for work in both clinical and research settings
+(PSG1), the other was trained exclusively for work in a
+research setting (PSG2). ACT data were collected in 30-s
+epochs and scored for sleep and wakefulness at medium
+wake threshold sensitivity (wakefulness threshold value of 40
+activity counts), according to Actiware 5.0 software (Mini
+Mitter Philips ⁄ Respironics, Bend, OR, USA). Scored data for
+the WS were extracted from the ﬂash memory card.
+Data analysis
+The WS was compared with the PSG data scored according
+to R&K criteria. For sleep stage comparisons, PSG data
+scored as Stage 1 and Stage 2 were combined into a single
+category for comparison with the WS /C212light sleep /C213. Similarly,
+PSG data scored as Stage 3 and Stage 4 were combined into
+a single category for comparison with the WS /C212deep sleep /C213.
+For sleep ⁄ wakefulness comparisons, PSG, ACT and WS
+records were analyzed with binary scores (0 = wakefulness,
+1 = sleep). Epochs that were scored by all three systems
+were included in analyses.
+Pooled epoch-by-epoch agreement was established for
+sleep stages between the two PSG scorers and WS by
+calculating percent agreement and Cohen /C213s kappa for each
+pair (WS versus PSG1, and WS versus PSG2, PSG1 versus
+PSG2). Cohen /C213s kappa measures the agreement between
+two systems beyond what would be expected from chance
+alone (Cohen, 1960). A kappa value of 0–0.2 is considered
+essentially no agreement, 0.2–0.4 low agreement, 0.4–0.6
+moderate agreement, 0.6–0.8 high agreement and 0.8–1.0
+nearly perfect agreement (Landis and Koch, 1977). Contin-
+gency tables are provided for descriptive purposes showing
+the frequency of agreement ⁄ disagreement of epochs each
+system scored as wakefulness, REM sleep, light sleep or
+deep sleep. Percentage agreement and positive predictive
+values (PPV) for sleep stages were computed from the
+tables. Chi-squared analysis was used to assess differences
+in agreement between scorer pairs.
+Sleep ⁄ wakefulness agreement was assessed by calculat-
+ing percentage agreement and PPV for wakefulness and
+sleep for each pair (WS versus PSG1, WS versus PSG2,
+ACT versus PSG1, ACT versus PSG2). The percentage
+agreement and average PPV were also calculated to assess
+concordance between scorers (PSG1 versus PSG2).
+A consensus score (PSGC) was derived from PSG1 and
+PSG2 wherein only epochs for which there was agreement
+between the two sleep scorers were included. This yielded
+the following additional pairs for analysis of sleep stages (WS
+versus PSGC) and sleep ⁄ wakefulness (WS versus PSGC,
+ACT versus PSGC).
+Entire night agreement was established for sleep stages
+between the two PSG scorers and the WS by calculating
+percentage agreement, PPV for sleep stages and Cohen /C213s
+kappa for each of the 26 subjects.
+The following averaged nightly summary sleep measures
+were also calculated for each system: TST, sleep onset
+latency to the ﬁrst epoch of sleep (SOL), latency to persistent
+sleep of 10 continuous min (LPS), wakefulness after sleep
+onset (WASO), sleep efﬁciency (SE), the number of awak-
+enings lasting at least 2 min (NA) and wakefulness time
+Validation of automated WS to monitor sleep in healthy adults223
+ª 2011 European Sleep Research Society
+
+[... MIDDLE PAGES OMITTED ...]
+
+for sleep stage scoring presents what may be considered a
+more meaningful assessment of the performance of the WS.
+Regardless, for many of the same reasons that actigraphy is
+generally accepted as a useful tool for measuring sleep (see,
+particularly, Tryon, 2004), the WS shows potential as an
+effective way to measure sleep.
+The WS performed better than ACT in differentiating sleep
+from wakefulness by all measures, and especially PPV for
+wakefulness. These differences were especially pronounced
+for nights of low SE. The agreement of ACT with PSG in this
+study was consistent with ﬁndings from previous studies
+showing agreements ranging from 83 to more than 90%
+(Ancoli-Israel et al., 2003; Kushida et al., 2001; Paquet et al.,
+2007; Pollak et al., 2001). The correlations between ACT and
+PSG for summary variables were at the low end of the range
+described by Tryon (2004), who reported a range of 0.72–
+0.98 for TST, 0.56–0.91 for SE and 0.49–0.87 for WASO
+(Fig. 5). A high level of variability in actigraphic equipment
+and algorithms has been described in the literature (Acebo
+and LeBourgeois, 2006), and it is important to consider that
+different wakefulness threshold levels can affect the sensi-
+tivity and speciﬁcity to sleep and wakefulness (Paquet et al.,
+2007). A medium wake threshold algorithm was used in this
+study, and an improvement in performance may be expected
+with a logarithmic regression algorithm (Paquet et al., 2007;
+Pollak et al., 2001). This option was not available for the
+software and equipment used in this study.
+Although all subjects in the present study were self-
+reported good sleepers, and were given a night to acclimate
+to the laboratory environment, there were still some cases
+where the sleep quality was low for reportedly healthy
+sleepers. Lower sleep quality may also have contributed to
+instances of lower performance of ACT, as it has been
+reported that concordance of ACT with PSG is lower in nights
+with lower SE (Ancoli-Israel et al., 2003; Kushida et al., 2001;
+Lichstein et al., 2006). In contrast, the WS performance was
+more consistent over the range in sleep quality, and for those
+sleep measures where the WS had a lower agreement with
+PSG, the two human scorers exhibited similarly low concor-
+dance with each other (for example, with SOL and NA). The
+differences here, between the WS and ACT, may be due to
+the fact that actigraphy uses movement or lack of movement
+as a surrogate to infer a state of wakefulness or sleep,
+respectively, whereas the WS uses signals coming directly
+from the brain to differentiate wakefulness and sleep. It is
+important to note that because of the temporal smoothing in
+the WS algorithm it is not suitable for scoring single epoch
+intervals of wakefulness or arousals.
+Prior attempts have been made to automate the process of
+scoring sleep, and with some exceptions (Caffarel et al.,
+2006; Villa et al., 1998) results have been generally encour-
+aging (Park et al., 2000; Pittman et al., 2004; Schaltenbrand
+et al., 1996). Although these systems provide some advan-
+tage over manual scoring, they still require substantial time
+and cost in terms of equipment, set-up and trained expertise
+because of the need for full PSG. Further advantages could
+be gained with a system that also requires fewer signals, less
+expertise and is less obtrusive to the subject. The results of
+the present study suggest that the WS performs comparably
+to other systems that have attempted simple recording
+methods for automated sleep staging, such as Automatic
+Sleep EEG Analysis (ASEEGA) (Berthomier et al., 2007), C
+STAGE (Prinz et al., 1994) and a two electro-oculogram
+(EOG) montage tested by Virkkala et al.(2007). These other
+systems utilize traditional wired electrodes, requiring prepa-
+ration and technical expertise. The WS, on the other hand,
+uses a dry fabric headband that requires no preparation, and
+has the potential to ﬁll a need for a simple way to record
+sleep.
+There are some limitations of this study which should be
+considered when evaluating the WS. Only one night /C213s
+data was analyzed from each subject, all of whom were
+between 19 and 60 years of age. Internight intrasubject
+variability was not established, and information about the
+ability of the WS to score sleep in younger and older
+populations cannot be inferred from these results. The study
+subjects were self-reported healthy sleepers, and the WS
+performance in other populations should not be inferred from
+these results. Also, these data were collected in a laboratory
+setting. Additional studies evaluating the WS in the natural in-
+home environment are needed. The WS yield was slightly
+lower than the yield for PSG. This may have an effect on the
+accuracy of certain sleep summary measures on nights with
+missing epochs. However, given that widespread use of PSG
+in the home is impractical, this trade-off seems reasonable.
+We conclude that the WS shows promise as a relatively
+accurate system for scoring sleep. The WS incorporates
+many of the beneﬁts of PSG and actigraphy in one system,
+and may ﬁnd utility as an alternative in certain circumstances.
+With additional validation in broader populations the WS may
+represent a useful tool for sleep medicine and research.
+ACKNOWLEDGEMENTS
+The authors would like to acknowledge Paolo DePetrillo and
+Benjamin Rubin for their work in pioneering the wireless
+system technology, and would like to thank Richard Harter
+and Jesse Snider MA for their work in scoring the sleep
+records. The study was supported by Zeo, Inc., Newton, MA.
+DISCLOSURES
+This study was supported by Zeo, Inc. John Shambroom has
+been a salaried employee and consultant for Zeo, Inc.
+Stephan Fa´bregas is a salaried employee of Zeo, Inc. Dr
+Johnstone received ﬁnancial support for the conduct of this
+study.
+REFERENCES
+Acebo, C. and LeBourgeois, M. K. Actigraphy. Respir. Care Clin.
+N. Am.,2006, 12: 23–30.
+Validation of automated WS to monitor sleep in healthy adults229
+ª 2011 European Sleep Research Society
+Ancoli-Israel, S., Cole, R., Alessi, C., Chambers, M., Moorcroft, W.
+and Pollak, C. P. The role of actigraphy in the study of sleep and
+circadian rhythms. Sleep, 2003, 26: 342–392.
+Anderer, P., Gruber, G., Parapatics, S. et al.An e-health solution for
+automatic sleep classiﬁcation according to Rechtschaffen and
+Kales: validation study of the Somnolyzer 24 vs. 7 utilizing the
+Siesta database. Neuropsychobiology, 2005, 51: 5–33.
+Berthomier, C., Drouot, X., Herman-Stoı ¨ca, M. et al. Automatic
+analysis of single-channel sleep EEG: validation in healthy
+individuals. Sleep, 2007, 30: 1587–1595.
+Caffarel, J., Gibson, G. J., Harrison, J. P., Grifﬁths, C. J. and Drinnan,
+M. J. Comparison of manual sleep staging with automated neural
+network-based analysis in clinical practice. Med. Biol. Eng.
+Comput., 2006, 44: 105–110.
+Cohen, J. A coefﬁcient of agreement for nominal scales. Educ.
+Psychol. Meas., 1960, 20: 37–46.
+Danker-Hopfe, H., Anderer, P., Zeitlhofer, J. et al.Interrater reliability
+for sleep scoring according to the Rechtschaffen & Kales and the
+new AASM standard. J. Sleep Res., 2009, 18: 74–84.
+Feige, B., Al-Shajlawi, A., Nissen, C. et al. Does REM sleep
+contribute to subjective wake time in primary insomnia? A compar-
+ison of polysomnographic and subjective sleep in 100 patients. J.
+Sleep Res., 2008, 17: 180–190.
+Fisher, R. A. Statistical Methods for Research Workers. Oliver &
+Boyd, Edinburgh, 1954.
+Grigg-Damberger, M. M. The AASM scoring manual: a critical
+appraisal. Curr. Opin. Pulm. Med., 2009, 15: 540–549.
+Himanen, S.-L. and Hasan, J. Limitations of Rechtschaffen and
+Kales. Sleep Med. Rev., 2000, 4: 149–167.
+Iber, C., Ancoli-Israel, S., Chesson, A. and Quan, S. F. for the
+American Academy of Sleep Medicine. The AASM Manual for the
+Scoring of Sleep and Associated Events: Rules, Terminology, and
+Technical Speciﬁcations. American Academy of Sleep Medicine,
+Westchester, IL, 2007.
+Kushida, C. A., Chang, A., Gadkary, C., Guilleminault, C., Carrillo, O.
+and Dement, W. C. Comparison of actigraphic, polysomnographic,
+and subjective assessment of sleep parameters in sleep-disor-
+dered patients. Sleep Med., 2001, 2: 389–396.
+Landis, J. R. and Koch, G. G. The measurement of observer agree-
+ment for categorical data. Biometrics, 1977, 33: 159–174.
+Lichstein, K. L., Stone, K. C., Donaldson, J. et al. Actigraphy
+validation with insomnia. Sleep, 2006, 29: 232–239.
+Means, M. K., Edinger, J. D., Glenn, D. M. and Fins, A. I. Accuracy of
+sleep perceptions among insomnia sufferers and normal sleepers.
+Sleep Med., 2003, 4: 285–296.
+Norman, R. G., Pal, I., Stewart, C., Walsleben, J. A. and Rapoport, D.
+M. Interobserver agreement among sleep scorers from different
+centers in a large dataset. Sleep, 2000, 23: 901–908.
+Paquet, J., Kawinska, A. and Carrier, J. Wake detection capacity of
+actigraphy during sleep. Sleep, 2007, 30: 1362–1369.
+Park, H. J., Oh, J. S., Jeong, D. U. and Park, K. S. Automated sleep
+stage scoring using hybrid rule- and case-based reasoning.
+Comput. Biomed. Res., 2000, 33: 330–349.
+Pittman, S. D., MacDonald, M. M., Fogel, R. B. et al.Assessment of
+automated scoring of polysomnographic recordings in a population
+with suspected sleep-disordered breathing. Sleep, 2004, 27:
+1394–1403.
+Pollak, C. P., Tryon, W. W., Nagaraja, H. and Dzwonczyk, R. How
+accurately does wrist actigraphy identify the states of sleep and
+wakefulness? Sleep, 2001, 24: 957–965.
+Prinz, P. N., Larsen, L. H., Moe, K. E., Dulberg, E. M. and Vitiello, M.
+V. C STAGE, automated sleep scoring: development and com-
+parison with human sleep scoring for healthy older men and
+women. Sleep, 1994, 17: 711–717.
+Rechtschaffen, A. and Kales, A. A Manual of Standardized Termi-
+nology, Techniques, and Scoring System for Sleep Stages of
+Human Subjects . University of California, Brain Information
+Service ⁄ Brain Research Institute, Los Angeles, CA, 1968.
+Schaltenbrand, N., Lengelle, R., Toussaint, M. et al. Sleep stage
+scoring using the neural network model: comparison between
+visual and automatic analysis in normal subjects and patients.
+Sleep, 1996, 19: 26–35.
+Tryon, W. W. Issues of validity in actigraphic sleep assessment.
+Sleep, 2004, 27: 158–165.
+Villa, M. P., Piro, S., Dotta, A. et al. Validation of automated sleep
+analysis in normal children. Eur. Respir. J., 1998, 11: 458–461.
+Virkkala, J., Hasan, J., Va ¨rri, A., Himanen, S.-L. and Mu ¨ller, K.
+Automatic sleep stage classiﬁcation using two-channel electro-
+oculography. J. Neurosci. Methods, 2007, 166: 109–115.
+SUPPORTING INFORMATION
+Additional Supporting Information may be found in the online
+version of this article:
+Figure S1. Representative signals from the wireless
+system headband and PSG system depicting 30 second
+epoch examples for wakefulness, REM, light, and deep
+sleep.
+Figure S2.Scatter plots of sleep stage summary measures
+by night. Each point represents the estimate for one subject
+night by each of two scorers (paired combinations of WS,
+PSG1, and PSG2). PSG1 – PSG scorer 1, PSG2 – PSG
+scorer 2, WS – wireless system.
+Please note: Wiley-Blackwell are not responsible for the
+content or functionality of any supporting materials supplied
+by the authors. Any queries (other than missing material)
+should be directed to the corresponding author for the article.
+230 J. R. Shambroomet al.
+ª 2011 European Sleep Research Society
+
+--- END OF PAPER: j.1365-2869.2011.00944.x.pdf ---
+

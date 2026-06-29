@@ -1,0 +1,1768 @@
+--- START OF PAPER: s41746-024-01086-9.pdf ---
+npj |digital medicine Editorial
+Published in partnership with Seoul National University Bundang Hospital
+https://doi.org/10.1038/s41746-024-01086-9
+Challenges and opportunities of deep learning
+for wearable-based objective sleep
+assessment
+Check for updates
+In recent years the intersection of
+wearable technologies and machine
+learning (ML) based deep learning (DL)
+approaches have highlighted their
+potential in sleep research. Yet, a
+recent study published in NPJ Digital
+Medicine highlights the generalization
+limitations of DL models in sleep-
+wake classiﬁcation using actigraphy
+data. Here, this article discusses
+some of the challenges and
+opportunities presented by domain
+adaptation and self-supervised
+learning (SSL), innovative
+methodologies that use large-scale
+unlabeled data to bolster the
+generalizability of DL models in sleep
+assessment. These approaches not
+only improve sleep-wake
+classiﬁcation but also hold promise
+for extending to more comprehensive
+sleep stage classiﬁcation, potentially
+advancing theﬁeld of automated
+sleep assessment through efﬁcient
+and user-friendly wearable
+monitoring systems.
+D
+eep learning (DL, Table1), a subset of
+machine learning (ML), has sig-
+niﬁcantly impacted theﬁeld of auto-
+mated sleep assessment, especially
+through the analysis of polysomnography
+(PSG) data. PSG is the most accurate objective
+sleep measurement method because it simul-
+taneously assesses multiple physiological para-
+meters, including overnight brain activity, and
+can classify sleep into distinct stages
+1.D L
+models trained on clinical PSG data have
+attained performance levels comparable to
+human experts, providing clinicians with
+valuable tools for automated and comprehen-
+sive sleep stage analysis
+2– 5, across a range of
+clinical datasets e.g., MESA6, SHHS7. However,
+PSG’s suitability for long-term, at-home sleep
+monitoring is limited due to its intrusive nature.
+Even headband devices like Dreem™, though
+less intrusive than traditional PSG technology
+for brain wave-based sensing, can be cumber-
+some/uncomfortable during extended wear
+8.
+Recent developments in wearable and nearable
+technologies have made it feasible to monitor
+sleep in home settings3,9– 11. Despite advance-
+ments, the effectiveness of adopting wearable
+devices and DL methods for sleep analysis is often
+hindered by data scarcity, leading to model
+overﬁtting
+12. For instance, to estimate sleep
+parameters, a recent study published in NPJ
+Digital Medicine by Patterson et al.
+13 evaluated
+DL models based on actigraphy data in cross-
+dataset settings and found that those models
+often struggle with considerable domain
+discrepancies
+13,w h i c hp o s e sc h a l l e n g e sf o r
+effectively deploying DL models across varied
+settings and devices. Many wrist-worn devices
+now feature photoplethysmography (PPG) sen-
+sors, alongside actigraphy, indicating their
+potential for classifying sleep stages
+3,4,14.N o n e -
+theless, many investigations have been conducted
+on small datasets, yielding limited performance
+outcomes. Conversely, ﬁelds such as natural
+language processing use abundantly availability
+datasets to aid the development of sophisticated
+DL models, such as ChatGPT
+15.T h a td i s p a r i t y
+highlights the potential beneﬁts of using large
+volumes of unlabeled data to enhance sleep
+monitoring technologies.
+Challenges: Wearable sensing and
+deep learning
+The frequent implementation of DL in various
+ﬁelds is remarkable, yet it encounters two key
+challenges when applied to sleep assessment
+through wearable sensing-based methodologies.
+Namely, (i) small-labelled dataset problem (i.e.,
+data scarcity), and (ii) the balancing act between
+achieving a high signal-to-noise ratio (SNR, a
+method that compares the level of a desired signal
+to the level of background noise) in wearables and
+maintaining user acceptance for long-term usage.
+Data Scarcity: Annotation and patient
+availability
+In sleep medicine, especially with wearable
+computing, the development of supervised
+learning models is impeded by a lack of richly
+annotated datasets. Obtaining unlabeled data
+from wrist-worn wearable devices is feasible and
+pragmatic. However, annotating those data for
+sleep classiﬁcation requires simultaneous elec-
+troencephalography (EEG) collection and expert
+medical annotation. That contrasts withﬁelds
+such as computer vision, where the annotation is
+more straightforward (i.e., requires less exper-
+tise), underscoring the unique difﬁculties in
+assembling annotated sleep-based datasets for
+supervised DL wearable-based algorithms
+16,17.
+Furthermore, limited research resources,
+patient scarcity, and the challenge of recruiting a
+diverse patient population with varying disease
+severities exacerbate data imbalances, making
+models easily overﬁt to the training dataset,
+affecting generalizability on unseen populations
+(i.e., participants wereout of the distribution/
+heterogeneity of the training dataset). That phe-
+nomenon is evidenced in the evaluation out-
+comes presented by Patterson et al.,
+demonstrating that when the training and test
+datasets originate from the same distribution, the
+performance of the DL model surpasses that of
+conventional methods. Assessments based on the
+proxy signals, such as those from cardior-
+espiratory signals, reveal distinct patterns in
+individuals with conditions like sleep apnea
+18,
+underscoring the need for more diverse data to
+improve model generalizability.
+Signal to noise ratio: Adequate
+hardware
+The quest for high SNR wearables persists, cap-
+able of precisely gauging brain activity with
+minimal intrusion and optimal comfort 19.
+Approaches based on wrist movement and
+npj Digital Medicine|            (2024) 7:85 1
+1234567890():,;
+1234567890():,;
+cardiac sensing data may reach a ceiling effect, as
+peripheral signals might not precisely reﬂect sleep
+stages20. Traditional scalp and forehead skin-
+based sensing methods are less perturbed by
+physiological activities other than the brain
+18,21– 25.
+The advancements made using DL models with
+PSG data for automated sleep staging analysis
+highlighted the signiﬁcant potential of soft
+textile-based EEG sleep detection devices, such as
+MUSE™
+9,21. The trade-off between usability and
+performance remains crucial in developing
+wearables aimed at sleep stage classiﬁcation19.
+Moreover, the persistent data scarcity issue
+remains challenging, necessitating exploration
+into ML paradigms like self-supervised learning
+(SSL) and transfer learning as potential avenues
+to bolster model generalization and adaptability
+to new tasks.
+Opportunities: Self-supervised
+machine learning and domain
+adaptation
+In automated sleep analysis, SSL is combined
+with domain adaptationto become a key strategy
+for enhancing model generalization26,27.D o m a i n
+adaptation reﬁnes models developed in one
+domain of sleep research (e.g., laboratory sleep
+patterns) to be applicable in another (e.g., free-
+living conditions sleep patterns). It overcomes
+disparities in data volume or quality by discard-
+ing irrelevant features and capturing universally
+recognized patterns, making it a valuable tool for
+advancing sleep assessment methodologies with
+limited data. SSL represents a paradigm shift in
+automated sleep analysis, enabling models to
+learn from large volumes of unlabelled data
+through the identiﬁcation of inherent patterns.
+This approach is analogous to inferential learning
+in humans, where understanding is developed
+through observation rather than explicit
+instruction (e.g., learning the differences between
+sleep epochs and similar sleep epochs at different
+times). By employingpretext tasks, such as pre-
+dicting the next sequence in a series of data
+points, SSL models can learn general features and
+patterns relevant to sleep, contributing to the
+robustness and accuracy of downstream super-
+vised learning tasks classiﬁcation
+28,29.
+The great promise of SSL has been observed
+across a range of domains in computer vision30,
+natural language processing31– 33, and speech
+processing34. In automated sleep analysis, with
+the widespread proliferation of miniature sleep
+sensing technologies, accumulating substantial
+quantities of unlabeled data has become
+increasingly feasible. This development holds the
+potential to furnish extensive datasets for the
+training of SSL models, which are frequently
+structured around an encoder-decoder archi-
+tecture. The encoders transform raw data into a
+compact representation, and decoders recon-
+struct the original data from this representation
+to learn meaningful patterns without explicit
+labels. What does that mean? Consider apre-
+train-then-ﬁne-tune paradigm, the encoder is
+initially trained to acquire useful representations
+(features) for downstream sleep-related tasks,
+such as sleep stage classiﬁcation and sleep spindle
+recognition. Subsequently, those learned enco-
+ders are frozen, and trained/ﬁne-tuned task-
+speciﬁc classiﬁcation layers are updated to cate-
+gorize speciﬁc events of interest within a smaller
+expert-annotated dataset. That approach aims to
+capture fundamental signal characteristics by
+learning to discern high-level semantics (e.g.,
+different patterns in sleep data indicate sleep
+stages, quality, or disturbances) to facilitate
+effective representation learning. Of further
+interest is the use of SSL with domain adaptation
+in integrating those techniques with existing
+frameworks, potentially enhancing the adapt-
+ability and effectiveness of sleep stage classiﬁca-
+tion algorithms across varied data sources and
+environments.
+Harnessing existing SSL approaches
+Various existing framework methodologies like
+SimCLR
+35,M o C o36, SimSiam37, and Barlow
+Twins38, offer universally adaptable frameworks
+that could seamlessly extend into sleep mon-
+itoring, warranting investigations into their efﬁ-
+cacy. For instance, a recent study using
+accelerometer data alone from over 96,000 UK
+Biobank participants has shown the effectiveness
+of SSL for three-stage sleep classiﬁcation and
+achieved an F1 score of 0.573 ± 0.12, representing
+a 7.1% improvement over the baseline model that
+did not incorporate SSL pre-training, as validated
+through internal evaluations
+39.T h i so u t c o m e
+challenges previous assumptions regarding the
+feasibility of sleep stage classi ﬁcation using
+accelerometer data only. That method, crucial in
+a domain with limited labelled data, emphasizes
+the effectiveness of general representations
+learned through SSL for sleep stage classiﬁcation.
+In conclusion, the study by Patterson et al.
+highlighted the vulnerability of basic DL models
+to overﬁtting, particularly when applied to spe-
+ciﬁc datasets, data preprocessing methodologies,
+and PSG annotation styles as demonstrated
+through a single cross-dataset evaluation. The
+effort to accumulate large-scale datasets of sleep
+stages, annotated by experts from raw data
+gathered through wearable devices continues to
+present a signiﬁcant challenge. Nonetheless, DL
+has shown considerable promise in a single
+dataset setting. Hence, using vast amounts of
+Table 1 | Terminology and descriptors used in this editorial
+Terminology Description
+Actigraphy Actigraphy uses a non-invasive wearable device to track rest and activity through movement.
+Deep learning (DL) Deep learning is a subset of machine learning (ML) that uses neural networks with many layers to analyze complex patterns in large
+amounts of data.
+Domain adaptation Domain adaptation is a technique in ML that aims to improve model performance on a target domain by leveraging knowledge from a
+related but different source domain.
+Model overﬁtting Model over ﬁtting in ML occurs when a modelﬁts too closely to the training dataset and cannot generalize to new/unseen data
+Nearables A type of smart object that can enhance the interaction with e.g., people and other smart objects. One notable example is a smartphone
+that can improve the usability and experience of wearing a smart watch.
+Photoplethysmography (PPG) PPG measures capillary blood volume changes by detecting light variations, used for heart rate monitoring.
+Polysomnography (PSG) PSG is the most accurate objective sleep measurement method because it simultaneously assesses multiple physiological parameters,
+including overnight brain activity, and can classify sleep into distinct stages
+Self-supervised learning (SSL) Self-supervised learning trains models on tasks using the data itself to generate supervisory signals for trainingon a task without relying
+on human-provided labels
+Signal-to-noise-ratio (SNR) Signal-to-noise-ratio quanti ﬁes the clarity of a signal in a system by comparing its power to that of the background noise, with a higher
+SNR indicating a clearer signal.
+npj Digital Medicine|            (2024) 7:85 2
+npj |digital medicine Editorial
+unlabeled raw data from wearables and exploring
+sophisticated model architectures to improve
+generalizability, like integrating SSL and domain
+adaptation, offers a promising path for advancing
+long-term sleep assessment.
+Bing Zhai1,G r e gJ .E l d e r2 & Alan Godfrey 1
+1Department of Computer and Information
+Sciences, Northumbria University,
+Newcastle, UK.2Northumbria Sleep Research,
+Department of Psychology, Northumbria
+University, Newcastle upon Tyne, UK.
+e-mail: alan.godfrey@northumbria.ac.uk
+Received: 12 February 2024; Accepted: 22
+March
+2024
+References
+1. Murray, B. J. Subjective and objective assessment of
+hypersomno- lence.Sleep Medicine Clinics15,1 6 7–176 (2020).
+2. Phan, H., Andreotti, F., Cooray, N., Ch´en, O. Y. & De Vos, M.
+Seqsleepnet: end-to-end hierarchical recurrent neural
+network for sequence-to-sequence automatic sleep
+staging. IEEE Trans. Neural Syst. Rehab. Eng.27,
+400– 410 (2019).
+3. Zhai, B., Perez-Pozuelo, I., Clifton, E. A. D., Palotti, J. & Guan,
+Y. Making sense of sleep: multimodal sleep stage
+classiﬁcation in a large, diverse population using movement
+and cardiac sensing.Proc. ACM Interactive, Mobile,
+Wearable Ubiquitous Technol.4,1 – 33 (2020).
+4. Fonseca, P. et al. Sleep stage classiﬁcation with ecg and
+respi- ratory effort.Physiol. Measur.36, 2027 (2015).
+5. Perslev, M. et al. U-sleep: resilient high-frequency sleep
+staging. NPJ Digit. Med.4, 72 (2021).
+6. Xiaoli Chen, R. et al. Racial/ethnic differences in sleep
+disturbances: the multi-ethnic study of atherosclerosis
+(mesa). Sleep 38, 877– 888 (2015).
+7. Quan, S. F. et al. The sleep heart health study: design,
+rationale, and methods.Sleep 20, 1077– 1085 (1997).
+8. Graeber, J. et al. Technology acceptance of digital devices
+for home use: Qualitative results of a mixed methods study.
+Digital Health9, 20552076231181239 (2023).
+9. Arnal, P. J. et al. The dreem headband com- pared to
+polysomnography for electroencephalographic signal
+acquisition and sleep staging.Sleep 43, zsaa097 (2020).
+10. Hsu, C.-Y. et al. Zero-effort in-home sleep and insomnia
+monitoring using radio signals.Proceedings of the ACM on
+Interactive, Mobile, Wear- Able Ubiquitous Technol.1,
+1– 18 (2017).
+11. Yu, B. et al. Wiﬁ-sleep: sleep stage monitoring using
+commodity wi-ﬁ devices. IEEE Internet Things J.8,
+13900– 13913 (2021).
+12. Goodfellow, I., Bengio, Y. & Courville, A.Deep learning. (MIT
+Press, 2016).
+13. Patterson, M. R. et al. 40 years of actigra- phy in sleep
+medicine and current state of the art algorithms.NPJ Digital
+Med. 6, 51 (2023).
+14. Zhai, B., Guan, Y., Catt, M. & Pl¨otz, T. Ubi-sleepnet: Ad-
+vanced multimodal fusion techniques for three-stage sleep
+classiﬁcation using ubiquitous sensing.
+Proceedings of the
+ACM on Interactive, Mobile, Wearable and Ubiquitous
+Technol. 5,1 – 33 (2021).
+15. Ouyang, L. et al. Training language models to follow
+instructions with human feedback.Adv. Neural Inform.
+Process. Syst.35, 27730– 27744 (2022).
+16. Phan, H. & Mikkelsen, K. Automatic sleep staging of eeg
+signals: recent development, challenges, and future
+directions. Physiol. Measur.43, 04TR01 (2022).
+17. Roy, Y. et al. Deep learning-based electroen- cephalography
+analysis: a systematic review.J. Neural Eng.16, 051001 (2019).
+18. Tobaldini, E. et al. Heart rate variability in normal and patho-
+logical sleep.Front. Physiol.4,1 – 11 (2013).
+19. Perez-Pozuelo, I. et al. The future of sleep health: a data-
+driven revolution in sleep science and medicine.NPJ Digit.
+Med. 3, 42 (2020).
+20. Lujan, M. R., Perez-Pozuelo, I. & Grandner, M. A. Past,
+present, and future of multisensory wearable technology to
+monitor sleep and circadian rhythms.Front. Dig. Health3,
+721919 (2021).
+21. Kwon, S., Kim, H. & Yeo, W-H. Recent advances in wearable
+sensors and portable electronics for sleep monitoring.
+Iscience, 24 (2021).
+22. Trinder, J. et al. Autonomic activity during human sleep as a
+function of time and sleep stage.J. Sleep Res.10,
+253– 264 (2001).
+23. Vanoli, E. et al. Heart rate variability during speciﬁc sleep
+stages. Circulation 91, 1918– 1922 (1995).
+24. Stein, P. K. & Pu, Y. Heart rate variability, sleep and sleep
+disorders. Sleep Med. Rev.16,4 7– 66 (2012).
+25. Boudreau, P., Yeh, W. H., Dumont, G. A. & Boivin, D. B.
+Circadian variation of heart rate variability across sleep
+stages. Sleep 36, 1919– 1928 (2013).
+26. Zhao, M., Yue, S., Katabi, D., Jaakkola, T. S. & Bianchi, M. T.
+Learning sleep stages from radio signals: A conditional
+adversarial architecture. InInternational Conference on
+Machine Learning, pages 4100– 4109. (PMLR, 2017).
+27. Heremans, E. R. M. et al. From unsupervised to semi-
+supervised adversarial domain adaptation in
+electroencephalography-based sleep stag- ing.Journal of
+Neural Engineering19, 036044 (2022).
+28. Xiao, Q. et al. Self-supervised learning for sleep stage
+classiﬁcation with predictive and discriminative contrastive
+coding. In
+ICASSP 2021-2021 IEEE International
+Conference on Acoustics, Speech and Signal Processing
+(ICASSP), pages 1290– 1294 (IEEE, 2021).
+29. Banville, H., Chehab, O., Hyv¨arinen, A., En- gemann, D.-A. &
+Gramfort, A. Uncovering the structure of clinical eeg signals with
+self-supervised learning.J. Neural Eng.18, 046020 (2021).
+30. Gidaris, S., Singh, P. & Komodakis, N. Unsupervised
+representation learning by predicting image rotations.arXiv
+preprint arXiv:1803.07728(2018).
+31. Devlin, J., Chang, M-W., Lee, K. & Toutanova, K. Bert:
+Pre-training of deep bidirectional transformers for
+language understanding. arXiv preprint
+arXiv:1810.04805 (2018).
+32. Radford, A. et al. Improving language understanding by
+generative pre-training. (2018).
+33. Radford, A. et al. Language models are unsupervised
+multitask learners.OpenAI blog1, 9 (2019).
+34. Liu, X. et al. Self-supervised learning: generative or
+contrastive. IEEE Trans. Knowledge Data Eng.35,
+857– 876 (2021).
+35. Chen, T., Kornblith, S., Norouzi, M. & Hinton, G. A simple
+framework for contrastive learning of visual representations.
+In International conference on machine learning, pages
+1597– 1607 (PMLR, 2020).
+36. He, K., Fan, H., Wu, Y., Xie, S. & Girshick, R. Mo- mentum
+contrast for unsupervised visual representation
+learning. In Pro- ceedings of the IEEE/CVF conference on
+computer vision and pattern recognition,p a g e s
+9729– 9738 (2020).
+37. Chen, X. & He, K. Exploring simple siamese representation
+learning. InProceedings of the IEEE/CVF conference on
+computer vision and pattern recognition, pages
+15750– 15758 (2021).
+38. Zbontar, J., Jing, L., Misra, I., LeCun, Y. & St´ephane, D.
+Barlow twins: Self-supervised learning via redundancy
+reduction. InInternational Conference on Machine Learning,
+pages 12310– 12320 (PMLR, 2021).
+39. Hang Yuan, T. et al. Self-supervised learning of accelerom-
+eter data provides new insights for sleep and its association
+with mortality.medRxiv (2023).
+Author contributions
+The ﬁrst draft was written by B.Z., G.J.E. and A.G. provided critical
+revisions and approved theﬁnal draft.
+Competing interests
+A.G. is a Deputy Editor of npj Digital Medicine and played no role in
+the internal review or decision to publish this Editorial. The
+remaining authors declare no competing interests.
+Open AccessThis article is licensed under a Creative Commons
+Attribution 4.0 International License, which permits use, sharing,
+adaptation, distribution and reproduction in any medium or
+format, as long as you give appropriate credit to the original
+author(s) and the source, provide a link to the Creative Commons
+licence, and indicate if changes were made. The images or other
+third party material in this article are included in the article’s
+Creative Commons licence, unless indicated otherwise in a
+credit line to the material. If material is not included in the article’s
+Creative Commons licence and your intended use is not
+permitted by statutory regulation or exceeds the permitted use,
+you will need to obtain permission directly from the copyright
+holder. To view a copy of this licence, visithttp://
+creativecommons.org/licenses/by/4.0/
+.
+© The Author(s) 2024
+npj Digital Medicine|            (2024) 7:85 3
+npj |digital medicine Editorial
+
+--- END OF PAPER: s41746-024-01086-9.pdf ---
+
+--- START OF PAPER: sensors-23-04950.pdf ---
+Citation: Toma, T.I.; Choi, S. An
+End-to-End Multi-Channel
+Convolutional Bi-LSTM Network for
+Automatic Sleep Stage Detection.
+Sensors 2023, 23, 4950. https://
+doi.org/10.3390/s23104950
+Academic Editor: Yvonne Tran
+Received: 26 April 2023
+Revised: 17 May 2023
+Accepted: 19 May 2023
+Published: 21 May 2023
+Copyright: © 2023 by the authors.
+Licensee MDPI, Basel, Switzerland.
+This article is an open access article
+distributed under the terms and
+conditions of the Creative Commons
+Attribution (CC BY) license (https://
+creativecommons.org/licenses/by/
+4.0/).
+sensors
+Article
+An End-to-End Multi-Channel Convolutional Bi-LSTM
+Network for Automatic Sleep Stage Detection
+Tabassum Islam Toma
+ and Sunwoong Choi *
+School of Electrical Engineering, Kookmin University, Seoul 02707, Republic of Korea;
+tabassum2485@kookmin.ac.kr
+* Correspondence: schoi@kookmin.ac.kr
+Abstract: Sleep stage detection from polysomnography (PSG) recordings is a widely used method
+of monitoring sleep quality. Despite signiﬁcant progress in the development of machine-learning
+(ML)-based and deep-learning (DL)-based automatic sleep stage detection schemes focusing on
+single-channel PSG data, such as single-channel electroencephalogram (EEG), electrooculogram
+(EOG), and electromyogram (EMG), developing a standard model is still an active subject of research.
+Often, the use of a single source of information suffers from data inefﬁciency and data-skewed
+problems. Instead, a multi-channel input-based classiﬁer can mitigate the aforementioned challenges
+and achieve better performance. However, it requires extensive computational resources to train the
+model, and, hence, a tradeoff between performance and computational resources cannot be ignored.
+In this article, we aim to introduce a multi-channel, more speciﬁcally a four-channel, convolutional
+bidirectional long short-term memory (Bi-LSTM) network that can effectively exploit spatiotemporal
+features of data collected from multiple channels of the PSG recording (e.g., EEG Fpz-Cz, EEG Pz-Oz,
+EOG, and EMG) for automatic sleep stage detection. First, a dual-channel convolutional Bi-LSTM
+network module has been designed and pre-trained utilizing data from every two distinct channels
+of the PSG recording. Subsequently, we have leveraged the concept of transfer learning circuitously
+and have fused two dual-channel convolutional Bi-LSTM network modules to detect sleep stages. In
+the dual-channel convolutional Bi-LSTM module, a two-layer convolutional neural network has been
+utilized to extract spatial features from two channels of the PSG recordings. These extracted spatial
+features are subsequently coupled and given as input at every level of the Bi-LSTM network to extract
+and learn rich temporal correlated features. Both Sleep EDF-20 and Sleep EDF-78 (expanded version
+of Sleep EDF-20) datasets are used in this study to evaluate the result. The model that includes an
+EEG Fpz-Cz + EOG module and an EEG Fpz-Cz + EMG module can classify sleep stage with the
+highest value of accuracy (ACC), Kappa (Kp), and F1 score(e.g., 91.44%, 0.89, and 88.69%, respectively)
+on the Sleep EDF-20 dataset. On the other hand, the model consisting of an EEG Fpz-Cz + EMG
+module and an EEG Pz-Oz + EOG module shows the best performance (e.g., the value of ACC, Kp,
+and F1 scoreare 90.21%, 0.86, and 87.02%, respectively) compared to other combinations for the Sleep
+EDF-78 dataset. In addition, a comparative study with respect to other existing literature has been
+provided and discussed in order to exhibit the efﬁcacy of our proposed model.
+Keywords: automatic sleep stage detection; convolutional neural network (CNN); bidirectional long
+short-term memory (Bi-LSTM); electroencephalogram (EEG); electrooculogram (EOG)
+1. Introduction
+Sleep quality assessment via sleep staging is very essential for the human body in
+order to maintain good health and well-being as any irregularities in the sleep cycle may
+render pernicious consequences to physical and mental health, including acute sleep apnea,
+exhaustion, a lack of focus, or metabolic issues such as diabetes and obesity [1,2]. In the
+long run, these can increase the chance of developing a variety of other illnesses. Therefore,
+several methods conducted by a human specialist were developed based on overnight
+Sensors 2023, 23, 4950. https://doi.org/10.3390/s23104950 https://www.mdpi.com/journal/sensors
+Sensors 2023, 23, 4950 2 of 16
+polysomnography (PSG) signals that electroencephalogram (EEG), an electrooculogram
+(EOG), and an electromyogram (EMG), which have been in use for a long time. Most
+recently, these traditional manually operated methods have been replaced by automatic
+detection methods following the guidelines of the American Academy of Sleep Medicine
+(AASM) or Rechtschaffen and Kales (R&K) as the manual sleep stage scoring is tedious,
+time-consuming, expensive, and sensitive to human errors [3,4].
+In recent years, the overwhelming progress in the ﬁelds of machine learning (ML) and
+deep learning (DL) has accelerated its expansion in diverse application domains ranging
+from computer vision to natural language processing followed by predictive analysis,
+time-series forecasting, and digital healthcare [5–8]. Motivated by these unprecedented
+successes in different domains, ML/DL-based schemes have received considerable attention
+from the sleep research community. More speciﬁcally, DL-based methods, which include
+convolutional neural networks (CNN), recurrent neural networks (RNN), and a variant of
+RNNs called long short-term memory (LSTM) network, have been extensively explored
+to design automatic sleep scoring because of their powerful capabilities of capturing
+spatial and temporal features from the complex data distribution and mapping them in
+decision making with higher accuracy without manual intervention [9–27]. In addition, the
+ever-growing annotated sleep databases and their availability has also stimulated sleep
+researchers to design and develop novel sleep scoring methods and to test under powerful
+DL frameworks.
+Despite comprehensive studies on DL-based automatic sleep staging modeling, none
+of them have depicted gold standard performance (e.g., reliable and robust results) because
+of several drawbacks that include the use of single-channel data, the absence of of potential
+features, data variability, and data inefﬁciency [13,28,29]. In order to improve performance,
+researchers have adopted data fusion or feature fusion techniques from multiple data
+channels, mostly from two distinct channels of the PSG recording. Although a signiﬁcant
+improvement has been achieved, designing multi-channel DL-based architecture requires a
+large amount of computational resources leading to a high resource cost and an increased
+training time of the model. In addition, the choice of two distinct channel’s data randomly
+can lead to poor performance. In this article, we aim to develop a multi-channel convo-
+lutional Bi-LSTM network model that will take input data from multiple channels of the
+PSG recording (e.g., EEG Fpz-Cz, EEG Pz-Oz, EOG, and EMG) and exploit the extracted
+multi-channel spatiotemporal data features for automatic sleep staging. We have employed
+the transfer-learning concept circuitously to reduce the burden of a high computational
+cost and reduce overall training time. First, a dual channel two-layer CNN-incorporated
+Bi-LSTM network module has been designed to learn the extraction of spatiotemporal
+features from the data of any two distinct channels of the PSG recording. Instead of LSTM
+layers, Bi-LSTM layers are utilized in the proposed model because Bi-LSTM layers are
+capable of addition training, which utilizes input data twice for training (i.e., ﬁrst from left
+to right and then from right to left), and, hence, are prone to achieve better performance [30].
+However, two such modules are concatenated later and trained following the principle of
+transfer learning to learn the extraction of features from four channels’ data and to fuse
+those features to make predictions with higher accuracy. The main contributions of this
+paper are summarized as follows:
+■ This paper proposes a multi-channel, more speciﬁcally a four-channel, convolutional
+Bi-LSTM network for automatic sleep scoring with high accuracy.
+■ In the proposed model, a dual-channel two-layer CNN-incorporated Bi-LSTM net-
+work module is designed and pre-trained utilizing data from any two distinct channel
+signals of the PSG recording.
+■ Once the pre-training is ﬁnished and the dual channel module is validated, using
+two such pre-trained modules, a four-channel model has been developed, and the
+concept of transfer learning is employed circuitously to reduce the burden of a high
+computational cost and reduce the overall training time.
+Sensors 2023, 23, 4950 3 of 16
+■ In the dual-channel module, convolutional layers are employed to extract spatial
+features from two channel PSG recordings, and these extracted spatial features are
+coupled with the input at every level of the BI-LSTM network to extract and learn rich
+temporally correlated features.
+■ Finally, we have evaluated the performances of the proposed model on the Sleep
+EDF-20 and Sleep EDF-78 datasets. In addition, we compared the performance with
+other existing works.
+2. Related Works
+In recent years, different types of DL-based schemes have been developed in sleep
+staging to avoid the complexity associated with the establishment of mathematical models
+and the extraction of handcrafted features. Cui et al. proposed a CNN-based automatic
+sleep stage classiﬁcation method that takes 30 s ﬁne-grained segments of multi-channel
+EEG signals in multiscale entropy analysis as a time-series input [9]. In order to construct
+input time series based on the ﬁne-grained segments, the authors of [ 9] reorganized the
+posterior and current segments, and the size of the time series was decided based on the
+scale chosen depending on the ﬁne-grained segments. A 14-layer CNN classiﬁer was
+developed in [10] for automatic sleep scoring based on single-channel EEG. The model also
+takes as input the 30 s epoch to be classiﬁed along with two preceding epochs and one
+following epoch for temporal context. A Deep Learning (DL) model named DeepSleepNet
+was developed for the automatic classiﬁcation of sleep stages from single-channel, raw
+electroencephalogram (EEG) data [11]. DeepSleepNet uses CNNs to extract time-invariant
+features and bidirectional long short-term memory to learn transition rules among sleep
+stages directly from EEG epochs. This approach effectively captures temporal information
+and enables the identiﬁcation of the next sleep stage. One study [ 12] suggested a frame-
+work for autonomous sleep staging based on CNNs and then offered a straightforward
+yet effective CNN architecture to power the system. The authors of the paper stated that
+their combined approach for classiﬁcation and prediction has the ability to overcome the
+limitations of the traditional classiﬁcation method while also enhancing the accuracy of
+the model. In [13], the authors integrated deep learning with complex networks to present
+a novel temporal-graph-fused dual-input CNN technique to identify different stages of
+sleep using the Sleep-EDF database. Considering data variability and data inefﬁciency
+as two of the bottlenecks towards effective model development, a deep transfer learning
+approach introduced in [14] can transfer information from a large dataset to a small cohort
+for autonomous sleep staging. However, learning from raw polysomnography signals or
+time-frequency image representations simultaneously is challenging and not well explored.
+XSleepNet, a sequence-to-sequence sleep staging model, is proposed in [15] and can learn a
+combined representation from both raw signals and time-frequency images. The perfor-
+mance of any automatic sleep stage classiﬁcation can be limited on a speciﬁc PSG montage
+and, hence, shows very poor performance on new data with different demographics. To
+overcome these challenges, a new deep learning model called RobustSleepNet has been
+introduced in [16]. It can handle any PSG montage and is capable of accurate sleep stage
+classiﬁcation even on unseen data with different demographic characteristics. An end-to-
+end network model combined with a multi-branch CNN and a residual attention technique
+has been proposed in [ 17]. The authors have ensured the end-to-end processing of the
+multi-channel sleep signals in their proposed scheme and demonstrated that this approach
+can achieve improved model classiﬁcation accuracy. A temporal CNN incorporated with
+a “Conditional Random Field” layer has been proposed in order to achieve improved
+performance [18]. The authors also added a data augmentation technique to enhance the
+CNN’s training, which has auxiliary effects. Using single-channel EEG inputs, the au-
+thors present a unique attention-based deep learning architecture in another study dubbed
+AttnSleep to categorize different stages of sleep [ 19]. The proposed architecture begins
+with a feature extraction module based on an adaptive feature recalibration (AFR) and a
+multi-resolution convolutional neural network (MRCNN). Another study [ 20] suggests
+
+[... MIDDLE PAGES OMITTED ...]
+
+Sensors 2023, 23, 4950 15 of 16
+3. Iber, C.; Ancoli-Israel, S.; Chesson, A.; Quan, S.F. The AASM Manual for the Scoring of Sleep and Associated Events; American
+Academy of Sleep Medicine: Westchester, IL, USA, 2007.
+4. Rechtschaffen, A.; Kales, A. A Manual Standardized Terminology, Techniques, and Scoring System for Sleep Stages of Human Subjects;
+US Public Health Service, US Government Printing Ofﬁce: Washington, DC, USA, 1968.
+5. Faisal, F.; Nishat, M.M.; Mahbub, M.A.; Shawon, M.M.I.; Alvi, M.M.-U.-H. COVID-19 and its impact on school closures: A
+predictive analysis using machine learning algorithms. In Proceedings of the 2021 International Conference on Science &
+Contemporary Technologies (ICSCT), Dhaka, Bangladesh, 5–7 August 2021; pp. 1–6.
+6. Lim, B.; Zohren, S. Time-series forecasting with deep learning: A survey. Philos. Trans. R. Soc. A2021, 379, 20200209. [CrossRef]
+7. Esteva, A.; Robicquet, A.; Ramsundar, B.; Kuleshov, V .; DePristo, M.; Chou, K.; Cui, C.; Corrado, G.; Thrun, S.; Dean, J. A guide to
+deep learning in healthcare. Nat. Med.2019, 25, 24–29. [CrossRef]
+8. Toma, T.I.; Choi, S. A Parallel Cross Convolutional Recurrent Neural Network for Automatic Imbalanced ECG Arrhythmia
+Detection with Continuous Wavelet Transform. Sensors 2022, 22, 7396. [CrossRef] [PubMed]
+9. Cui, Z.H.; Zheng, X.W.; Shao, X.X.; Cui, L.Z. Automatic sleep stage classiﬁcation based on convolutional neural network and
+ﬁne-grained segments. Complexity 2018, 2018, 9248410. [CrossRef]
+10. Sors, A.; Bonnet, S.; Mirek, S.; Vercueil, L.; Payen, J.F. A convolutional neural network for sleep stage scoring from raw
+single-channel EEG. Biomed. Signal Process.2018, 42, 107–114. [CrossRef]
+11. Supratak, A.; Dong, H.; Wu, C.; Guo, Y. DeepSleepNet: A Model for Automatic Sleep Stage Scoring Based on Single-Channel
+EEG. IEEE Trans. Neural Syst. Rehabil. Eng.2017, 25, 1998–2008. [CrossRef] [PubMed]
+12. Phan, H.; Andreotti, F.; Cooray, N.; Chen, O.Y.; De Vos, M. Joint classiﬁcation and prediction CNN framework for automatic sleep
+stage classiﬁcation. IEEE Trans. Biomed. Eng.2019, 66, 1285–1296. [CrossRef] [PubMed]
+13. Cai, Q.; Gao, Z.; An, J.; Gao, S.; Grebogi, C. A Graph-Temporal Fused Dual-Input Convolutional Neural Network for Detecting
+Sleep Stages from EEG Signals. IEEE Trans. Circuits Syst. II Express Briefs2021, 68, 777–781. [CrossRef]
+14. Phan, H.; Chen, O.Y.; Koch, P .; Lu, Z.; McLoughlin, I.; Mertins, A. Towards More Accurate Automatic Sleep Staging via Deep
+Transfer Learning. IEEE Trans. Biomed. Eng.2021, 68, 1787–1798. [CrossRef]
+15. Phan, H.; Chen, O.Y.; Tran, M.C.; Koch, P .; Mertins, A.; Vos, M.D. XSleepNet. Multi-view sequential model for automatic sleep
+staging. IEEE Trans. Pattern Anal. Mach. Intell.2021, 44, 5903–5915. [CrossRef]
+16. Guillot, A.; Thorey, V . RobustSleepNet. Transfer Learning for Automated Sleep Staging at Scale.IEEE Trans. Neural Syst. Rehabil.
+Eng. 2021, 29, 1441–1451. [CrossRef] [PubMed]
+17. Tianqi, Z.; Wei, L.; Feng, Y. Multi-branch convolutional neural network for automatic sleep stage classiﬁcation with embedded
+stage reﬁnement and residual attention channel fusion. Sensors 2020, 20, 6592.
+18. Khalili, E.; Asl, B.M. Automatic sleep stage classiﬁcation using temporal convolutional neural network and new data augmentation
+technique from raw single-channel EEG. Comput. Meth. Programs Biomed.2021, 204, 106063. [CrossRef]
+19. Eldele, E.; Chen, Z.; Liu, C.; Wu, M.; Kwoh, C.K.; Li, X.; Guan, C. An attention-based deep learning approach for sleep stage
+classiﬁcation with single-channel EEG. IEEE Trans. Neural Syst. Rehabil. Eng.2021, 29, 809–818. [CrossRef]
+20. Zhang, X.; Xu, M.; Li, Y.; Su, M.; Xu, Z.; Wang, C.; Kang, D.; Li, H.; Mu, X.; Ding, X.; et al. Automated multi-model deep neural
+network for sleep stage scoring with unﬁltered clinical data. Sleep Breath.2020, 24, 581–590. [CrossRef] [PubMed]
+21. Shen, H.; Ran, F.; Xu, M.; Guez, A.; Li, A.; Guo, A. An Automatic Sleep Stage Classiﬁcation Algorithm Using Improved Model
+Based Essence Features. Sensors 2020, 20, 4677. [CrossRef]
+22. Michielli, N.; Acharya, U.R.; Molinari, F. Cascaded LSTM recurrent neural network for automated sleep stage classiﬁcation using
+single-channel EEG signals. Comput. Biol. Med.2019, 106, 71–81. [CrossRef]
+23. Mousavi, S.; Afghah, F.; Acharya, R. SleepEEGNet: Automated sleep stage scoring with sequence to sequence deep learning
+approach. PLoS ONE2019, 14, e0216456. [CrossRef]
+24. Sokolovsky, M.; Guerrero, F.; Paisarnsrisomsuk, S.; Ruiz, C.; Alvarez, S.A. Deep Learning for Automated Feature Discovery and
+Classiﬁcation of Sleep Stages. IEEE/ACM Trans. Comput. Biol. Bioinform.2020, 17, 1835–1845. [CrossRef]
+25. Wei, Y.; Qi, X.; Wang, H.; Liu, Z.; Wang, G.; Yan, X. A Multi-Class Automatic Sleep Staging Method Based on Long Short-Term
+Memory Network Using Single-Lead Electrocardiogram Signals. IEEE Access2019, 7, 85959–85970. [CrossRef]
+26. Urtnasan, E.; Park, J.-U.; Joo, E.Y.; Lee, K.-J. Deep Convolutional Recurrent Model for Automatic Scoring Sleep Stages Based on
+SingleLead ECG Signal. Diagnostics 2022, 12, 1235. [CrossRef] [PubMed]
+27. Toma, T.I.; Choi, S. An End-to-End Convolutional Recurrent Neural Network with Multi-Source Data Fusion for Sleep Stage
+Classiﬁcation. In Proceedings of the 2023 International Conference on Artiﬁcial Intelligence in Information and Communication
+(ICAIIC), Bali, Indonesia, 20–23 February 2023; pp. 564–569.
+28. Durrant-Whyte, H.F. Sensor models and multisensor integration. In Autonomous Robot Vehicles; Springer: New York, NY, USA,
+1990; pp. 73–89.
+29. Abdollahpour, M.; Rezaii, T.Y.; Farzamnia, A.; Saad, I. Transfer Learning Convolutional Neural Network for Sleep Stage
+Classiﬁcation Using Two-Stage Data Fusion Framework. IEEE Access2020, 8, 180618–180632. [CrossRef]
+30. Siami-Namini, S.; Tavakoli, N.; Namin, A.S. The Performance of LSTM and BiLSTM in Forecasting Time Series. In Proceedings of
+the 2019 IEEE International Conference on Big Data (Big Data), Los Angeles, CA, USA, 9–12 December 2019; pp. 3285–3292.
+31. Kemp, B.; Zwinderman, A.H.; Tuk, B.; Kamphuisen, H.A.; Oberye, J.J. Analysis of a sleep-dependent neuronal feedback loop: The
+slow-wave microcontinuity of the EEG. IEEE. Trans. Biomed. Eng.2000, 47, 1185–1194. [CrossRef]
+Sensors 2023, 23, 4950 16 of 16
+32. Goldberger, A.L.; Amaral, L.A.N.; Glass, L.; Hausdorff, J.M.; Ivanov, P .C.; Mark, R.G.; Mietus, J.E.; Moody, G.B.; Peng, C.-K.;
+Stanley, H.E. Physiobank, physiotoolkit, and physionet: Components of a new research resource for complex physiologic signals.
+Circulation 2000, 101, e215–e220. [CrossRef]
+33. Sola, J.; Sevilla, J. Importance of input data normalization for the application of neural networks to complex industrial problems.
+IEEE Trans. Nuclear Sci.1997, 44, 1464–1468. [CrossRef]
+34. Alam, M.M.; Rahman, M.H.; Ahmed, M.F.; Chowdhury, M.Z.; Jang, Y.M. Deep learning based optimal energy management for
+photovoltaic and battery energy storage integrated home micro-grid system. Sci. Rep.2022, 12, 15133. [CrossRef] [PubMed]
+35. Wang, P .; Jiang, A.; Liu, X.; Shang, J.; Zhang, L. LSTM-Based EEG Classiﬁcation in Motor Imagery Tasks.IEEE Trans. Neural Syst.
+Rehabil. Eng.2018, 26, 2086–2095. [CrossRef]
+Disclaimer/Publisher’s Note: The statements, opinions and data contained in all publications are solely those of the individual
+author(s) and contributor(s) and not of MDPI and/or the editor(s). MDPI and/or the editor(s) disclaim responsibility for any injury to
+people or property resulting from any ideas, methods, instructions or products referred to in the content.
+
+--- END OF PAPER: sensors-23-04950.pdf ---
+
+--- START OF PAPER: sensors-23-05696-v2.pdf ---
+Citation: Alajlan, N.N.; Ibrahim,
+D.M. DDD TinyML: A TinyML-Based
+Driver Drowsiness Detection Model
+Using Deep Learning. Sensors 2023,
+23, 5696. https://doi.org/10.3390/
+s23125696
+Academic Editor: Kary Främling
+Received: 12 May 2023
+Revised: 7 June 2023
+Accepted: 14 June 2023
+Published: 18 June 2023
+Copyright: © 2023 by the authors.
+Licensee MDPI, Basel, Switzerland.
+This article is an open access article
+distributed under the terms and
+conditions of the Creative Commons
+Attribution (CC BY) license (https://
+creativecommons.org/licenses/by/
+4.0/).
+sensors
+Article
+DDD TinyML: A TinyML-Based Driver Drowsiness Detection
+Model Using Deep Learning
+Norah N. Alajlan 1
+ and Dina M. Ibrahim 1,2, *
+1 Department of Information Technology, College of Computer, Qassim University,
+Buraydah 51452, Saudi Arabia; 411200285@qu.edu.sa
+2 Department of Computers and Control Engineering, Faculty of Engineering, Tanta University,
+Tanta 31733, Egypt
+* Correspondence: d.hussein@qu.edu.sa or dina.mahmoud@f-eng.tanta.edu.eg
+Abstract: Driver drowsiness is one of the main causes of trafﬁc accidents today. In recent years,
+driver drowsiness detection has suffered from issues integrating deep learning (DL) with Internet-of-
+things (IoT) devices due to the limited resources of IoT devices, which pose a challenge to fulﬁlling
+DL models that demand large storage and computation. Thus, there are challenges to meeting
+the requirements of real-time driver drowsiness detection applications that need short latency and
+lightweight computation. To this end, we applied Tiny Machine Learning (TinyML) to a driver
+drowsiness detection case study. In this paper, we ﬁrst present an overview of TinyML. After
+conducting some preliminary experiments, we proposed ﬁve lightweight DL models that can be
+deployed on a microcontroller. We applied three DL models: SqueezeNet, AlexNet, and CNN. In
+addition, we adopted two pretrained models (MobileNet-V2 and MobileNet-V3) to ﬁnd the best
+model in terms of size and accuracy results. After that, we applied the optimization methods to DL
+models using quantization. Three quantization methods were applied: quantization-aware training
+(QAT), full-integer quantization (FIQ), and dynamic range quantization (DRQ). The obtained results
+in terms of the model size show that the CNN model achieved the smallest size of 0.05 MB using the
+DRQ method, followed by SqueezeNet, AlexNet MobileNet-V3, and MobileNet-V2, with 0.141 MB,
+0.58 MB, 1.16 MB, and 1.55 MB, respectively. The result after applying the optimization method
+was 0.9964 accuracy using DRQ in the MobileNet-V2 model, which outperformed the other models,
+followed by the SqueezeNet and AlexNet models, with 0.9951 and 0.9924 accuracies, respectively,
+using DRQ.
+Keywords: TinyML; deep learning; IoT; driver drowsiness detection
+1. Introduction
+Driver drowsiness is deﬁned as a state of sleepiness when the driver needs to rest,
+and it can cause symptoms that have a great impact on the performance of tasks, such
+as intermittent lack of awareness, slowed response time, or microsleeps. While driving,
+these symptoms are highly dangerous, as they greatly increase the odds of drivers missing
+exits or road signs, drifting into other lanes, or even crashing their vehicle, causing an
+accident [1–3]. According to the American Automobile Association (AAA), the Foundation
+for Trafﬁc Safety in the United States reported that driver drowsiness was responsible for
+23.5% of all automobile crashes recorded in 2015; 16.5% were fatal crashes, and 7% were
+non-fatal crashes [4]. Recently, many researchers have proposed systems to be installed in
+cars to detect driver drowsiness, motivated by the urgent need to limit the number of trafﬁc
+crashes related to driver drowsiness. Different approaches have been used in research
+to detect drivers’ drowsiness, including physical features, physiological features, vehicle-
+based implementations, and hybrid approaches [3]. The physical features approach is the
+most frequently used to detect drivers’ drowsiness, using features such as eye tracking,
+yawning, head position, and detecting facial landmarks to detect drowsiness [3].
+Sensors 2023, 23, 5696. https://doi.org/10.3390/s23125696 https://www.mdpi.com/journal/sensors
+Sensors 2023, 23, 5696 2 of 35
+Many applications integrate DL with IoT devices, including driver drowsiness detec-
+tion systems in smart vehicles. Driver drowsiness detection is an application that faces
+challenges once DL is integrated with IoT devices. In particular, detecting drowsiness
+using videos or images poses several challenges. The authors of [5] performed an exten-
+sive survey on driver drowsiness detection systems, and they reported that DL learning
+models have high computational costs and require a lot of training time. Furthermore, they
+required a large quantity of data for quality predictions. However, in [6], the researchers
+recommended the use of lightweight sensors or the analysis of biological signals based on
+video data to maintain a high accuracy performance.
+Several survey and review studies that integrated DL models with IoT devices in driver
+drowsiness detection systems [5–8] have reported that the major challenge is training the
+DL models, in that DL has a complex architecture and is heavyweight. The approximate
+range of the DL model size in the literature on driver drowsiness detection is from 10 MB to
+54 MB. This poses a challenge to deployment on IoT devices that have resource constraints,
+such as smartphones or Raspberry Pi, which are commonly used in detecting drivers’
+drowsiness, as these devices have limited battery energy capacity, small memory size, and
+limited processor capacity. On the other hand, some studies have used devices that have
+resource constraints but deployed the DL models to a cloud-based platform, which also
+poses challenges in terms of latency.
+To tackle these challenges, a new and emerging technology called Tiny Machine
+Learning (TinyML) has paved the way to meet the challenges of integrating DL with IoT
+devices. TinyML can be deﬁned as an integration of two concepts: machine learning or deep
+learning and Internet-of-things devices. TinyML technology enables the deployment of DL
+models on resource-constrained devices powered by microcontrollers. Microcontrollers
+have low-cost boards equipped with limited computation, extremely low power (mW
+range and below), and small memory without sacriﬁcing accuracy [9].
+To this end, the aim of this research was to apply TinyML to a driver drowsiness
+detection case in order to overcome the challenge of integrating DL with IoT devices by
+producing lightweight DL models with a few kilobytes and, thus, enable their deployment
+on IoT devices that have resource constraints, such as microcontrollers. In this work,
+we implemented ﬁve lightweight DL models; we developed three DL models—namely,
+SqueezeNet, AlexNet, and CNN models—and adopted two pretrained models (MobileNet-
+V2 and MobileNet-V3). After that, we executed the optimization methods to reduce the
+size of the DL models. Two quantization methods were used—namely, post-training
+quantization (PTQ) and quantization-aware training (QAT). Next, we converted the DL
+models to TensorFlow Lite (TF Lite) format and used the interpreter to evaluate them.
+The rest of this paper is organized as follows: Section 2 presents an overview of
+TinyML, with mentions of its deﬁnition and advantages. Section 3 summarizes the related
+work on driver drowsiness detection. In Section 4, our research methodology approach
+is demonstrated. Section 5 presents the implementation and testing of our methodology.
+Section 6 presents the discussion and comparison of the results. Finally, Section 7 illustrates
+the conclusions.
+2. TinyML Overview
+Tiny machine learning (TinyML) is an emerging ﬁeld that culminates in many inven-
+tions and leads to the rapid growth of IoT ﬁelds, for example, the smart environment, smart
+transportation, autonomous driving, etc. TinyML is an alternative paradigm that allows
+deep learning tasks to be implemented locally on ultra-low-power devices that are typically
+under a milliwatt. Thus, TinyML allows for real-time analyzing and interpretation of data,
+which translates to massive advantages in terms of latency, privacy, and cost [10,11]. The
+primary goal of TinyML is to improve the adequacy of deep learning systems by requir-
+ing less computational power and fewer data, which facilitates the giant edge artiﬁcial
+intelligence (AI) market and the IoT [11]. According to the universal tech market advisory
+company, ABI Research [12,13], a total of 2.5 billion devices with a TinyML chipset are
+Sensors 2023, 23, 5696 3 of 35
+expected to be shipped in 2030. These devices focus on advanced automation, low cost,
+low latency in transmitting data, and ultra-power-efﬁcient AI chipsets. The chipsets are
+known as intelligent IoT (AIoT) or embedded AI, as they perform AI inference almost fully
+on the board, whereas in the training phase of these devices, they continue to depend on
+external resources, such as gateways, on-premises servers, or the cloud.
+According to the authors of the book on TinyML [9], TinyML is deﬁned as “machine
+learning aware architectures, frameworks, techniques, tools, and approaches which are
+capable of performing on-device analytics for a variety of sensing modalities (vision, audio,
+speech, motion, chemical, physical, textual, cognitive) at an mW (or below) power range
+setting while targeting predominately battery-operated embedded edge devices suitable
+for implementation in the large scale use cases preferable in the IoT or wireless sensor
+network domain” [14]. A common deﬁnition of TinyML is the implementation of a Neural
+Network model on a Microcontroller or similar devices with a power capacity of less than
+one mW [15].
+TinyML is made up of three main elements (i) hardware; (ii) software; and (iii) algo-
+rithms. The hardware can comprise IoT devices with or without hardware accelerators,
+while these devices can be based on analog computing, in-memory computing, or neu-
+romorphic computing for a better learning experience. Microcontroller units (MCUs) are
+considered ideal hardware platforms for TinyML due to their speciﬁcations [ 14]. A mi-
+crocontroller is typically small ( ∼1 cm), low cost (around 1 USD), and has low power
+(1 mW) [11,16]. The microcontroller chip combines a CPU, data, program memory (ﬂash
+memory and RAM), and a series of input/output peripherals. Microcontrollers are used
+worldwide as most of the desirable characteristics for hardware can be found in these
+devices. Their MCUs’ clock speed ranges from 8 MHz to about 500 MHz, while RAM
+ranges from 8 KB to 320 KB, and ﬂash memory ranges from 32 KB to 2 MB. Overall, TinyML
+uses low-cost devices while it efﬁciently consumes power and achieves a high level of per-
+formance [17]. In terms of Software, TinyML has recently attracted the interest of industry
+giants. For instance, Google has released the TensorFlow Lite (TFLite) platform, which
+allows neural network (NN) models to be run on IoT devices [ 18]. Likewise, Microsoft
+has released EdgeML [ 19], whereas ARM [ 20,21] has published an open-source library
+for Cortex-M processors that increase the NN performance and is known as the Cortex
+microcontroller software interface standard neural network (CMSIS-NN). In addition, a
+new package called X-Cube-AI [ 21] has been released to execute deep learning models
+on STM 32-bit microcontrollers [ 22]. Algorithms such as a deep learning algorithm for
+a TinyML system should be small (only a few KB). This is by using model compression
+techniques to reduce the deep learning model size to enable deployment on IoT devices
+with constrained resources [14].
+TinyML achieved successful performance in many ﬁelds. It was used for a variety of
+purposes, including autonomous small cars, trafﬁc management, sign language recognition,
+handwriting analysis, medical face mask detection, the environment, and more. [14,23].
+3. Related Work
+Several studies have applied various deep learning models, such as CNN, RNN, VGG-
+16, and AlexNet, to detect driver drowsiness from videos and images captured on IoT
+devices. For instance, the study in [24] proposed a real-time drowsiness detection system
+by developing a Sober drive system using an android smartphone. The authors identiﬁed
+the blink rate and eye status, with a back propagation neural network (BPNN) used to
+classify the eyes status as closed or open. The dataset was created by the authors using ﬁve
+subjects with 60 open-eye images and 60 closed-eye images. The result was 95% detection
+accuracy in good conditions, but accuracy fell under low illumination and when drivers
+were wearing glasses.
+The authors of [25] used various deep-learning models to detect whether drivers were
+drowsy or non-drowsy. They applied the public NTH drowsy driver detection (NTHU-
+DDD) video dataset [13] that contained driving recordings of 36 subjects of different races
+
+[... MIDDLE PAGES OMITTED ...]
+
+Sensors 2023, 23, 5696 34 of 35
+33. Mansur, V .; Shambavi, K. Highway Drivers Drowsiness Detection System Model with R-Pi and CNN technique. In Proceedings of
+the 2021 12th International Conference on Computing Communication and Networking Technologies, ICCCNT 2021, Kharagpur,
+India, 6–8 July 2021. [CrossRef]
+34. Filipe, J.; Ghosh, A.; Prates, R.O.; Zhou, L. Real-Time Driver Drowsiness Detection Using GRU with CNN Features. In Proceedings
+of the CVIP 2020: 5th International Conference on Computer Vision and Image Processing, Prayagraj, India, 4–6 December 2020;
+pp. 514–526. [CrossRef]
+35. Phan, A.-C.; Nguyen, N.-H.; Trieu, T.-N.; Phan, T.-C. An Efﬁcient Approach for Detecting Driver Drowsiness Based on Deep
+Learning. Appl. Sci. 2021, 11, 8441. [CrossRef]
+36. Bai, J.; Yu, W.; Xiao, Z.; Havyarimana, V .; Regan, A.C.; Jiang, H.; Jiao, L. Two-Stream Spatial–Temporal Graph Convolutional
+Networks for Driver Drowsiness Detection. IEEE Trans. Cybern. 2021, 52, 13821–13833. [CrossRef]
+37. I, S.S.; Ramli, R.; Azri, M.A.; Aliff, M.; Mohammad, Z. Raspberry Pi Based Driver Drowsiness Detection System Using Con-
+volutional Neural Network (CNN). In Proceedings of the 2022 IEEE 18th International Colloquium on Signal Processing &
+Applications (CSPA), Selangor, Malaysia, 12 May 2022; pp. 30–34. [CrossRef]
+38. Ganguly, B.; Dey, D.; Munshi, S. An Integrated System for Drivers’ Drowsiness Detection Using Deep Learning Frameworks. In
+Proceedings of the IEEE VLSI DCS 2022: 3rd IEEE Conference on VLSI Device, Circuit and System, Kolkata, India, 26–27 February
+2022; pp. 55–59. [CrossRef]
+39. Patel, P .P .; Pavesha, C.L.; Sabat, S.S.; More, S.S. Deep Learning based Driver Drowsiness Detection. In Proceedings of the 2022
+International Conference on Applied Artiﬁcial Intelligence and Computing (ICAAIC), Salem, India, 9–11 May 2022; pp. 380–386.
+[CrossRef]
+40. ¸ Safak, E.; Dogru, I.; Bari¸ sçi, N.; Toklu, S. IoT based mobile driver drowsiness detection using deep learning.J. Fac. Eng. Archit.
+Gazi Univ. 2022, 37, 1869–1881. [CrossRef]
+41. Google. Google Colab. Available online: https://colab.research.google.com/notebooks/intro.ipynb (accessed on 22 February
+2023).
+42. NumPy. Available online: https://numpy.org (accessed on 22 February 2023).
+43. Bisong, E. Building Machine Learning and Deep Learning Models on Google Cloud Platform ; Apress: Berkeley, CA, USA, 2019.
+[CrossRef]
+44. Matplotlib—Visualization with Python. Available online: https://matplotlib.org (accessed on 22 February 2023).
+45. Pandas—Python Data Analysis Library. Available online: https://pandas.pydata.org (accessed on 22 February 2023).
+46. Scikit-Learn. Available online: https://scikit-learn.org/stable/ (accessed on 22 February 2023).
+47. Google. TensorFlow. Available online: https://www.tensorﬂow.org (accessed on 22 February 2023).
+48. Google. TensorFlow Lite. Available online: https://www.tensorﬂow.org/lite/models/convert/ (accessed on 22 February 2023).
+49. Google. TensorFlow Lite for Microcontrollers. Available online: https://www.tensorﬂow.org/lite/microcontrollers (accessed on
+22 February 2023).
+50. Abtahi, S.; Omidyeganeh, M.; Shirmohammadi, S.; Hariri, B. YawDD: A yawning detection dataset. In Proceedings of the MMSys
+2014: 5th ACM Multimedia Systems Conference, Singapore, 19–21 March 2014; Association for Computing Machinery: New
+York, NY, USA, 2014; pp. 24–28. [CrossRef]
+51. ADITTA DAS NISHAD. Driver Drowsiness Using Keras Kaggle. Available online: https://www.kaggle.com/code/adinishad/
+driver-drowsiness-using-keras/data (accessed on 22 February 2023).
+52. Song, F.; Tan, X.; Liu, X.; Chen, S. Eyes closeness detection from still images with multi-scale histograms of principal oriented
+gradients. Pattern Recognit. 2014, 47, 2825–2838. [CrossRef]
+53. Liu, W.; Anguelov, D.; Erhan, D.; Szegedy, C.; Reed, S.; Fu, C.Y.; Berg, A.C. SSD: Single shot multibox detector. In Proceedings of
+the European Conference on Computer Vision, Amsterdam, The Netherlands, 11–14 October 2016. [CrossRef]
+54. Dlib C++ Library. Available online: http://dlib.net (accessed on 22 February 2023).
+55. OpenCV: Cascade Classiﬁer. Available online: https://docs.opencv.org/3.4/db/d28/tutorial_cascade_classiﬁer.html (accessed
+on 22 February 2023).
+56. Viola, P .; Jones, M. Rapid Object Detection using a Boosted Cascade of Simple Features. In Proceedings of the 2001 IEEE Computer
+Society Conference on Computer Vision and Pattern Recognition, Kauai, HI, USA, 8–14 December 2001. [CrossRef]
+57. Jabbar, R.; Al-Khalifa, K.; Kharbeche, M.; Alhajyaseen, W.; Jafari, M.; Jiang, S. Real-time Driver Drowsiness Detection for Android
+Application Using Deep Neural Networks Techniques. Procedia Comput. Sci. 2018, 130, 400–407. [CrossRef]
+58. Huang, Q. Weight-Quantized SqueezeNet for Resource-Constrained Robot Vacuums for Indoor Obstacle Classiﬁcation. AI 2022,
+3, 180–193. [CrossRef]
+59. Iandola, F.N.; Han, S.; Moskewicz, M.W.; Ashraf, K.; Dally, W.J.; Keutzer, K. SqueezeNet: AlexNet-Level Accuracy with 50×
+Fewer Parameters and <0.5 MB Model Size. 2016. Available online: https://github.com/DeepScale/SqueezeNet (accessed on 10
+May 2023).
+60. Krizhevsky, A.; Sutskever, I.; Hinton, G.E. Imagenet classiﬁcation with deep convolutional neural networks. Commun. ACM 2017,
+60, 84–90. [CrossRef]
+61. Hueso, E.; Reina, D.G.; Anber, S.; Alsaggaf, W.; Shalash, W. A Hybrid Driver Fatigue and Distraction Detection Model Using
+AlexNet Based on Facial Features. Electronics 2022, 11, 285. [CrossRef]
+Sensors 2023, 23, 5696 35 of 35
+62. Sandler, M.; Howard, A.; Zhu, M.; Zhmoginov, A.; Chen, L. MobileNetV2: Inverted Residuals and Linear Bottlenecks. In
+Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, Salt Lake City, UT, USA, 18–23 June 2018;
+pp. 4510–4520. [CrossRef]
+63. Howard, A.; Sandler, M.; Chen, B.; Wang, W.; Chen, L.-C.; Tan, M.; Chu, G.; Vasudevan, V .; Zhu, Y.; Pang, R.; et al. Searching for
+MobileNetV3. In Proceedings of the 2019 IEEE/CVF International Conference on Computer Vision (ICCV), Seoul, Republic of
+Korea, 27 October–2 November 2019; pp. 1314–1324. [CrossRef]
+64. Google. Model Optimization|TensorFlow Lite. Available online: https://www.tensorﬂow.org/lite/performance/model_
+optimization (accessed on 22 February 2023).
+65. Build and Convert Models|TensorFlow Lite. Available online: https://www.tensorﬂow.org/lite/microcontrollers/build_convert
+(accessed on 22 February 2023).
+66. Ubuntu Manpage: Xxd—Make a Hexdump or Do the Reverse. Available online: https://manpages.ubuntu.com/manpages/
+bionic/man1/xxd.1.html (accessed on 22 February 2023).
+67. He, H.; Zhang, X.; Jiang, F.; Wang, C.; Yang, Y.; Liu, W.; Peng, J. A Real-time Driver Fatigue Detection Method Based on Two-Stage
+Convolutional Neural Network. In IFAC-PapersOnLine; Elsevier B.V .: Amsterdam, The Netherlands, 2020; pp. 15374–15379.
+[CrossRef]
+68. Zhang, W.; Murphey, Y.L.; Wang, T.; Xu, Q. Driver yawning detection based on deep convolutional neural learning and robust
+nose tracking. In Proceedings of the 2015 International Joint Conference on Neural Networks (IJCNN), Killarney, Ireland, 12–16
+July 2015; pp. 1–8. [CrossRef]
+69. Li, X.; Xia, J.; Cao, L.; Zhang, G.; Feng, X. Driver fatigue detection based on convolutional neural network and face alignment for
+edge computing device. Proc. Inst. Mech. Eng. Part D J. Automob. Eng. 2021, 235, 2699–2711. [CrossRef]
+70. Suresh, Y.; Khandelwal, R.; Nikitha, M.; Fayaz, M.; Soudhri, V . Driver Drowsiness Detection using Deep Learning. In Proceedings
+of the 2021 2nd International Conference on Smart Electronics and Communication (ICOSEC), Trichy, India, 7–9 October 2021;
+pp. 1526–1531. [CrossRef]
+71. Akrout, B.; Fakhfakh, S. How to Prevent Drivers before Their Sleepiness Using Deep Learning-Based Approach. Electronics 2023,
+12, 965. [CrossRef]
+72. Gimeno, V .W.; Clols, E.S.; Morros, R.; Barcelona, R. Efﬁcient Deep Neural Networks for Micromobility Vision Application.
+Master’s Thesis, Universitat Politècnica de Catalunya, Barcelona, Spain, 2022.
+73. Prasad, K.; Thesis, S.P .A. Compressed MobileNet-V3: An Efﬁcient CNN for Resource Constrained Platforms. Master’s Thesis,
+Purdue University, West Lafayette, IN, USA, 2021.
+74. Merenda, M.; Porcaro, C.; Iero, D. Edge Machine Learning for AI-Enabled IoT Devices: A Review. Sensors 2020, 20, 2533.
+[CrossRef]
+75. Mohan, P .; Paul, A.J.; Chirania, A. A tiny cnn architecture for medical face mask detection for resource-constrained endpoints. In
+Innovations in Electrical and Electronic Engineering; Springer: Singapore, 2020; pp. 657–670. [CrossRef]
+76. Paul, A.J.; Mohan, P .; Sehgal, S. Rethinking Generalization in American Sign Language Prediction for Edge Devices with Extremely
+Low Memory Footprint. In Proceedings of the 2020 IEEE Recent Advances in Intelligent Computational Systems, RAICS 2020,
+Thiruvananthapuram, India, 3–5 December 2020; pp. 147–152. [CrossRef]
+77. Raza, W.; Osman, A.; Ferrini, F.; De Natale, F. Energy-Efﬁcient Inference on the Edge Exploiting TinyML Capabilities for UAVs.
+Drones 2021, 5, 127. [CrossRef]
+78. Capotondi, A.; Rusci, M.; Fariselli, M.; Benini, L. CMix-NN: Mixed Low-Precision CNN Library for Memory-Constrained Edge
+Devices. IEEE Trans. Circuits Syst. II Express Briefs 2020, 67, 871–875. [CrossRef]
+79. TinyML-Based Driver Drowsiness Detection. A vailable online: https://github.com/nourahnasser15/TinyML (accessed on 7 June 2023).
+Disclaimer/Publisher’s Note: The statements, opinions and data contained in all publications are solely those of the individual
+author(s) and contributor(s) and not of MDPI and/or the editor(s). MDPI and/or the editor(s) disclaim responsibility for any injury to
+people or property resulting from any ideas, methods, instructions or products referred to in the content.
+
+--- END OF PAPER: sensors-23-05696-v2.pdf ---
+
+--- START OF PAPER: sensors-26-01803-v2.pdf ---
+Academic Editor: Miguel
+Ángel Carvajal Rodríguez
+Received: 3 February 2026
+Revised: 3 March 2026
+Accepted: 10 March 2026
+Published: 12 March 2026
+Copyright: © 2026 by the authors.
+Licensee MDPI, Basel, Switzerland.
+This article is an open access article
+distributed under the terms and
+conditions of the Creative Commons
+Attribution (CC BY) license.
+Article
+Design and Implementation of an IoT-Based Low-Power
+Wearable EEG Sensing System for Home-Based
+Sleep Monitoring
+Ya Wang1, Jun-Bo Chen 1,2, *
+ and Yu-Ting Chen1
+1 School of Biomedical Engineering, South-Central Minzu University, Wuhan 430074, China;
+2024120774@mail.scuec.edu.cn (Y.W.); 2022120691@mail.scuec.edu.cn (Y.-T.C.)
+2 Key Laboratory of Cognitive Science, State Ethnic Affairs Commission, South-Central Minzu University,
+Wuhan 430074, China
+* Correspondence: jbchen@mail.scuec.edu.cn
+Abstract
+Long-term home-based sleep monitoring requires wearable sensing devices that strictly
+balance signal precision with power constraints. This study presents the design and
+implementation of a low-noise, low-power wearable single-channel electroencephalogra-
+phy (EEG) system for automatic sleep staging. The hardware architecture integrates a TI
+ADS1298 analog front-end with an STM32F4 microcontroller, utilizing differential sampling
+and hardware-based filtering to effectively suppress power-line interference and baseline
+drift. System-level testing demonstrates an average power consumption of approximately
+150.85 mW, enabling over 24.6 h of continuous operation on a 1000 mAh battery, which
+meets the requirements for overnight monitoring. To achieve accurate staging without
+draining the wearable’s battery, we adopted and deployed a lightweight deep learning
+model, SleePyCo, on the cloud backend. This architecture was specifically optimized
+for our edge–cloud collaborative execution, which combines contrastive representation
+learning with temporal dependency modeling. Validation on the ISRUC dataset yielded
+an overall accuracy of 79.3% ± 3.0%, with a notable F1-score of 88.3% for Deep Sleep
+(N3). Furthermore, practical field trials involving 10 healthy subjects verified the system’s
+engineering stability, achieving a valid data rate exceeding 97% and a Bluetooth packet
+loss rate of only 0.8%. These results confirm that the proposed hardware–software co-
+designed system provides a robust, energy-efficient IoMT sensing solution for daily sleep
+health management.
+Keywords: wearable EEG; sleep monitoring; instrumentation design; low-power electronics;
+Internet of Medical Things (IoMT)
+1. Introduction
+Sleep quality and architecture are critical indicators of physiological and mental
+health, playing a vital role in the early screening and long-term management of chronic
+diseases [1,2]. Currently, Polysomnography (PSG) serves as the clinical gold standard
+for sleep assessment, utilizing multimodal signals such as electroencephalography (EEG),
+electrooculography (EOG), and electromyography (EMG). However, the complex instru-
+mentation, high cost, and reliance on controlled laboratory settings render PSG unsuitable
+for long-term home monitoring [2,3]. Conversely, consumer wearables based on indirect
+signals (e.g., actigraphy or heart rate) offer convenience but often lack the signal fidelity
+Sensors 2026, 26, 1803 https://doi.org/10.3390/s26061803
+Sensors 2026, 26, 1803 2 of 14
+required for accurate multi-stage sleep classification [3,4]. Meanwhile, non-contact tech-
+nologies, such as optical fibers embedded in mattresses [5], offer unobtrusive monitoring
+alternatives, though wearable EEGs remain essential for capturing direct cortical activity.
+To bridge the gap between clinical precision and home usability, portable EEG sensing
+nodes have emerged as a promising solution. However, designing a reliable single-channel
+EEG system for home use faces significant engineering challenges. First, clinical conven-
+tions (AASM) rely on complex signal features for staging (e.g., distinguishing N1 from
+REM), which is difficult to achieve with limited spatial information from a single chan-
+nel [6]. Second, wearable instruments operate under strict power and size constraints,
+necessitating efficient hardware architectures to ensure continuous overnight operation
+without frequent recharging. Third, unlike controlled clinical environments, home settings
+introduce unpredictable noise and electrode contact variability, demanding robust analog
+front-end design and stable wireless transmission [7–9].
+Addressing these challenges requires a holistic hardware–software co-design approach
+rather than focusing solely on algorithmic improvements [10]. Recently, the Internet of Med-
+ical Things (IoMT) and edge–cloud collaborative architectures have emerged as standard
+paradigms to resolve the inherent conflict between resource-constrained wearable nodes
+and computationally intensive health monitoring algorithms [11,12]. By offloading heavy
+data processing tasks to cloud servers, wearable devices can significantly extend battery
+life while still delivering real-time, clinical-grade analytical results [13]. In this study, we
+present the design and implementation of a low-power, wireless single-channel EEG sensor
+tailored for home-based sleep monitoring. The system integrates a high-precision ADS1298
+analog-to-digital converter (ADC) with an STM32F4 microcontroller to achieve low-noise
+acquisition and real-time control. To enable accurate sleep staging within the computa-
+tional limits of embedded platforms, we adopted and deployed a lightweight deep learning
+framework named SleePyCo [14]. This algorithm features a resource-efficient architecture
+combining contrastive pre-training with temporal context modeling, specifically optimized
+for single-channel signal processing. The main contributions of this work are summarized
+as follows:
+(1) Design of a Low-Power Wearable EEG Sensing Node: We developed a compact
+sensor node featuring a highly integrated analog front-end and optimized power manage-
+ment. The system achieves an average power consumption of approximately 150.85 mW,
+supporting a theoretical battery life of 24.6 h on a standard 1000 mAh battery, ensuring
+reliability for full-night recording.
+(2) Cloud-Based Inference in an IoT Architecture: We adopted and deployed a stream-
+lined sleep staging algorithm (SleePyCo [ 14]) on the cloud server. By offloading the
+complex neural network computation to the cloud, the system successfully balances high
+classification accuracy with the strict low-power constraints of the wearable hardware.
+(3) Field Validation and System Robustness: Beyond standard dataset evaluation, the
+instrument underwent practical validation through at-home trials involving 10 subjects. The
+results demonstrate engineering robustness, with a valid data transmission rate exceeding
+85% and a Bluetooth packet loss rate of only 0.8%, confirming the system’s stability and
+practicality for daily health monitoring.
+2. Materials and Methods
+2.1. Hardware Design
+The hardware system is designed for low-noise, low-power EEG acquisition and
+integrates EEG acquisition, on-board signal processing, wireless transmission, and power
+management, as shown in Figure 1. The EEG acquisition module employs a TI ADS1298
+analog front end with 8-channel 24-bit ∆Σ ADCs and programmable gain (1–24X), to-
+https://doi.org/10.3390/s26061803
+Sensors 2026, 26, 1803 3 of 14
+gether with a built-in right-leg drive to suppress common-mode interference. Electrodes
+are arranged in a single-channel differential montage (sensing electrode at the forehead
+midpoint, reference at the earlobe) according to the 10–20 system, as illustrated in Figure 2.
+An external 0.5 Hz RC high-pass filter and a 50 Hz hardware notch filter are incorporated
+to attenuate baseline drift and mains interference [15].
+Figure 1. System hardware architecture diagram. The hardware modules include an EEG acquisition
+module, a filtering module, a power supply module, a microcontroller module, and a Bluetooth module.
+Figure 2. Electrode placement diagram. The system employs a single-channel differential montage:
+‘W’ (Red) denotes the Working/Sensing electrode placed at the forehead; ‘B’ (Green) denotes the
+Bias/Reference electrode placed adjacently; and ‘R’ (Purple) denotes the Right-Leg Drive (RLD)
+electrode attached to the earlobe to suppress common-mode interference.
+Signal processing is performed by an STM32F429IGT6 microcontroller. The firmware,
+developed under Keil MDK-5, acquires raw data via SPI at 200 Hz, applies a 6th-order
+Butterworth 50 Hz IIR notch filter and a 4th-order Chebyshev Type-I 0.5–45 Hz band-pass
+filter, and then downsamples the signal to 100 Hz. The complete preprocessing pipeline for
+a 30 s epoch completes within 5 ms. Processed data are packetized using a custom binary
+protocol and transmitted via an HC-05 Bluetooth module (v2.0 + EDR), which operates in
+slave mode at 9600 bps with an effective range of approximately 10 m. To conserve power,
+the Bluetooth module is awakened by a GPIO only when data are ready and returns to
+sleep after transmission; transfers are scheduled at 5 s intervals. Since clinical sleep staging
+is performed on 30 s epochs, this 5 s micro-batch transmission introduces an acceptable
+maximum latency of 5 s without compromising the real-time monitoring experience. To
+prevent data loss while the Bluetooth module is in sleep mode, the STM32 SRAM acts as
+a local buffer for the continuous ADC samples. Data synchronization and integrity are
+https://doi.org/10.3390/s26061803
+
+[... MIDDLE PAGES OMITTED ...]
+
+Sensors 2026, 26, 1803 13 of 14
+5. Conclusions
+In this work, we designed and implemented a hardware-algorithm co-designed wear-
+able EEG instrument for home-based sleep monitoring. Unlike purely algorithmic studies,
+we focused on the engineering challenges of low-power acquisition and embedded signal
+processing. The resulting system integrates a high-precision ADS1298 front-end with an
+STM32 microcontroller, achieving a low power consumption of 150.9 mW and a continuous
+runtime of 24.6 h, making it ideal for overnight recording.
+To enable intelligent staging without draining the resource-constrained wearable hard-
+ware, we successfully adopted and deployed the pre-trained SleePyCo model on the cloud
+backend. Evaluation results show that the system provides reliable sleep staging accuracy
+(ACC = 79.3%, N3 F1 = 88.3%) while maintaining a low computational footprint. Further-
+more, field trials with 10 participants demonstrated the instrument’s robustness in real-world
+environments, achieving a valid data transmission rate of over 97% via Bluetooth.
+In summary, this study presents a practical, cost-effective engineering solution for daily
+sleep health management. Future work will explore the integration of dry electrodes and
+multimodal sensors (e.g., PPG) to further enhance wearer comfort and staging granularity.
+Author Contributions: Conceptualization, Y.W. and J.-B.C.; methodology, Y.W. and J.-B.C.; software,
+Y.W.; validation, Y.W.; formal analysis, Y.W. and Y.-T.C.; investigation, Y.W. and Y.-T.C.; resources,
+J.-B.C.; data curation, Y.W. and Y.-T.C.; writing—original draft preparation, Y.W.; writing—review
+and editing, J.-B.C.; visualization, Y.W.; supervision, J.-B.C.; project administration, J.-B.C. All authors
+have read and agreed to the published version of the manuscript.
+Funding: This research received no external funding.
+Institutional Review Board Statement: The study was conducted in accordance with the Declaration
+of Helsinki, and approved by the Institutional Review Board of South-Central Minzu University
+(protocol code 2026-scuec-071 and date of approval 10 March 2026).
+Informed Consent Statement: Informed consent was obtained from all subjects involved in the study.
+Data Availability Statement: The original data presented in the study are openly available in ISRUC
+at https://sleeptight.isr.uc.pt/ (accessed on 3 February 2026).
+Acknowledgments: The authors are deeply grateful to the participants for their support and valuable
+contributions to this study.
+Conflicts of Interest: The authors declare no conflicts of interest.
+References
+1. Zheng, N.S.; Annis, J.; Master, H.; Han, L.; Gleichauf, K.; Ching, J.H.; Nasser, M.; Coleman, P .; Desine, S.; Ruderfer, D.M. Sleep
+patterns and risk of chronic disease as measured by long-term monitoring with commercial wearable devices in the All of Us
+Research Program. Nat. Med. 2024, 30, 2648–2656. [CrossRef]
+2. Hale, L.; Troxel, W.; Buysse, D.J. Sleep health: An opportunity for public health to address health equity.Annu. Rev. Public Health
+2020, 41, 81–99. [CrossRef]
+3. Robbins, R.; Weaver, M.D.; Sullivan, J.P .; Quan, S.F.; Gilmore, K.; Shaw, S.; Benz, A.; Qadri, S.; Barger, L.K.; Czeisler, C.A. Accuracy
+of three commercial wearable devices for sleep tracking in healthy adults. Sensors 2024, 24, 6532. [CrossRef]
+4. Birrer, V .; Elgendi, M.; Lambercy, O.; Menon, C. Evaluating reliability in wearable devices for sleep staging.npj Digit. Med. 2024,
+7, 74. [CrossRef] [PubMed]
+5. Zou, C.; Wang, Z.; Xiao, K.; Hu, X.; Wu, D.; Luo, B.; Min, R. Plastic optical fiber with spherical lens embedded in mattress for
+sleep monitoring. IEEE Sens. J. 2025, 25, 17144–17152. [CrossRef]
+6. Jorgensen, G.; Downey, C.; Goldin, J.; Melehan, K.; Rochford, P .; Ruehland, W. An Australasian commentary on the AASM
+manual for the scoring of sleep and associated events. Sleep Biol. Rhythm. 2020, 18, 163–185. [CrossRef]
+7. de Gans, C.J.; Burger, P .; Van den Ende, E.S.; Hermanides, J.; Nanayakkara, P .W.B.; Gemke, R.J.B.J.; Rutters, F.; Stenvers, D.J. Sleep
+assessment using EEG-based wearables–A systematic review. Sleep Med. Rev. 2024, 76, 101951. [CrossRef]
+https://doi.org/10.3390/s26061803
+Sensors 2026, 26, 1803 14 of 14
+8. van der Aar, J.F.; van Gilst, M.M.; van den Ende, D.A.; Fonseca, P .; van Wetten, B.N.; Janssen, H.C.J.P .; Peri, E.; Overeem, S.
+Optimizing wearable single-channel EEG sleep staging in a heterogeneous sleep-disordered population using transfer learning. J.
+Clin. Sleep Med. 2025, 21, 315–323. [CrossRef] [PubMed]
+9. Rong, G.; Zheng, Y.; Sawan, M. Energy solutions for wearable sensors: A review. Sensors 2021, 21, 3806. [CrossRef]
+10. Ates, H.C.; Nguyen, P .Q.; Gonzalez-Macia, L.; Morales-Narváez, E.; Güder, F.; Collins, J.J.; Dincer, C. End-to-end design of
+wearable sensors. Nat. Rev. Mater. 2022, 7, 887–907. [CrossRef] [PubMed]
+11. Pace, P .; Aloi, G.; Gravina, R.; Caliciuri, G.; Fortino, G.; Liotta, A. An edge-based architecture to support efficient applications for
+healthcare industry 4.0. IEEE Trans. Ind. Inform. 2018, 15, 481–489. [CrossRef]
+12. Ejiyi, C.; Qin, Z.; Ejiyi, M.B.; Nneji, G.U.; Monday, H.N.; Agu, F.A.; Ejiyi, T.U.; Diokpo, C.; Orakwue, C.O. The internet of medical
+things in healthcare management: A review. J. Digit. Health 2023, 2, 30–62. [CrossRef]
+13. Nguyen, H.T.; Mai, N.D.; Lee, B.G.; Chung, W.Y. Behind-the-ear EEG-based wearable driver drowsiness detection system using
+embedded tiny neural networks. IEEE Sens. J. 2023, 23, 23875–23892. [CrossRef]
+14. Lee, S.; Yu, Y.; Back, S.; Seo, H.; Lee, K. SleePyCo: Automatic sleep scoring with feature pyramid and contrastive learning. Expert
+Syst. Appl. 2024, 240, 122551. [CrossRef]
+15. Peltola, M.E.; Leitinger, M.; Halford, J.J.; Vinayan, K.P .; Kobayashi, K.; Pressler, R.M.; Mindruta, I.; Mayor, L.C.; Lauronen, L.;
+Beniczky, S. Routine and sleep EEG: Minimum recording standards of the International Federation of Clinical Neurophysiology
+and the International League Against Epilepsy. Clin. Neurophysiol. 2023, 147, 108–120. [CrossRef]
+16. Supratak, A.; Dong, H.; Wu, C.; Guo, Y. DeepSleepNet: A model for automatic sleep stage scoring based on raw single-channel
+EEG. IEEE Trans. Neural Syst. Rehabil. Eng. 2017, 25, 1998–2008. [CrossRef]
+17. Perslev, M.; Darkner, S.; Kempfner, L.; Nikolic, M.; Jennum, P .J.; Igel, C. U-Sleep: Resilient high-frequency sleep staging.npj Digit.
+Med. 2021, 4, 72. [CrossRef] [PubMed]
+18. Jin, E.; Wang, Q.; Wang, X.; Li, Y.; Shao, Z. An IOT-enabled multimodal framework for real-time sleep quality assessment and
+health monitoring. J. Mech. Med. Biol. 2025, 25, 2540074. [CrossRef]
+19. Khalighi, S.; Sousa, T.; Santos, J.M.; Nunes, U. ISRUC-Sleep: A comprehensive public dataset for sleep researchers. Comput.
+Methods Programs Biomed. 2016, 124, 180–192. [CrossRef] [PubMed]
+20. Feng, L.X.; Li, X.; Wang, H.Y.; Zheng, W.Y.; Zhang, Y.Q.; Gao, D.R.; Wang, M.Q. Automatic sleep staging algorithm based on time
+attention mechanism. Front. Hum. Neurosci. 2021, 15, 692054. [CrossRef] [PubMed]
+21. Zhou, Y.; Zhao, S.; Wang, J.; Jiang, H.; Yu, Z.; Li, S.; Li, T.; Pan, G. Simplifying multimodal with single EOG modality for automatic
+sleep staging. IEEE Trans. Neural Syst. Rehabil. Eng. 2024, 32, 1668–1678. [CrossRef] [PubMed]
+22. Phan, H.; Lorenzen, K.P .; Heremans, E.; Chén, O.Y.; Tran, M.C.; Koch, P .; Mertins, A.; Baumert, M.; Mikkelsen, K.B.; De Vos,
+M. L-SeqSleepNet: Whole-cycle long sequence modeling for automatic sleep staging. IEEE J. Biomed. Health Inform. 2023,
+27, 4748–4757. [CrossRef] [PubMed]
+23. Tang, W.; Sun, Q.; Wang, Z.L. Self-powered sensing in wearable electronics—A paradigm shift technology. Chem. Rev. 2023,
+123, 12105–12134. [CrossRef] [PubMed]
+24. Kim, H.; Kim, E.; Choi, C.; Yeo, W.H. Advances in soft and dry electrodes for wearable health monitoring devices. Micromachines
+2022, 13, 629. [CrossRef]
+25. Yamaguchi, T.; Kurashina, Y.; Nagahara, E.; Oshima, S.; Kaneko, N.; Nakazawa, K.; Tanaka, H.; Yokoyama, H. Quantitative
+assessment of signal quality and usability of EEG and EMG recordings with PEDOT: PSS-coated microneedle electrodes. Front.
+Neurosci. 2025, 19, 1706501. [CrossRef]
+26. Xiong, F.; Fan, M.; Feng, Y.; Li, Y.; Yang, C.; Zheng, J.; Wang, C.; Zhou, J. Advancements in dry and semi-dry EEG electrodes:
+Design, interface characteristics, and performance evaluation. AIP Adv. 2025, 15, 040703. [CrossRef]
+27. Zhang, M.; Qian, B.; Gao, J.; Zhao, S.; Cui, Y.; Luo, Z.; Shi, K.; Yin, E. Recent Advances in Portable Dry Electrode EEG: Architecture
+and Applications in Brain-Computer Interfaces. Sensors 2025, 25, 5215. [CrossRef]
+Disclaimer/Publisher’s Note: The statements, opinions and data contained in all publications are solely those of the individual
+author(s) and contributor(s) and not of MDPI and/or the editor(s). MDPI and/or the editor(s) disclaim responsibility for any injury to
+people or property resulting from any ideas, methods, instructions or products referred to in the content.
+https://doi.org/10.3390/s26061803
+
+--- END OF PAPER: sensors-26-01803-v2.pdf ---
+
+--- START OF PAPER: SleepFCN_A_Fully_Convolutional_Deep_Learning_Framework_for_Sleep_Stage_Classification_Using_Single-Channel_Electroencephalograms.pdf ---
+2088 IEEE TRAN SACTIONS ON NEURAL SYSTEMS AND REHABILITATION ENGINEERING, VOL. 30, 2022
+SleepFCN: A Fully Convolutional Deep Learning
+Framework for Sleep Stage Classiﬁcation Using
+Single-Channel Electroencephalograms
+Narjes Goshtasbi , Reza Boostani , and Saeid Sanei , Senior Member, IEEE
+Abstract — Sleep is a vital process of our daily life as
+we roughly spend one-third of our lives asleep. In order
+to evaluate sleep quality and potential sleep disorders,
+sleep stage classiﬁcation is a gold standard method. In this
+paper, we introduce a novel fully convolutional neural
+network architecture (SleepFCN) to classify sleep stages
+into ﬁve classes using single-channel electroencephalo-
+grams (EEGs). The framework of SleepFCN includes two
+major parts for feature extraction and temporal sequence
+encoding namely multi-scale feature extraction (MSFE)
+and residual dilated causal convolutions (ResDC), respec-
+tively. These are then followed by convolutional layers of
+1-sized kernels instead of dense layers to build the fully
+convolutional neural network. Due to the imbalance in
+the distribution of sleep stages, we incorporate a weight
+correspondingto the number of samples of each class in our
+loss function. We evaluated the performance of SleepFCN
+using the Sleep-EDF and SHHS datasets. Our experimen-
+tal results show that the proposed method outperforms
+state-of-the-art works in both classiﬁcation correctness and
+learning speed.
+Index Terms— CNN, deep learning, EEG, single-channel,
+sleep stage classiﬁcation.
+I. I NTRODUCTION
+S
+LEEP is an important brain state. Having a good sleep
+quality is essential for guaranteeing normal body perfor-
+mance and mental health. During sleep, the brain goes to
+several stages. In the non-rapid eyes movements (Non-REM)
+stage, the neural systems (e.g., emotional and sensory systems)
+of the brain get rest and calibrated. Inadequate sleep can cause
+signiﬁcant problems such as increasing the risk of Alzheimer’s,
+diabetes, and cancer. In addition, disturbing the sleep rhythm
+can lead to anxiety, depression, and even invoke suicidal
+thoughts [1], [2]. As a result, specialists need to analyze sleep
+Manuscript received 18 February 2022; revised 11 June 2022;
+accepted 1 July 2022. Date of publication 21 July 2022; date of current
+version 29 July 2022.
+(Corresponding author: Narjes Goshtasbi.)
+Narjes Goshtasbi and Reza Boostani are with the CSE and IT
+Department of Electrical and Computer Engineering, Shiraz University,
+Shiraz 71946-84471, Iran (e-mail: n.goshtasbi@shirazu.ac.ir; boostani@
+shirazu.ac.ir).
+Saeid Sanei is with the School of Science and Technology,
+Nottingham Trent University, Nottingham NG11 8NS, U.K. (e-mail:
+saeid.sanei@ntu.ac.uk).
+Digital Object Identiﬁer 10.1109/TNSRE.2022.3192988
+patterns to identify sleep-related conditions such as drowsi-
+ness, fatigue, or sleep disorders including narcolepsy, insom-
+nia, and sleep apnea [3]. Several attempts have been made
+to distinguish sleep stages using polysomnography to quanti-
+tatively measure the duration of each of the sleep stages [4].
+Polysomnography measures a set of physiological signals such
+as electroencephalography (EEG), electromyogram (EMG),
+electrooculogram (EOG), and electrocardiogram (ECG) from
+each subject during their sleep. Sleep experts visually clas-
+sify successive 30-second intervals of the EEG signals
+based on a set of rules like those provided by Rechtschaf-
+fen [5], scoring sleep into six stages, including Wake, S1,
+S2, S3, S4, and REM. Manual scoring by an expert is
+time-consuming and involves a degree of uncertainty [6]–[8].
+To make this subjective problem objective, researchers used
+intelligent techniques to automatically classify the sleep stages.
+These methods need to extract sleep patterns, select the
+more important ones, and then apply the selected features
+to an efﬁcient classiﬁer in order to differentiate sleep stages.
+EEG features can be extracted in the time, frequency, and
+time-frequency domains [9], [10]. Although these meth-
+ods have achieved reasonable performance, they are highly
+dependent to hand engineering features based on knowl-
+edge of sleep data characteristics. Hence, establishing an
+automated method to extract more general features seems
+inevitable [11], [12].
+Some studies have explored deep learning algorithms to
+address this issue in recent years. These algorithms have been
+shown good performance in various ﬁelds of EEG analy-
+sis [13]–[15], most of which used convolutional [16]–[19] and
+recurrent neural networks [20]–[23]. Having a hard look over
+the literature, we can see that the studies can be classiﬁed
+into two categories. Some researchers try to adopt different
+modalities of polysomnography (e.g., EEG, EMG) [24]–[26].
+It is obvious such multi-modal approaches impose high com-
+putational complexity on the recognition system at the cost
+of achieving better accuracy [27], [28]. On the other hand,
+using multiple modalities of PSG needs more intrusive devices
+to be attached to the subject during sleep and are more
+expensive [17]. Among other electrophysiological signals,
+EEGs are of high interest in various cognitive tasks since
+they are non-invasive, portable, and low in cost [29], [30].
+This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+GOSHTASBI et al.: SleepFCN: FULL Y CONVOLUTIONAL DEEP LEARNING FRAMEWORK 2089
+Thus, most studies are conducted to decode the information
+captured through single-channel EEG signals in order to
+differentiate the sleep stages [31], [32]. Tsinalis et al. [16]
+used a convolutional neural network (CNN) to classify sleep
+stages from the raw Fpz-cz EEG channel. In [17], the authors
+used a relatively deeper CNN model to show the effect of
+model depth on the performance. In most research ﬁndings,
+an input signal is fed into the model in batches of 30 s
+EEG signals. In some research, the interval of 90 s is also
+considered to explore the effect of input length [33]. Moreover,
+Zhu et al. [34] fed 2 s epochs to their model in order to
+capture events such as K-complexes and sawtooth waves that
+occur rapidly (in 1–2 s). Olesen et al. [35] built a slightly
+deeper CNN model with four blocks of convolution layers and
+used skip connections between them and Andreottiet al. [36]
+incorporated a naïve inception-like module [37] in their CNN
+to take advantage of multiple time-frequency-based contexts.
+Various models used recurrent neural networks (RNNs), spe-
+cially long-short term memory (LSTM), to capture sequential
+characteristics of sleep EEGs. For instance, Donget al. [38]
+used a hybrid neural network structure consisting of the
+multi-layer perceptron neural networks and LSTM. In addi-
+tion, Some studies considered techniques to handle the imbal-
+anced class problem of sleep scoring. In [22], the authors
+have proposed a cascaded model of RNNs with two blocks of
+LSTMs which can separately classify the majority and minor-
+ity stages and Suprataket al.[39] applied a data augmentation
+technique to the rarest stage to overcome its low performance.
+Here is the description of our contributions in this
+study:
+1) We constructed a novel fully convolutional neural net-
+work (FCN) that consists of three major parts. I. We built
+a custom multi-representational model of convolutional
+layers to extract local time-invariant features of sleep
+data in a multi-scale way, which we call multi-scale
+feature extraction (MSFE) module. II. Referring to the
+sequential order of sleep stages, we need to learn from
+these sequential sleep cycles, in order to accurately
+detect the sleep stages. To achieve this goal, we built a
+residual dilated causal convolutional module (ResDC),
+which models the sequence of sleep with a remarkably
+simpler and faster structure than RNNs. III. We inte-
+grated our fully convolutional architecture by the use of
+convolutional ﬁlters with kernel size = 1 instead of dense
+layers on the top of our model. This strategy could help
+us to overcome the disadvantages of dense layers that
+have been deployed in almost all the models in the sleep
+staging processes.
+2) In order to deal with the imbalance problem, we pro-
+posed a loss function that takes the weight of each stage
+into account to correct the prediction errors more evenly.
+3) We assessed our model with two public datasets and
+showed that it outperforms state-of-the-art models in the
+sleep stage classiﬁcation task.
+4) Most studies in the domain of sleep scoring obtained
+their results using data from healthy subjects. Despite
+being a potentially useful baseline for sleep scoring, this
+constrains the task and might reduce the generality of the
+model. In a supplementary experiment, we trained our
+model with unhealthy subjects to learn useful patterns
+for identifying abnormalities and disorders.
+The rest of the paper is organized in the following order: in
+section II, we introduce our model and explain its components
+in detail together with the description of datasets and the
+preprocessing steps. Section III contains experimental results
+for different datasets as well as the comparison between our
+model and the previous ones. Finally, the paper is concluded
+in section IV .
+II. M
+A TERIALS AND METHOD
+A. Data and Preprocessing
+We used two publicly available datasets in this work. The
+ﬁrst one, namely Sleep-EDF, which is widely used in sleep
+scoring, is derived from the PhysioBank [40]. It comprises
+the data from 20 healthy subjects, aged 25–101, 10 females
+and 10 males. The polysomnography was recorded for about
+20 hours for each individual during two consecutive nights
+and includes two channels of EEG signals (Fpz-cz, pz-oz)
+sampled at 100 Hz in addition to the EMG and EOG chan-
+nels. Similar to previous studies [41], we use the single-
+channel Fpz-cz EEG as the input of our model. The second
+dataset is obtained from the sleep heart health study (SHHS)
+database [42], [43], comprising 6,441 men and women aged
+more than 40 years. Each subject’s data has been recorded
+during about six hours of sleep, and sampled at 125 Hz. The
+subjects of this dataset suffer from sleep-correlated breathing
+diseases resulting from lung and cardiovascular abnormalities.
+To reduce the impact of disorders, we follow the work in [44]
+and select 120 subjects whose Apnea Hypopnea Indexes (AHI)
+is lower than 5. This shows that the subjects had almost a
+regular sleep pattern. We have taken the C4-A1 EEG of the
+selected subjects from the two EEG channels provided in this
+dataset (C4-A1, C3-A2). In another experiment, we selected
+and applied the data from another 120 subjects whose AHI
+is above 5, indicating a mild to severe state of obstructive
+sleep apnea, and fed them to the proposed model to explore
+the effect of breath-correlated abnormalities on the sleep stage
+classiﬁcation.
+Preprocessing includes these steps: we remove unknown
+stages and movements from signals and merge stages 3 and
+4 into one stage according to the American Academy of
+Sleep Medicine (AASM) guideline [45]. Therefore, we have
+ﬁve sleep stages namely W, N1, N2, N3, and REM whereby
+W represents the state of wakefulness, ranging from full
+alertness to early drowsiness and REM stands for rapid eye
+movement sleep in which sharp and irregular eye movements
+are observable. Stages N1, N2 and N3 are the stages of non-
+REM sleep. By way of explanation, stage N1 is characterized
+by low amplitude and mixed frequency activities (4–7 Hz),
+stage N2 is characterized by the presence of sleep spindles and
+K-complexes, while during stage N3, the subject experiences
+a state of deep sleep associated with slow wave activity. Then,
+we exclude the redundant wake times before and after the sleep
+onset. In other words, we keep in-bed times which include
+30 minutes of wake stages before and after the sleeping time.
+2090 IEEE TRAN SACTIONS ON NEURAL SYSTEMS AND REHABILITATION ENGINEERING, VOL. 30, 2022
+Fig. 1. The overall framework of the proposed method. Parameter d indicates the dilation rate of the convolutional layers and n is experimentally
+set to 4.
+TABLE I
+THE NUMBER OF PER -STAGE AND TOTAL 30 S
+EPOCHS FOR EACH DATASET
+EEG signals were ﬁltered by a 5th order Butterworth ﬁlter
+with a cutoff frequency of 30 Hz to reduce artifacts and
+then standardized by removing the mean and scaling to unit
+variance. After all, each data was segmented into successive
+30 s windows.Table Ishows the per-class and the total number
+of 30 s epochs of each dataset.
+B. Proposed Method
+There are three main challenges in sleep stage classiﬁcation.
+First, we should control the trade-off between the time and
+frequency resolutions during the feature extraction phase. The
+second is to learn the temporal characteristics of EEG signals
+to capture the dependencies of samples that lead to the transi-
+tion between sleep stages. Eventually, we should incorporate
+some techniques in our model to overcome the imbalanced
+distribution of samples between sleep stages. To deal with
+these challenges, we propose a novel FCN called SleepFCN,
+the components of which are explained in subsequent parts.
+The overall framework of SleepFCN is shown inFig. 1.
+1) Time-Frequency Resolution T rade-Off: As the ﬁrst part
+of the model, we construct MSFE module containing two
+convolutional branches with different sizes of kernels, inspired
+by [39] and [46] and the fact that each sleep stage is associated
+with a speciﬁc frequency band [47]. In this way, we will be
+able to capture information from different frequency bands
+of EEG signals and local time-invariant features in the time
+domain. In one branch of this block, we use small kernels
+of size 25, and in the other, wide kernels of size 200 as the
+ﬁrst layer. These layers are able to capture frequency band
+information directly from input EEG samples. To illustrate
+more, imagine an input signal sampled at frequency 100 Hz,
+so each kernel size of 200 can capture 2 s of the EEG signal.
+In the frequency domain, these kernels slide on groups of
+samples with a frequency of about 0.5 Hz, i.e., slow waves
+that occur in a deep sleep. Furthermore, the ﬁlter with a kernel
+size of 25, can capture frequencies about 4 Hz. Therefore, with
+respect to the stride, theta and alpha or even beta bands can
+be learned. In order to make these features more interpretable
+for a classiﬁer, we need to reﬁne them after extraction. Hence,
+these convolutions are followed by batch normalization [48],
+which is a regularization technique for training deep neural
+networks, normalizing the inputto each layer for mini-batches
+of the data. This method results in a more stable learning
+process since the prediction errors can be propagated backward
+more effectively through the layers. The number of epochs
+required for training the network can be signiﬁcantly reduced
+as a result. The outputs then are passed through a Leaky Rec-
+tiﬁed Linear Unit (LeakyReLU) activation function that allows
+the negative outputs of neurons to be passed through the layer.
+Consequently, we do not lose such information as opposed to
+the ReLU that is used in similar works. Essentially, the initial
+convolutional layer of CNNs can be thought of as extracting
+basic features of the samples, and as we delve deeper into
+the network, the features become more representative. Thus,
+in each branch, we add convolutional and pooling layers to
+extract more details of the signal and prevent the excessive
+increase of the parameters, respectively. Features extracted
+by these two branches then are concatenated into one array
+and are passed through the convolutional layers activated by
+ReLU, and an average pooling mechanism for reﬁnement and
+reduction purposes. It is worth mentioning that negative values
+are no longer a concern since we have included and processed
+them within the feature space through the two branches of the
+MSFE module. In order to facilitate faster convergence, we opt
+for ReLU activation in the converging part of the module. The
+whole MSFE module is shown inFig. 2.
+2) Sequential Feature Learning: Sleep stage classiﬁcation
+is naturally a sequential problem. According to the AASM
+guideline, an epoch is labeled as N2 if some events such as
+K-complexes or sleep spindles occur in the 2
+nd half of the
+previous epoch [45]. Furthermore, the REM stage depends
+on the presence of mixed frequency activities in EEG signals
+without the occurrence of K-complexes or sleep spindles in
+the prior epoch. Indeed, it can be distinguished even without
+rapid eye movements, based on information learned by the
+sequence [22]. Consequently, after extracting the features
+of interest, we should make some decisions to capture the
+sequential characteristics of the sleep data, i.e., implement a
+sequential modeling scheme. For this purpose, we develop the
+ResDC module inspired by [49]. It could control the trade-off
+between accurate localization and context-aware understand-
+ing, including learning the sequence’s order of occurrence,
+to capture the transition rules between sleep stages.
+There are two fundamental principles behind the ResDC
+module. Firstly, it provides a causal sequence modeling
+scheme, in which an output at the time t is produced by
+performing convolution on the inputs at time t and earlier,
+i.e., its past sequence [49]. Secondly, the model is required to
+
+[... MIDDLE PAGES OMITTED ...]
+
+GOSHTASBI et al.: SleepFCN: FULL Y CONVOLUTIONAL DEEP LEARNING FRAMEWORK 2095
+TABLE VII
+COMPARISON BETWEEN THE SLEEP FCN AND ATTN SLEEP [41] MODELS ON 120 UNHEALTHY SUBJECTS OF SHHS DATASET
+the SleepFCN and AttnSleep [41] using unhealthy subjects,
+and per-class F1-scores and overall metrics. As is shown in
+the tables, the model perform ance reduces with unhealthy
+subjects because it is harder for a model to classify stages
+with abnormal patterns in contrast with standard patterns of
+healthy individuals (e.g., fewer ﬂuctuations between sleep
+stages). However, our model is still superior to AttnSleep [41]
+in both overall and per-class metrics.
+IV . C
+ONCLUSION
+In this study, a novel fully CNN called SleepFCN is
+proposed to classify sleep patterns into ﬁve classes accord-
+ing to the AASM manual [45]. The SleepFCN incorpo-
+rates a module for feature extraction whose main idea is to
+capture multi-frequency band information as well as local
+time-invariant features of sleep data called MSFE. Another
+module called ResDC is developed for temporal context learn-
+ing that employs causal and dilated convolutional layers that
+enables the model to capture the history, i.e., the context
+of the signal effectively. The proposed model was trained
+using single-channel EEG signals obtained by two publicly
+available datasets, namely Sleep-EDF and SHHS. A weighted
+loss function is applied to the training algorithm to reduce the
+data’s skewed distribution effect. Experimental results show
+that such a model could be faster and more accurate than other
+methods using RNNs or even attention mechanisms. Moreover,
+the SleepFCN exhibits more generality for the breath-related
+distortions in individuals’ sleep. Furthermore, avoiding fully
+connected layers provides the model ﬂexibility to varying
+dimensions.
+It is beneﬁcial for sleep technicians to have a relatively
+accurate and fast model to train and test over unseen data.
+Therefore, the motives for future research in the ﬁeld of sleep
+stage classiﬁcation can be pruning the model to reduce the
+parameters for simplicity as well as applying transfer learning
+to mitigate the need for large training data.
+R
+EFERENCES
+[1] M. Walker, Why We Sleep: Unlocking the Power of Sleep and Dreams.
+New York, NY , USA: Simon and Schuster, 2017.
+[2] M. W. Mahowald and C. H. Schenck, “Insights from studying human
+sleep disorders,” Nature, vol. 437, no. 7063, pp. 1279–1285, 2005.
+[3] F. Karimzadeh, M. Nami, and R. Boostani, “Sleep microstructure
+dynamics and neurocognitive performance in obstructive sleep apnea
+syndrome patients,”J. Integrative Neurosci., vol. 16, no. 2, pp. 127–142,
+2017.
+[4] A. Procházka et al., “Sleep scoring using polysomnography data fea-
+tures,” Signal Image Video Process., vol. 12, no. 6, pp. 1043–1051,
+Sep. 2018.
+[5] A. Rechtschaffen, A Manual of Standardized Terminology, Techniques,
+and Scoring System for Sleep Stages of Human Subjects. Los Angeles,
+CA, USA: Brain Information Service/Brain Research Institute, UCLA,
+1968.
+[6] A. Malhotra et al., “Performance of an automated polysomnography
+scoring system versus computer-assisted manual scoring,”Sleep, vol. 36,
+no. 4, pp. 573–582, Apr. 2013.
+[7] S. M. Mohammadi et al., “Improving time–frequency domain sleep
+EEG classiﬁcation via singular spectrum analysis,”J. Neurosci. Methods,
+vol. 273, pp. 96–106, Nov. 2016.
+[8] F. Karimzadeh, R. Boostani, E. Seraj, and R. Sameni, “A distributed
+classiﬁcation procedure for automatic sleep stage scoring based on
+instantaneous electroencephalogram phase and envelope features,”IEEE
+Trans. Neural Syst. Rehabil. Eng., vol. 26, no. 2, pp. 362–370, Feb. 2018.
+[9] R. Boostani, F. Karimzadeh, and M. Nami, “A comparative review on
+sleep stage classiﬁcation methods in patients and healthy individuals,”
+Comput. Methods Programs Biomed., vol. 140, pp. 77–91, Mar. 2017.
+[10] F. Karimzadeh, E. Seraj, R. Boostani, and M. Torabi-Nami, “Presenting
+efﬁcient features for automatic CAP detection in sleep EEG signals,”
+in Proc. 38th Int. Conf. Telecommun. Signal Process. (TSP), Jul. 2015,
+pp. 448–452.
+[11] Y . Sun, B. Wang, J. Jin, and X. Wang, “Deep convolutional network
+method for automatic sleep stage classiﬁcation based on neurophysio-
+logical signals,” inProc. 11th Int. Congr. Image Signal Process., Biomed.
+Eng. Informat. (CISP-BMEI), Oct. 2018, pp. 1–5.
+[12] E. Khalili and B. M. Asl, “Automatic sleep stage classiﬁcation using
+temporal convolutional neural network and new data augmentation
+technique from raw single-channel EEG,”Comput. Methods Programs
+Biomed., vol. 204, Jun. 2021, Art. no. 106063.
+[13] S. Sanei and J. A. Chambers, EEG Signal Processing and Machine
+Learning. Hoboken, NJ, USA: Wiley, 2021.
+[14] M. Dehghani, A. Mobaien, and R. Boostani, “A deep neural network-
+based transfer learning to enhance the performance and learning speed
+of BCI systems,”Brain-Comput. Interfaces, vol. 8, nos. 1–2, pp. 14–25,
+Apr. 2021.
+[15] E. Amirizadeh and R. Boostani, “CDEC: A constrained deep embedded
+clustering,” Int. J. Intell. Comput. Cybern., vol. 14, no. 4, pp. 686–701,
+Oct. 2021.
+[16] O. Tsinalis, P. M. Matthews, Y . Guo, and S. Zafeiriou, “Automatic
+sleep stage scoring with single-channel EEG using convolutional neural
+networks,” 2016,arXiv:1610.01683.
+[17] A. Sors, S. Bonnet, S. Mirek, L. Vercueil, and J.-F. Payen, “A con-
+volutional neural network for sleep stage scoring from raw single-
+channel EEG,” Biomed. Signal Process. Control, vol. 42, pp. 107–114,
+Apr. 2018.
+[18] S. Hashempour, R. Boostani, M. Mohammadi, and S. Sanei, “Continuous
+scoring of depression from EEG signals via a hybrid of convolutional
+neural networks,” IEEE Trans. Neural Syst. Rehabil. Eng.
+, vol. 30,
+pp. 176–183, 2022.
+[19] H. Phan, F. Andreotti, N. Cooray, O. Y . Chen, and M. De V os, “Joint
+classiﬁcation and prediction CNN framework for automatic sleep stage
+classiﬁcation,” IEEE Trans. Biomed. Eng., vol. 66, no. 5, pp. 1285–1296,
+May 2019.
+[20] S. Afshar, R. Boostani, and S. Sanei, “A combinatorial deep learning
+structure for precise depth of anesthesia estimation from EEG signals,”
+IEEE J. Biomed. Health Informat. , vol. 25, no. 9, pp. 3408–3415,
+Sep. 2021.
+[21] E. Bresch, U. Großekathöfer, and G. Garcia-Molina, “Recurrent deep
+neural networks for real-time sleep stage classiﬁcation from single
+channel EEG,” Frontiers Comput. Neurosci., vol. 12, p. 85, Oct. 2018.
+[22] N. Michielli, U. R. Acharya, and F. Molinari, “Cascaded LSTM
+recurrent neural network for automated sleep stage classiﬁcation using
+single-channel EEG signals,”Comput. Biol. Med., vol. 106, pp. 71–81,
+Mar. 2019.
+[23] X. Zhang, W. Kou, E. I.-C. Chang, H. Gao, Y . Fan, and Y . Xu, “Sleep
+stage classiﬁcation based on multi-level feature learning and recurrent
+neural networks via wearable device,” Comput. Biol. Med., vol. 103,
+pp. 71–81, Dec. 2018.
+[24] S. Chambon, M. N. Galtier, P. J. Arnal, G. Wainrib, and A. Gramfort,
+“A deep learning architecture for temporal sleep stage classiﬁcation
+using multivariate and multimodal time series,”IEEE Trans. Neural Syst.
+Rehabil. Eng., vol. 26, no. 4, pp. 758–769, Apr. 2018.
+2096 IEEE TRAN SACTIONS ON NEURAL SYSTEMS AND REHABILITATION ENGINEERING, VOL. 30, 2022
+[25] Z. Cui, X. Zheng, X. Shao, and L. Cui, “Automatic sleep stage
+classiﬁcation based on convolutional neural network and ﬁne-grained
+segments,” Complexity, vol. 2018, pp. 1–13, Oct. 2018.
+[26] F. Andreotti et al., “Multichannel sleep stage classiﬁcation and transfer
+learning using convolutional neural networks,” inProc. 40th Annu. Int.
+Conf. IEEE Eng. Med. Biol. Soc. (EMBC), Jul. 2018, pp. 171–174.
+[27] M. Sabeti, R. Boostani, S. D. Katebi, and G. W. Price, “Selection of
+relevant features for EEG signal classiﬁcation of schizophrenic patients,”
+Biomed. Signal Process. Control, vol. 2, no. 2, pp. 122–134, Apr. 2007.
+[28] J. Jin, R. Xiao, I. Daly, Y . Miao, X. Wang, and A. Cichocki,
+“Internal feature selection met hod of CSP based on L1-norm and
+Dempster–Shafer theory,” IEEE Trans. Neural Netw. Learn. Syst. ,
+vol. 32, no. 11, pp. 4814–4825, Nov. 2020.
+[29] M. Xu, X. Xiao, Y . Wang, H. Qi, T. Jung, and D. Ming,
+“A brain–computer interface based on miniature-event-related potentials
+induced by very small lateral visual stimuli,”IEEE Trans. Biomed. Eng.,
+vol. 65, no. 5, pp. 1166–1175, May 2018.
+[30] J. Jin et al., “Robust similarity measurement based on a novel time
+ﬁlter for SSVEPs detection,” IEEE Trans. Neural Netw. Learn. Syst.,
+early access, Oct. 14, 2021, doi:10.1109/TNNLS.2021.3118468.
+[31] J. Zhang, R. Yao, W. Ge, and J. Gao, “Orthogonal convolutional
+neural networks for automatic sleepstage classiﬁcation based on single-
+channel EEG,”Comput. Methods Programs Biomed., vol. 183, Jan. 2020,
+Art. no. 105089.
+[32] S. Kouchaki, K. Eftaxias, and S. Sanei, “An adaptive ﬁltering approach
+using supervised SSA for identiﬁcation of sleep stages from EEG,”
+Frontiers Biomed. Technol., vol. 1, no. 4, pp. 233–239, 2014.
+[33] H. Phan, F. Andreotti, N. Cooray, O. Y . Chen, and M. De V os,
+“SeqSleepNet: End-to-end hierarchical recurrent neural network for
+sequence-to-sequence automatic sleep staging,”IEEE Trans. Neural Syst.
+Rehabil. Eng., vol. 27, no. 3, pp. 400–410, Mar. 2019.
+[34] T. Zhu, W. Luo, and F. Yu, “Convolution- and attention-based neural
+network for automated sleep stage classiﬁcation,”Int. J. Environ. Res.
+Public Health, vol. 17, no. 11, p. 4152, Jun. 2020.
+[35] A. N. Olesen, P. Jennum, P. Peppard, E. Mignot, and H. B. D. Sorensen,
+“Deep residual networks for automatic sleep stage classiﬁcation of raw
+polysomnographic waveforms,” inProc. 40th Annu. Int. Conf. IEEE Eng.
+Med. Biol. Soc. (EMBC), Jul. 2018, pp. 1–4.
+[36] F. Andreotti, H. Phan, and M. De V os, “Visualising convolutional neural
+network decisions in automatic sleep scoring,” inProc. CEUR Workshop,
+2018, pp. 70–81.
+[37] C. Szegedy et al., “Going deeper with convolutions,” in Proc. IEEE
+Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2015, pp. 1–9.
+[38] H. Dong, A. Supratak, W. Pan, C. Wu, P. M. Matthews, and Y . Guo,
+“Mixed neural network approach for temporal sleep stage classiﬁcation,”
+IEEE Trans. Neural Syst. Rehabil. Eng., vol. 26, no. 2, pp. 324–333,
+Apr. 2018.
+[39] A. Supratak, H. Dong, C. Wu, and Y . Guo, “DeepSleepNet: A model
+for automatic sleep stage scoring based on raw single-channel EEG,”
+IEEE Trans. Neural Syst. Rehabil. Eng., vol. 25, no. 11, pp. 1998–2008,
+Nov. 2017.
+[40] A. L. Goldberger et al., “PhysioBank, PhysioToolkit, and PhysioNet:
+Components of a new research resource for complex physiologic sig-
+nals,” Circulation, vol. 101, no. 23, pp. e215–e220, Jun. 2000.
+[41] E. Eldele et al., “An attention-based deep learning approach for sleep
+stage classiﬁcation with single-channel EEG,”IEEE Trans. Neural Syst.
+Rehabil. Eng., vol. 29, pp. 809–818, 2021.
+[42] G.-Q. Zhang
+et al., “The national sleep research resource: Towards a
+sleep data commons,” J. Amer. Med. Inform. Assoc., vol. 25, no. 10,
+pp. 1351–1358, Oct. 2018.
+[43] S. F. Quan et al., “The sleep heart health study: Design, rationale, and
+methods,” Sleep, vol. 20, no. 12, pp. 1077–1085, 1997.
+[44] P. Fonseca, N. D. Teuling, X. Long, and R. M. Aarts, “Cardiorespiratory
+sleep stage detection using conditional random ﬁelds,”IEEE J. Biomed.
+Health Informat., vol. 21, no. 4, pp. 956–966, Jul. 2017.
+[45] C. Iber, The AASM Manual for the Scoring of Sleep and Associated
+Events: Rules, Terminology and Technical Speciﬁcation. Westchester,
+IL, USA: American Academy of Sleep Medicine, 2007.
+[46] M. X. Cohen,Analyzing Neural Time Series Data: Theory and Practice.
+Cambridge, MA, USA: MIT Press, 2014.
+[47] S. Kouchaki, S. Sanei, E. L. Arbon, and D. J. Dijk, “Tensor based
+singular spectrum analysis for automatic scoring of sleep EEG,”IEEE
+Trans. Neural Syst. Rehabil. Eng., vol. 23, no. 1, pp. 1–9, Jan. 2015.
+[48] S. Ioffe and C. Szegedy, “Batch normalization: Accelerating deep
+network training by reducing internal covariate shift,” inProc. Int. Conf.
+Mach. Learn., 2015, pp. 448–456.
+[49] S. Bai, J. Z. Kolter, and V . Koltun, “An empirical evaluation of generic
+convolutional and recurrent networks for sequence modeling,” 2018,
+arXiv:1803.01271.
+[50] F. Yu and V . Koltun, “Multi-scale context aggregation by dilated
+convolutions,” 2015,arXiv:1511.07122.
+[51] J. Long, E. Shelhamer, and T. Darrell, “Fully convolutional networks
+for semantic segmentation,” inProc. IEEE Conf. Comput. Vis. Pattern
+Recognit., Jun. 2015, pp. 3431–3440.
+[52] J. Cohen, “A coefﬁcient of agreement for nominal scales,” Educ.
+Psychol. Meas., vol. 20, no. 1, pp. 37–46, 1960.
+[53] D. P. Kingma and J. Ba, “Adam: A method for stochastic optimization,”
+2014, arXiv:1412.6980.
+[54] S. Mousavi, F. Afghah, and U. R. Acharya, “SleepEEGNet: Automated
+sleep stage scoring with sequence to sequence deep learning approach,”
+PLoS ONE, vol. 14, no. 5, May 2019, Art. no. e0216456.
+[55] M. Friedman, “The use of ranks to avoid the assumption of normality
+implicit in the analysis of variance,”J. Amer. Statist. Assoc., vol. 32,
+no. 200, pp. 675–701, Dec. 1937.
+
+--- END OF PAPER: SleepFCN_A_Fully_Convolutional_Deep_Learning_Framework_for_Sleep_Stage_Classification_Using_Single-Channel_Electroencephalograms.pdf ---
+
