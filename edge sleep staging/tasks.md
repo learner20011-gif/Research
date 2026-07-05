@@ -1,4 +1,3 @@
-
 Here is the comprehensive Research Decomposition for **"TinyEEG-Sleep: An Ultra-Lightweight, Temporal-Context-Aware Edge AI Framework for Real-Time Single-Channel EEG Sleep Staging on Microcontrollers."**
 
 This document breaks the validated blueprint down to the absolute leaf-node tasks.
