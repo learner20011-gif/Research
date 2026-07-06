@@ -235,14 +235,14 @@ class RealEEGSleepLoader:
         return data
 
 # Download data if not exists
-print("Ensuring openneuro dataset ds005178 is downloaded (sub-001 and sub-002)...")
+print("Ensuring openneuro dataset ds005185 is downloaded (sub-001 and sub-002)...")
 try:
     import openneuro as on
-    on.download(dataset='ds005178', target_dir='./eesm23', include=['sub-001', 'sub-002'])
+    on.download(dataset='ds005185', target_dir='./eesm19', tag='1.0.2', include=['sub-001', 'sub-002'])
 except Exception as e:
     print("Download skipped or failed:", e)
 
-loader = RealEEGSleepLoader(data_root='./eesm23')
+loader = RealEEGSleepLoader(data_root='./eesm19')
 dataset = loader.load_dataset(n_subjects=2, sessions=['001', '002'])
 print(f'Epoch shape: {dataset[0]["epochs"].shape} | FS: {dataset[0]["fs"]} Hz')
 
