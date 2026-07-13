@@ -12,7 +12,7 @@
 # |---|---------|----------|
 # | 0 | **Environment Setup** | Packages, imports, dark style |
 # | 1 | **Dataset Architecture** | BIDS structure, metadata tables |
-# | 2 | **Data Loading** | MNE/OpenNeuro or synthetic data |
+# | 2 | **Data Loading** | MNE/OpenNeuro real local data |
 # | 3 | **EDA** | Hypnograms, class distributions |
 # | 4 | **Preprocessing** | Filtering, artifact removal |
 # | 5 | **Time-Frequency Analysis** | Spectrograms, biomarker visualization |
@@ -290,8 +290,10 @@ class RealEEGSleepLoader:
                     end_idx = start_idx + self.EPOCH_SAMP
                     
                     if end_idx <= len(sig):
-                        ep = sig[start_idx:end_idx].astype(np.float32)
-                        ep = (ep - ep.mean()) / (ep.std() + 1e-8) * 30
+                        ep = sig[start_idx:end_idx].astype(np.float32) * 1e6 # Convert Volts to microVolts
+                        if np.isnan(ep).any():
+                            continue
+                        ep = ep - np.mean(ep) # Remove DC offset
                         epochs.append(ep)
                         stage_names.append(stage_str)
                         labels.append(STAGE_MAP[stage_str])
@@ -324,6 +326,16 @@ else:
     with open(dataset_cache_path, 'wb') as f:
         pickle.dump(dataset, f)
         print("Dataset saved to cache.")
+# Clean up any NaN epochs from the dataset (especially if loaded from an old cache)
+for rec in dataset:
+    if len(rec['epochs']) > 0:
+        valid_mask = ~np.isnan(rec['epochs']).any(axis=1)
+        rec['epochs'] = rec['epochs'][valid_mask]
+        rec['labels'] = rec['labels'][valid_mask]
+        rec['stage_names'] = [sn for i, sn in enumerate(rec['stage_names']) if valid_mask[i]]
+        rec['metadata'] = [md for i, md in enumerate(rec['metadata']) if valid_mask[i]]
+dataset = [rec for rec in dataset if len(rec['epochs']) > 0]
+
 if len(dataset) > 0:
     print(f'Epoch shape: {dataset[0]["epochs"].shape} | FS: {dataset[0]["fs"]} Hz')
 else:
@@ -354,7 +366,7 @@ axes[0].grid(axis='y',alpha=0.3); axes[0].set_ylim(0,max(pcts)*1.3)
 
 x_=np.arange(5)
 axes[1].bar(x_-0.2,[aasm[s] for s in STAGE_ORDER],0.4,label='AASM Reference',color='#8B949E',alpha=0.6)
-axes[1].bar(x_+0.2,pcts,0.4,color=colors_,alpha=0.85,label='Synthetic EESM')
+axes[1].bar(x_+0.2,pcts,0.4,color=colors_,alpha=0.85,label='Real EESM')
 axes[1].set_xticks(x_); axes[1].set_xticklabels(STAGE_ORDER)
 axes[1].set_ylabel('%'); axes[1].set_title('vs. AASM Reference')
 axes[1].legend(); axes[1].grid(axis='y',alpha=0.3)
@@ -399,7 +411,10 @@ plt.show()
 stage_samples={}
 for rec_ in dataset:
     for i,stg in enumerate(rec_['stage_names']):
-        if stg not in stage_samples: stage_samples[stg]=rec_['epochs'][i]
+        if stg not in stage_samples:
+            ep_ = rec_['epochs'][i]
+            if not np.isnan(ep_).any():
+                stage_samples[stg] = ep_
     if len(stage_samples)==5: break
 
 t_=np.arange(RealEEGSleepLoader.EPOCH_SAMP)/RealEEGSleepLoader.FS
@@ -437,13 +452,27 @@ class EarEEGPreprocessor:
 
     def process_epoch(self,x):
         info={'artifact':False,'snr_db':0.0}
-        if np.max(np.abs(x))>self.thresh or x.std()<0.5:
+        if np.isnan(x).any():
             info['artifact']=True; return x,info
+            
+        x_raw = x.copy()
+        
+        # Apply filters first to remove massive baseline drift
         x=signal.filtfilt(self.nb_b,self.nb_a,x)
         x=signal.filtfilt(self.bp_b,self.bp_a,x)
-        f,psd=signal.welch(x,fs=self.fs,nperseg=self.fs*2)
+        
+        # Artifact detection on the FILTERED signal
+        if np.nanmax(np.abs(x))>self.thresh or np.nanstd(x)<0.5:
+            info['artifact']=True; return x,info
+        
+        # Compute SNR on the *raw* signal before filters obliterate the noise band
+        f,psd=signal.welch(x_raw,fs=self.fs,nperseg=self.fs*2)
         sig_p=np.mean(psd[(f>=1)&(f<=30)]); noise_p=np.mean(psd[(f>=45)&(f<=80)])
         info['snr_db']=10*np.log10(sig_p/(noise_p+1e-10))
+        
+        # Standardize for neural network after artifact detection and filtering
+        x = (x - np.mean(x)) / (np.std(x) + 1e-8) * 30.0
+        
         return x.astype(np.float32),info
 
     def process_recording(self,rec):
@@ -924,8 +953,8 @@ benchmarks=[
     ('DeepSleepNet','Sleep-EDF',0.82,0.76,0.75,'Supratak 2017'),
     ('TinySleepNet','Sleep-EDF',0.83,0.78,0.77,'Supratak 2020'),
     ('SeqSleepNet (ear-EEG)','EESM19',0.79,0.73,0.72,'Mikkelsen 2025'),
-    ('TinyEEGSleep Float32','EESM syn.',fp32_acc,fp32_f1,fp32_k,'This Notebook'),
-    ('TinyEEGSleep INT8 QAT','EESM syn.',int8_acc,int8_f1,int8_k,'This Notebook'),
+    ('TinyEEGSleep Float32','Real EESM',fp32_acc,fp32_f1,fp32_k,'This Notebook'),
+    ('TinyEEGSleep INT8 QAT','Real EESM',int8_acc,int8_f1,int8_k,'This Notebook'),
 ]
 df_bench=pd.DataFrame(benchmarks,columns=['Method','Dataset','Accuracy','Macro F1',"Cohen's k",'Reference'])
 
