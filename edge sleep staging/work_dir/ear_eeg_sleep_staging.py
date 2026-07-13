@@ -54,7 +54,9 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
 import seaborn as sns
+# pyrefly: ignore [missing-import]
 import scipy.signal as signal
+# pyrefly: ignore [missing-import]
 from scipy.stats import wilcoxon
 from sklearn.metrics import accuracy_score, f1_score, cohen_kappa_score, confusion_matrix, classification_report
 from sklearn.preprocessing import StandardScaler
@@ -164,21 +166,63 @@ class RealEEGSleepLoader:
     def __init__(self, data_root):
         self.data_root = Path(data_root)
 
-    def load_dataset(self, n_subjects=2, sessions=['001', '002']):
+    def load_dataset(self, subjects=None, sessions=None):
+        import os
         data = []
-        subjects = [f"{i:03d}" for i in range(1, n_subjects + 1)]
-        print(f"Loading {n_subjects} subjects, sessions: {sessions} from real data...")
+        if subjects is None:
+            try:
+                subjects = sorted([d.split('-')[1] for d in os.listdir(self.data_root) 
+                                   if d.startswith("sub-") and os.path.isdir(os.path.join(self.data_root, d))])
+            except Exception as e:
+                print(f"Error listing data_root: {e}")
+                subjects = []
+                
+        print(f"Loading subjects: {subjects} from real data...")
+        
+        VAL_TO_STAGE = {
+            1: 'Wake',
+            2: 'REM',
+            3: 'N1',
+            4: 'N2',
+            5: 'N3'
+        }
         
         for sub in subjects:
-            for ses in sessions:
-                eeg_dir = self.data_root / f"sub-{sub}" / f"ses-{ses}" / "eeg"
-                raw_file = eeg_dir / f"sub-{sub}_ses-{ses}_task-sleep_acq-earEEG_eeg.set"
-                evt_file = eeg_dir / f"sub-{sub}_ses-{ses}_task-sleep_acq-scoring_events.tsv"
+            sub_dir = self.data_root / f"sub-{sub}"
+            if not sub_dir.exists(): continue
+            
+            try:
+                cur_sessions = sessions if sessions is not None else sorted([
+                    d.split('-')[1] for d in os.listdir(sub_dir)
+                    if d.startswith("ses-") and os.path.isdir(os.path.join(sub_dir, d))
+                ])
+            except Exception as e:
+                print(f"Error listing sessions for sub-{sub}: {e}")
+                continue
                 
-                if not raw_file.exists() or not evt_file.exists():
-                    print(f"Missing data for sub-{sub} ses-{ses}, skipping.")
+            for ses in cur_sessions:
+                eeg_dir = sub_dir / f"ses-{ses}" / "eeg"
+                
+                # Target the PSG file directly since it contains both the scoring labels and the ear-EEG channels
+                raw_file = eeg_dir / f"sub-{sub}_ses-{ses}_task-sleep_acq-PSG_eeg.set"
+                
+                # Check for scoring files
+                evt_file = None
+                for evt_name in [
+                    f"sub-{sub}_ses-{ses}_task-sleep_acq-scoring1_events.tsv",
+                    f"sub-{sub}_ses-{ses}_task-sleep_acq-scoring2_events.tsv",
+                    f"sub-{sub}_ses-{ses}_task-sleep_acq-scoring_events.tsv"
+                ]:
+                    test_file = eeg_dir / evt_name
+                    if test_file.exists():
+                        evt_file = test_file
+                        break
+                
+                if not raw_file.exists() or evt_file is None or not evt_file.exists():
+                    # Silently skip sessions without sleep scoring events or raw files
                     continue
 
+                print(f"Processing sub-{sub} ses-{ses}...")
                 # Load RAW
                 try:
                     raw = mne.io.read_raw_eeglab(raw_file, preload=True, verbose=False)
@@ -186,14 +230,37 @@ class RealEEGSleepLoader:
                     print(f"Failed to read eeglab file {raw_file}: {e}")
                     continue
                 
+                print(f"Available channels in {raw_file.name}: {raw.ch_names}")
+                
                 raw.resample(self.FS, n_jobs=1, verbose=False)
-                # Select one good Ear-EEG channel, e.g. 'RB' or 'LT'
-                ch_name = raw.ch_names[0] if len(raw.ch_names) > 0 else None
+                
+                # The acq-PSG file contains both Scalp and Ear-EEG channels.
+                # We prioritize extracting an Ear-EEG channel
+                preferred_ear_channels = ['ELA', 'ELB', 'ELC', 'ELT', 'ELE', 'ELI', 
+                                          'ERA', 'ERB', 'ERC', 'ERT', 'ERE', 'ERI']
+                ch_name = None
+                for pc in preferred_ear_channels:
+                    if pc in raw.ch_names:
+                        ch_name = pc
+                        break
+                
+                if not ch_name:
+                    ch_name = raw.ch_names[0] if len(raw.ch_names) > 0 else None
+                    
                 if not ch_name: continue
+                print(f"Extracting signal from channel: {ch_name}")
                 sig = raw.get_data(picks=[ch_name])[0]
                 
                 # Load EVENTS
-                events_df = pd.read_csv(evt_file, sep='	')
+                events_df = pd.read_csv(evt_file, sep='\t')
+                col = None
+                for c in ['scoring', 'Scoring1', 'Scoring2']:
+                    if c in events_df.columns:
+                        col = c
+                        break
+                if col is None:
+                    print(f"No scoring column found in {evt_file}, skipping.")
+                    continue
                 
                 epochs = []
                 stage_names = []
@@ -203,17 +270,27 @@ class RealEEGSleepLoader:
                 for _, row in events_df.iterrows():
                     onset = float(row['onset'])
                     duration = float(row['duration'])
-                    stage_str = row['scoring'].strip()
+                    raw_val = row[col]
                     
+                    if pd.isna(raw_val):
+                        continue
+                        
+                    if isinstance(raw_val, (int, float, np.integer, np.floating)) or (isinstance(raw_val, str) and raw_val.replace('.', '', 1).isdigit()):
+                        val_int = int(float(raw_val))
+                        if val_int not in VAL_TO_STAGE:
+                            continue
+                        stage_str = VAL_TO_STAGE[val_int]
+                    else:
+                        stage_str = str(raw_val).strip()
+                        
                     if stage_str not in STAGE_MAP:
-                        continue # Skip Artefact or unknown
+                        continue
                         
                     start_idx = int(onset * self.FS)
                     end_idx = start_idx + self.EPOCH_SAMP
                     
                     if end_idx <= len(sig):
                         ep = sig[start_idx:end_idx].astype(np.float32)
-                        # Basic zero-mean and variance normalization per epoch
                         ep = (ep - ep.mean()) / (ep.std() + 1e-8) * 30
                         epochs.append(ep)
                         stage_names.append(stage_str)
@@ -234,17 +311,24 @@ class RealEEGSleepLoader:
         print(f"Done: {len(data)} recordings, {sum(len(r['epochs']) for r in data):,} epochs")
         return data
 
-# Download data if not exists
-print("Ensuring openneuro dataset ds005185 is downloaded (sub-001 and sub-002)...")
-try:
-    import openneuro as on
-    on.download(dataset='ds005185', target_dir='./eesm19', tag='1.0.2', include=['sub-001', 'sub-002'])
-except Exception as e:
-    print("Download skipped or failed:", e)
+loader = RealEEGSleepLoader(data_root=r'E:\EESM19')
+dataset_cache_path = OUTPUT_DIR / 'loaded_dataset.pkl'
+if dataset_cache_path.exists():
+    import pickle
+    print("Loading dataset from cache...")
+    with open(dataset_cache_path, 'rb') as f:
+        dataset = pickle.load(f)
+else:
+    dataset = loader.load_dataset(subjects=None, sessions=None)
+    import pickle
+    with open(dataset_cache_path, 'wb') as f:
+        pickle.dump(dataset, f)
+        print("Dataset saved to cache.")
+if len(dataset) > 0:
+    print(f'Epoch shape: {dataset[0]["epochs"].shape} | FS: {dataset[0]["fs"]} Hz')
+else:
+    print("No valid recordings found with epochs!")
 
-loader = RealEEGSleepLoader(data_root='./eesm19')
-dataset = loader.load_dataset(n_subjects=2, sessions=['001', '002'])
-print(f'Epoch shape: {dataset[0]["epochs"].shape} | FS: {dataset[0]["fs"]} Hz')
 
 
 #%% [markdown]
