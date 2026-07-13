@@ -239,17 +239,22 @@ class RealEEGSleepLoader:
                 preferred_ear_channels = ['ELA', 'ELB', 'ELC', 'ELT', 'ELE', 'ELI', 
                                           'ERA', 'ERB', 'ERC', 'ERT', 'ERE', 'ERI']
                 ch_name = None
+                sig = None
+                
+                # Check preferred channels first, ensuring they are not just full of NaNs
                 for pc in preferred_ear_channels:
                     if pc in raw.ch_names:
-                        ch_name = pc
-                        break
-                
-                if not ch_name:
-                    ch_name = raw.ch_names[0] if len(raw.ch_names) > 0 else None
+                        test_sig = raw.get_data(picks=[pc])[0]
+                        if not np.isnan(test_sig).all():
+                            ch_name = pc
+                            sig = test_sig
+                            break
+                            
+                if not ch_name or sig is None:
+                    print(f"No valid Ear-EEG channels found in {raw_file.name}, skipping.")
+                    continue
                     
-                if not ch_name: continue
-                print(f"Extracting signal from channel: {ch_name}")
-                sig = raw.get_data(picks=[ch_name])[0]
+                print(f"Extracting valid signal from channel: {ch_name}")
                 
                 # Load EVENTS
                 events_df = pd.read_csv(evt_file, sep='\t')
@@ -267,6 +272,9 @@ class RealEEGSleepLoader:
                 labels = []
                 metas = []
                 
+                nan_skips = 0
+                map_skips = 0
+                
                 for _, row in events_df.iterrows():
                     onset = float(row['onset'])
                     duration = float(row['duration'])
@@ -278,12 +286,14 @@ class RealEEGSleepLoader:
                     if isinstance(raw_val, (int, float, np.integer, np.floating)) or (isinstance(raw_val, str) and raw_val.replace('.', '', 1).isdigit()):
                         val_int = int(float(raw_val))
                         if val_int not in VAL_TO_STAGE:
+                            map_skips += 1
                             continue
                         stage_str = VAL_TO_STAGE[val_int]
                     else:
                         stage_str = str(raw_val).strip()
                         
                     if stage_str not in STAGE_MAP:
+                        map_skips += 1
                         continue
                         
                     start_idx = int(onset * self.FS)
@@ -292,12 +302,15 @@ class RealEEGSleepLoader:
                     if end_idx <= len(sig):
                         ep = sig[start_idx:end_idx].astype(np.float32) * 1e6 # Convert Volts to microVolts
                         if np.isnan(ep).any():
+                            nan_skips += 1
                             continue
                         ep = ep - np.mean(ep) # Remove DC offset
                         epochs.append(ep)
                         stage_names.append(stage_str)
                         labels.append(STAGE_MAP[stage_str])
                         metas.append({'stage': stage_str, 'has_spindle': False, 'has_k_complex': False})
+                
+                print(f" -> Extracted {len(epochs)} valid epochs. Skipped {nan_skips} due to NaNs, {map_skips} due to unmapped labels.")
                 
                 if len(epochs) > 0:
                     data.append({
@@ -561,17 +574,18 @@ for rec in processed_dataset[:5]:
         if not rec['artifact_mask'][i]:
             ep=rec['epochs'][i]
             f_,psd_=signal.welch(ep,fs=RealEEGSleepLoader.FS,nperseg=RealEEGSleepLoader.FS*2)
-            row={nm:np.trapz(psd_[(f_>=lo)&(f_<=hi)],f_[(f_>=lo)&(f_<=hi)]) for nm,(lo,hi) in BANDS_PLOT.items()}
+            total_power = np.trapz(psd_[(f_>=0.5)&(f_<=40)], f_[(f_>=0.5)&(f_<=40)])
+            row={nm:(np.trapz(psd_[(f_>=lo)&(f_<=hi)],f_[(f_>=lo)&(f_<=hi)]) / total_power) * 100 for nm,(lo,hi) in BANDS_PLOT.items()}
             row['stage']=rec['stage_names'][i]; band_rows.append(row)
 df_bp=pd.DataFrame(band_rows)
 fig,axes=plt.subplots(2,2,figsize=(14,10))
-fig.suptitle('EEG Band Power by Sleep Stage - Biomarker Analysis',fontsize=14,fontweight='bold',color='#58A6FF')
+fig.suptitle('EEG Relative Band Power by Sleep Stage - Biomarker Analysis',fontsize=14,fontweight='bold',color='#58A6FF')
 for ax,band_nm in zip(axes.flatten(),BANDS_PLOT):
     means=df_bp.groupby('stage')[band_nm].mean().reindex(STAGE_ORDER)
     stds=df_bp.groupby('stage')[band_nm].std().reindex(STAGE_ORDER)
     ax.bar(STAGE_ORDER,means,yerr=stds,capsize=5,color=[STAGE_COLORS[s] for s in STAGE_ORDER],
            alpha=0.8,edgecolor='#30363D')
-    ax.set_title(band_nm.replace('_',' '),fontweight='bold'); ax.set_ylabel('Power (uV^2/Hz)')
+    ax.set_title(band_nm.replace('_',' '),fontweight='bold'); ax.set_ylabel('Relative Power (%)')
     ax.grid(axis='y',alpha=0.3)
 plt.tight_layout()
 plt.savefig(OUTPUT_DIR/'band_powers.png',dpi=150,bbox_inches='tight',facecolor='#0D1117')
@@ -675,10 +689,17 @@ print(f'Running {N_FOLDS}-fold LOSO-CV ({N_TRAIN_EP} epochs/fold)...')
 
 loso_results=[]
 for fold_i,test_sub in enumerate(unique_subs[:N_FOLDS]):
-    tr_mask=all_subjects!=test_sub; te_mask=all_subjects==test_sub
-    Xtr,ytr=all_epochs_np[tr_mask],all_labels_np[tr_mask]
-    Xte,yte=all_epochs_np[te_mask],all_labels_np[te_mask]
-    print(f'\nFold {fold_i+1}/{N_FOLDS} | Sub {test_sub} | Train: {len(Xtr):,} | Test: {len(Xte):,}')
+    if len(unique_subs) == 1:
+        # Fallback for single-subject testing: 80/20 chronological split
+        split_idx = int(len(all_epochs_np) * 0.8)
+        Xtr, ytr = all_epochs_np[:split_idx], all_labels_np[:split_idx]
+        Xte, yte = all_epochs_np[split_idx:], all_labels_np[split_idx:]
+        print(f'\nSingle Subject Fallback | Sub {test_sub} | Train: {len(Xtr):,} | Test: {len(Xte):,}')
+    else:
+        tr_mask=all_subjects!=test_sub; te_mask=all_subjects==test_sub
+        Xtr,ytr=all_epochs_np[tr_mask],all_labels_np[tr_mask]
+        Xte,yte=all_epochs_np[te_mask],all_labels_np[te_mask]
+        print(f'\nFold {fold_i+1}/{N_FOLDS} | Sub {test_sub} | Train: {len(Xtr):,} | Test: {len(Xte):,}')
 
     cw=class_weights(ytr); crit_=nn.CrossEntropyLoss(weight=cw.to(DEVICE))
     ds_tr=TensorDataset(torch.from_numpy(Xtr).unsqueeze(1),torch.from_numpy(ytr))
