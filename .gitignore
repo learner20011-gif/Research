@@ -1,3 +1,4 @@
 # Edge Sleep Staging Cache & Outputs
 edge sleep staging/work_dir/__pycache__/
 edge sleep staging/work_dir/outputs/
+outputs/

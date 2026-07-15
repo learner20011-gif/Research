@@ -35,9 +35,31 @@
 
 #%%
 # SECTION 0 - Environment Setup
+# ==============================================================================
+# 🚀 INTEL ARC XPU (Windows) SETUP INSTRUCTIONS
+# ==============================================================================
+# To use an Intel Arc GPU (e.g., A770) for hardware acceleration on Windows:
+#
+# 1. DO NOT add `torch` to the PACKAGES list below. 
+#    Running `pip install torch` inside a running Python script on Windows can 
+#    cause DLL locking issues, corrupting the environment. It also defaults to 
+#    downloading the CPU-only version from PyPI, overwriting your XPU build.
+#
+# 2. Before running this script, open your terminal (Command Prompt / PowerShell)
+#    and install the native XPU PyTorch build explicitly:
+#      pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/xpu
+#
+# 3. Ensure your Intel GPU drivers are up to date (32.0.101.6739 or higher).
+#
+# Once the above is done, this script will automatically detect `torch.xpu`, 
+# route tensors to the Intel GPU, and apply `torch.compile()` for massive 
+# training speedups using the native PyTorch 2.13+ API.
+# ==============================================================================
+
 import subprocess, sys
+
 PACKAGES = ['mne>=1.7','mne-bids>=0.14','openneuro-py','scipy>=1.12','scikit-learn>=1.4',
-            'torch>=2.2','torchinfo','matplotlib>=3.8','seaborn>=0.13','pandas>=2.2',
+            'torchinfo','matplotlib>=3.8','seaborn>=0.13','pandas>=2.2',
             'numpy>=1.26','tqdm','pyedflib']
 for pkg in PACKAGES:
     subprocess.run([sys.executable,'-m','pip','install','-q',pkg], check=False)
@@ -67,6 +89,13 @@ import mne
 mne.set_log_level('WARNING')
 warnings.filterwarnings('ignore')
 
+# Intel Arc A770 XPU — native support in torch 2.13+xpu (no IPEX needed)
+_XPU_AVAILABLE = hasattr(torch, 'xpu') and torch.xpu.is_available()
+if _XPU_AVAILABLE:
+    print(f'Intel XPU detected: {torch.xpu.get_device_name(0)}')
+else:
+    print('Intel XPU not available. Using CUDA/CPU.')
+
 plt.rcParams.update({
     'figure.facecolor':'#0D1117','axes.facecolor':'#161B22','axes.edgecolor':'#30363D',
     'axes.labelcolor':'#C9D1D9','xtick.color':'#8B949E','ytick.color':'#8B949E',
@@ -79,9 +108,18 @@ STAGE_MAP    = {'Wake':0,'N1':1,'N2':2,'N3':3,'REM':4}
 INV_STAGE_MAP= {v:k for k,v in STAGE_MAP.items()}
 STAGE_ORDER  = ['Wake','N1','N2','N3','REM']
 
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+# Auto-detect best available device: Intel XPU > CUDA > CPU
+if _XPU_AVAILABLE:
+    DEVICE = 'xpu'
+elif torch.cuda.is_available():
+    DEVICE = 'cuda'
+else:
+    DEVICE = 'cpu'
+
 OUTPUT_DIR = Path('./outputs'); OUTPUT_DIR.mkdir(exist_ok=True)
 print(f'Device: {DEVICE} | MNE: {mne.__version__} | PyTorch: {torch.__version__}')
+if DEVICE == 'xpu':
+    print(f'Intel Arc GPU: {torch.xpu.get_device_name(0)} | XPU count: {torch.xpu.device_count()}')
 
 #%% [markdown]
 # ---
@@ -177,7 +215,7 @@ class RealEEGSleepLoader:
                 print(f"Error listing data_root: {e}")
                 subjects = []
                 
-        print(f"Loading subjects: {subjects} from real data...")
+        print(f"Loading subjects: {subjects} from real data (parallelized)...")
         
         VAL_TO_STAGE = {
             1: 'Wake',
@@ -187,9 +225,10 @@ class RealEEGSleepLoader:
             5: 'N3'
         }
         
-        for sub in subjects:
+        def _process_subject(sub):
+            sub_data = []
             sub_dir = self.data_root / f"sub-{sub}"
-            if not sub_dir.exists(): continue
+            if not sub_dir.exists(): return sub_data
             
             try:
                 cur_sessions = sessions if sessions is not None else sorted([
@@ -198,7 +237,7 @@ class RealEEGSleepLoader:
                 ])
             except Exception as e:
                 print(f"Error listing sessions for sub-{sub}: {e}")
-                continue
+                return sub_data
                 
             for ses in cur_sessions:
                 eeg_dir = sub_dir / f"ses-{ses}" / "eeg"
@@ -313,7 +352,7 @@ class RealEEGSleepLoader:
                 print(f" -> Extracted {len(epochs)} valid epochs. Skipped {nan_skips} due to NaNs, {map_skips} due to unmapped labels.")
                 
                 if len(epochs) > 0:
-                    data.append({
+                    sub_data.append({
                         'subject': sub,
                         'night': ses,
                         'epochs': np.stack(epochs),
@@ -322,19 +361,27 @@ class RealEEGSleepLoader:
                         'metadata': metas,
                         'fs': self.FS
                     })
+            return sub_data
+            
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+            results = list(executor.map(_process_subject, subjects))
+            
+        for res in results:
+            data.extend(res)
         
         print(f"Done: {len(data)} recordings, {sum(len(r['epochs']) for r in data):,} epochs")
         return data
 
-loader = RealEEGSleepLoader(data_root=r'E:\EESM19')
-dataset_cache_path = OUTPUT_DIR / 'loaded_dataset.pkl'
+loader = RealEEGSleepLoader(data_root=r'E:\EESM19\ds005185-download')
+dataset_cache_path = OUTPUT_DIR / 'loaded_dataset_sub1to3.pkl'
 if dataset_cache_path.exists():
     import pickle
     print("Loading dataset from cache...")
     with open(dataset_cache_path, 'rb') as f:
         dataset = pickle.load(f)
 else:
-    dataset = loader.load_dataset(subjects=None, sessions=None)
+    dataset = loader.load_dataset(subjects=['001', '002', '003'], sessions=None)
     import pickle
     with open(dataset_cache_path, 'wb') as f:
         pickle.dump(dataset, f)
@@ -499,8 +546,10 @@ class EarEEGPreprocessor:
                 'mean_snr_db':snr_vals[~art_mask].mean() if (~art_mask).any() else 0.0}
 
 preprocessor=EarEEGPreprocessor(fs=RealEEGSleepLoader.FS)
-print('Preprocessing all recordings...')
-processed_dataset=[preprocessor.process_recording(r) for r in dataset]
+print('Preprocessing all recordings (parallelized)...')
+import concurrent.futures
+with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+    processed_dataset = list(executor.map(preprocessor.process_recording, dataset))
 print(f'Mean artifact rate: {np.mean([r["artifact_pct"] for r in processed_dataset]):.2f}%')
 print(f'Mean SNR: {np.mean([r["mean_snr_db"] for r in processed_dataset]):.1f} dB')
 
@@ -566,7 +615,15 @@ plt.tight_layout()
 plt.savefig(OUTPUT_DIR/'spectrograms.png',dpi=150,bbox_inches='tight',facecolor='#0D1117')
 plt.show()
 
-#%%
+# Try to import trapezoid integration for NumPy 2.0 compatibility
+try:
+    from scipy.integrate import trapezoid
+except ImportError:
+    try:
+        from numpy import trapezoid
+    except ImportError:
+        from numpy import trapz as trapezoid
+
 BANDS_PLOT={'delta_0.5-4':(0.5,4),'theta_4-8':(4,8),'alpha_8-13':(8,13),'beta_13-30':(13,30)}
 band_rows=[]
 for rec in processed_dataset[:5]:
@@ -574,8 +631,8 @@ for rec in processed_dataset[:5]:
         if not rec['artifact_mask'][i]:
             ep=rec['epochs'][i]
             f_,psd_=signal.welch(ep,fs=RealEEGSleepLoader.FS,nperseg=RealEEGSleepLoader.FS*2)
-            total_power = np.trapz(psd_[(f_>=0.5)&(f_<=40)], f_[(f_>=0.5)&(f_<=40)])
-            row={nm:(np.trapz(psd_[(f_>=lo)&(f_<=hi)],f_[(f_>=lo)&(f_<=hi)]) / total_power) * 100 for nm,(lo,hi) in BANDS_PLOT.items()}
+            total_power = trapezoid(psd_[(f_>=0.5)&(f_<=40)], f_[(f_>=0.5)&(f_<=40)])
+            row={nm:(trapezoid(psd_[(f_>=lo)&(f_<=hi)],f_[(f_>=lo)&(f_<=hi)]) / total_power) * 100 for nm,(lo,hi) in BANDS_PLOT.items()}
             row['stage']=rec['stage_names'][i]; band_rows.append(row)
 df_bp=pd.DataFrame(band_rows)
 fig,axes=plt.subplots(2,2,figsize=(14,10))
@@ -682,7 +739,7 @@ all_epochs_np=scaler.fit_transform(all_epochs_np).astype(np.float32)
 
 unique_subs=np.unique(all_subjects)
 N_FOLDS=min(len(unique_subs),5)   # Increase for full LOSO publication run
-N_TRAIN_EP=20                      # Increase to 60+ for publication
+N_TRAIN_EP=80                      # Increase to 60+ for publication
 
 print(f'Total: {len(all_epochs_np):,} epochs | {len(unique_subs)} subjects')
 print(f'Running {N_FOLDS}-fold LOSO-CV ({N_TRAIN_EP} epochs/fold)...')
@@ -708,6 +765,7 @@ for fold_i,test_sub in enumerate(unique_subs[:N_FOLDS]):
     ld_te=DataLoader(ds_te,batch_size=64,shuffle=False,num_workers=0)
 
     fold_model=TinyEEGSleep().to(DEVICE)
+            
     opt_=optim.AdamW(fold_model.parameters(),lr=1e-3,weight_decay=1e-4)
     sched=optim.lr_scheduler.CosineAnnealingLR(opt_,T_max=N_TRAIN_EP)
     hist={'train_loss':[],'val_f1':[],'val_acc':[]}
