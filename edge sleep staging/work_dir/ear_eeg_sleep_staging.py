@@ -83,18 +83,27 @@ from scipy.stats import wilcoxon
 from sklearn.metrics import accuracy_score, f1_score, cohen_kappa_score, confusion_matrix, classification_report
 from sklearn.preprocessing import StandardScaler
 import torch, torch.nn as nn, torch.optim as optim
-import torch.quantization
+try:
+    import torch.ao.quantization as quantization
+except ImportError:
+    import torch.quantization as quantization
 from torch.utils.data import DataLoader, TensorDataset
 import mne
 mne.set_log_level('WARNING')
 warnings.filterwarnings('ignore')
 
-# Intel Arc A770 XPU — native support in torch 2.13+xpu (no IPEX needed)
-_XPU_AVAILABLE = hasattr(torch, 'xpu') and torch.xpu.is_available()
+# Auto-detect best available device: Intel XPU > CUDA > CPU
+try:
+    _XPU_AVAILABLE = hasattr(torch, 'xpu') and torch.xpu.is_available()
+except Exception:
+    _XPU_AVAILABLE = False
+
 if _XPU_AVAILABLE:
-    print(f'Intel XPU detected: {torch.xpu.get_device_name(0)}')
+    DEVICE = 'xpu'
+elif torch.cuda.is_available():
+    DEVICE = 'cuda'
 else:
-    print('Intel XPU not available. Using CUDA/CPU.')
+    DEVICE = 'cpu'
 
 plt.rcParams.update({
     'figure.facecolor':'#0D1117','axes.facecolor':'#161B22','axes.edgecolor':'#30363D',
@@ -108,18 +117,12 @@ STAGE_MAP    = {'Wake':0,'N1':1,'N2':2,'N3':3,'REM':4}
 INV_STAGE_MAP= {v:k for k,v in STAGE_MAP.items()}
 STAGE_ORDER  = ['Wake','N1','N2','N3','REM']
 
-# Auto-detect best available device: Intel XPU > CUDA > CPU
-if _XPU_AVAILABLE:
-    DEVICE = 'xpu'
-elif torch.cuda.is_available():
-    DEVICE = 'cuda'
-else:
-    DEVICE = 'cpu'
-
-OUTPUT_DIR = Path('./outputs'); OUTPUT_DIR.mkdir(exist_ok=True)
+OUTPUT_DIR = Path('./outputs'); OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 print(f'Device: {DEVICE} | MNE: {mne.__version__} | PyTorch: {torch.__version__}')
 if DEVICE == 'xpu':
     print(f'Intel Arc GPU: {torch.xpu.get_device_name(0)} | XPU count: {torch.xpu.device_count()}')
+elif DEVICE == 'cuda':
+    print(f'NVIDIA GPU: {torch.cuda.get_device_name(0)} | CUDA count: {torch.cuda.device_count()}')
 
 #%% [markdown]
 # ---
@@ -546,10 +549,21 @@ class EarEEGPreprocessor:
                 'mean_snr_db':snr_vals[~art_mask].mean() if (~art_mask).any() else 0.0}
 
 preprocessor=EarEEGPreprocessor(fs=RealEEGSleepLoader.FS)
-print('Preprocessing all recordings (parallelized)...')
-import concurrent.futures
-with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
-    processed_dataset = list(executor.map(preprocessor.process_recording, dataset))
+processed_dataset_path = OUTPUT_DIR / 'processed_dataset.pkl'
+if processed_dataset_path.exists():
+    import pickle
+    print('Loading preprocessed dataset from cache...')
+    with open(processed_dataset_path, 'rb') as f:
+        processed_dataset = pickle.load(f)
+else:
+    print('Preprocessing all recordings (parallelized)...')
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        processed_dataset = list(executor.map(preprocessor.process_recording, dataset))
+    import pickle
+    with open(processed_dataset_path, 'wb') as f:
+        pickle.dump(processed_dataset, f)
+        print('Preprocessed dataset saved to cache.')
 print(f'Mean artifact rate: {np.mean([r["artifact_pct"] for r in processed_dataset]):.2f}%')
 print(f'Mean SNR: {np.mean([r["mean_snr_db"] for r in processed_dataset]):.1f} dB')
 
@@ -744,49 +758,61 @@ N_TRAIN_EP=80                      # Increase to 60+ for publication
 print(f'Total: {len(all_epochs_np):,} epochs | {len(unique_subs)} subjects')
 print(f'Running {N_FOLDS}-fold LOSO-CV ({N_TRAIN_EP} epochs/fold)...')
 
-loso_results=[]
-for fold_i,test_sub in enumerate(unique_subs[:N_FOLDS]):
-    if len(unique_subs) == 1:
-        # Fallback for single-subject testing: 80/20 chronological split
-        split_idx = int(len(all_epochs_np) * 0.8)
-        Xtr, ytr = all_epochs_np[:split_idx], all_labels_np[:split_idx]
-        Xte, yte = all_epochs_np[split_idx:], all_labels_np[split_idx:]
-        print(f'\nSingle Subject Fallback | Sub {test_sub} | Train: {len(Xtr):,} | Test: {len(Xte):,}')
-    else:
-        tr_mask=all_subjects!=test_sub; te_mask=all_subjects==test_sub
-        Xtr,ytr=all_epochs_np[tr_mask],all_labels_np[tr_mask]
-        Xte,yte=all_epochs_np[te_mask],all_labels_np[te_mask]
-        print(f'\nFold {fold_i+1}/{N_FOLDS} | Sub {test_sub} | Train: {len(Xtr):,} | Test: {len(Xte):,}')
+loso_cache_path = OUTPUT_DIR / 'loso_results.pkl'
+if loso_cache_path.exists():
+    import pickle
+    print('Loading LOSO results from cache...')
+    with open(loso_cache_path, 'rb') as f:
+        loso_results = pickle.load(f)
+else:
+    loso_results=[]
+    for fold_i,test_sub in enumerate(unique_subs[:N_FOLDS]):
+        if len(unique_subs) == 1:
+            # Fallback for single-subject testing: 80/20 chronological split
+            split_idx = int(len(all_epochs_np) * 0.8)
+            Xtr, ytr = all_epochs_np[:split_idx], all_labels_np[:split_idx]
+            Xte, yte = all_epochs_np[split_idx:], all_labels_np[split_idx:]
+            print(f'\nSingle Subject Fallback | Sub {test_sub} | Train: {len(Xtr):,} | Test: {len(Xte):,}')
+        else:
+            tr_mask=all_subjects!=test_sub; te_mask=all_subjects==test_sub
+            Xtr,ytr=all_epochs_np[tr_mask],all_labels_np[tr_mask]
+            Xte,yte=all_epochs_np[te_mask],all_labels_np[te_mask]
+            print(f'\nFold {fold_i+1}/{N_FOLDS} | Sub {test_sub} | Train: {len(Xtr):,} | Test: {len(Xte):,}')
+    
+        cw=class_weights(ytr); crit_=nn.CrossEntropyLoss(weight=cw.to(DEVICE))
+        ds_tr=TensorDataset(torch.from_numpy(Xtr).unsqueeze(1),torch.from_numpy(ytr))
+        ds_te=TensorDataset(torch.from_numpy(Xte).unsqueeze(1),torch.from_numpy(yte))
+        ld_tr=DataLoader(ds_tr,batch_size=64,shuffle=True,num_workers=0)
+        ld_te=DataLoader(ds_te,batch_size=64,shuffle=False,num_workers=0)
+    
+        fold_model=TinyEEGSleep().to(DEVICE)
+                
+        opt_=optim.AdamW(fold_model.parameters(),lr=1e-3,weight_decay=1e-4)
+        sched=optim.lr_scheduler.CosineAnnealingLR(opt_,T_max=N_TRAIN_EP)
+        hist={'train_loss':[],'val_f1':[],'val_acc':[]}
+        best_f1,best_st=0.0,None
+    
+        for ep_i in range(N_TRAIN_EP):
+            tl=train_epoch(fold_model,ld_tr,opt_,crit_,DEVICE)
+            _,vacc,vf1,_,_=evaluate(fold_model,ld_te,crit_,DEVICE)
+            sched.step()
+            hist['train_loss'].append(tl); hist['val_f1'].append(vf1); hist['val_acc'].append(vacc)
+            if vf1>best_f1: best_f1=vf1; best_st={k:v.clone() for k,v in fold_model.state_dict().items()}
+            if (ep_i+1)%5==0:
+                print(f'  ep {ep_i+1:02d}/{N_TRAIN_EP} | loss={tl:.4f} | acc={vacc*100:.1f}% | f1={vf1*100:.1f}%')
+    
+        fold_model.load_state_dict(best_st)
+        _,test_acc,test_f1,preds_,gts_=evaluate(fold_model,ld_te,crit_,DEVICE)
+        kappa_=cohen_kappa_score(gts_,preds_)
+        loso_results.append({'fold':fold_i+1,'subject':test_sub,'accuracy':test_acc,'macro_f1':test_f1,
+                             'kappa':kappa_,'predictions':preds_,'ground_truth':gts_,'history':hist,
+                             'model_state':{k:v.cpu() for k,v in fold_model.state_dict().items()}})
+        print(f'  -> Acc: {test_acc*100:.1f}% | F1: {test_f1*100:.1f}% | kappa: {kappa_:.3f}')
 
-    cw=class_weights(ytr); crit_=nn.CrossEntropyLoss(weight=cw.to(DEVICE))
-    ds_tr=TensorDataset(torch.from_numpy(Xtr).unsqueeze(1),torch.from_numpy(ytr))
-    ds_te=TensorDataset(torch.from_numpy(Xte).unsqueeze(1),torch.from_numpy(yte))
-    ld_tr=DataLoader(ds_tr,batch_size=64,shuffle=True,num_workers=0)
-    ld_te=DataLoader(ds_te,batch_size=64,shuffle=False,num_workers=0)
-
-    fold_model=TinyEEGSleep().to(DEVICE)
-            
-    opt_=optim.AdamW(fold_model.parameters(),lr=1e-3,weight_decay=1e-4)
-    sched=optim.lr_scheduler.CosineAnnealingLR(opt_,T_max=N_TRAIN_EP)
-    hist={'train_loss':[],'val_f1':[],'val_acc':[]}
-    best_f1,best_st=0.0,None
-
-    for ep_i in range(N_TRAIN_EP):
-        tl=train_epoch(fold_model,ld_tr,opt_,crit_,DEVICE)
-        _,vacc,vf1,_,_=evaluate(fold_model,ld_te,crit_,DEVICE)
-        sched.step()
-        hist['train_loss'].append(tl); hist['val_f1'].append(vf1); hist['val_acc'].append(vacc)
-        if vf1>best_f1: best_f1=vf1; best_st={k:v.clone() for k,v in fold_model.state_dict().items()}
-        if (ep_i+1)%5==0:
-            print(f'  ep {ep_i+1:02d}/{N_TRAIN_EP} | loss={tl:.4f} | acc={vacc*100:.1f}% | f1={vf1*100:.1f}%')
-
-    fold_model.load_state_dict(best_st)
-    _,test_acc,test_f1,preds_,gts_=evaluate(fold_model,ld_te,crit_,DEVICE)
-    kappa_=cohen_kappa_score(gts_,preds_)
-    loso_results.append({'fold':fold_i+1,'subject':test_sub,'accuracy':test_acc,'macro_f1':test_f1,
-                         'kappa':kappa_,'predictions':preds_,'ground_truth':gts_,'history':hist,
-                         'model_state':{k:v.cpu() for k,v in fold_model.state_dict().items()}})
-    print(f'  -> Acc: {test_acc*100:.1f}% | F1: {test_f1*100:.1f}% | kappa: {kappa_:.3f}')
+    import pickle
+    with open(loso_cache_path, 'wb') as f:
+        pickle.dump(loso_results, f)
+        print('LOSO results saved to cache.')
 
 mean_acc_=np.mean([r['accuracy'] for r in loso_results])
 mean_f1_=np.mean([r['macro_f1'] for r in loso_results])
@@ -871,8 +897,8 @@ crit_q=nn.CrossEntropyLoss(weight=class_weights(ytr_q))
 fp32_model=TinyEEGSleep(); fp32_model.load_state_dict(best_res['model_state']); fp32_model.eval()
 
 qat_model=TinyEEGSleep(); qat_model.load_state_dict(best_res['model_state'])
-qat_model.qconfig=torch.quantization.get_default_qat_qconfig('fbgemm')
-torch.quantization.prepare_qat(qat_model,inplace=True)
+qat_model.qconfig=quantization.get_default_qat_qconfig('fbgemm')
+quantization.prepare_qat(qat_model,inplace=True)
 
 print('QAT fine-tuning (10 epochs on CPU)...')
 opt_q=optim.AdamW(qat_model.parameters(),lr=5e-4,weight_decay=1e-4)
@@ -882,7 +908,7 @@ for ep in range(10):
         opt_q.zero_grad(); loss=crit_q(qat_model(x),y); loss.backward(); opt_q.step(); tl+=loss.item()
     if (ep+1)%5==0: print(f'  QAT ep {ep+1}/10 | loss={tl/len(ld_tr_q):.4f}')
 
-qat_model.eval(); int8_model=torch.quantization.convert(qat_model,inplace=False)
+qat_model.eval(); int8_model=quantization.convert(qat_model,inplace=False)
 print('INT8 model ready.')
 
 #%%
