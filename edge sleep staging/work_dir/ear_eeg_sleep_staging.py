@@ -2,7 +2,7 @@
 # # 🧠 Ear-EEG Sleep Monitoring — Complete Research Pipeline
 # **Dataset:** Mikkelsen, K.B. et al. *Ear-EEG sleep monitoring data sets.* Scientific Data 12, 301 (2025).  
 # **DOI:** [10.1038/s41597-025-04579-8](https://doi.org/10.1038/s41597-025-04579-8)  
-# **Data:** OpenNeuro [ds005185 (EESM19)](https://openneuro.org/datasets/ds005185) | [ds005178 (EESM23)](https://openneuro.org/datasets/ds005178)
+# **Data:** OpenNeuro [ds005185 (EESM19)](https://openneuro.org/datasets/ds005185)
 # 
 # ---
 # 
@@ -27,7 +27,7 @@
 # 
 # ## Research Context
 # 
-# The **EESM19** and **EESM23** datasets: **320 nights** across **30 healthy subjects** using **dry-contact iridium oxide electrodes**.
+# The **EESM19** dataset: **214 nights** (including **80 PSG-scored nights**) across **20 healthy subjects** using **dry-contact iridium oxide electrodes**.
 # 
 # **Core Research Question:** Can a TCN for single-channel Ear-EEG sleep staging be compressed via QAT to fit within <256 KB SRAM without degrading clinical accuracy (>83% Macro F1)?
 # 
@@ -144,17 +144,17 @@ elif DEVICE == 'cuda':
 # ---
 # ## Section 1 - Dataset Architecture
 # 
-# | Property | EESM19 | EESM23 |
-# |----------|--------|--------|
-# | OpenNeuro ID | ds005185 | ds005178 |
-# | Subjects | 20 | 10 |
-# | Total nights | 214 | 106 |
-# | PSG nights/subject | 4 | 2 |
-# | Home EEG-only nights | 12 (half subjects) | 10 (all subjects) |
-# | Ear piece | Custom (ear impression) | Generic |
-# | Electrode material | Iridium oxide (dry) | Iridium oxide (dry) |
-# | Additional sensors | GENEactiv actigraphy | None |
-# | % Unscored epochs | 5% | 3% |
+# | Property | EESM19 |
+# |----------|--------|
+# | OpenNeuro ID | ds005185 |
+# | Subjects | 20 |
+# | Total nights | 214 (80 PSG-scored) |
+# | PSG nights/subject | 4 |
+# | Home EEG-only nights | 12 (half subjects) |
+# | Ear piece | Custom (ear impression) |
+# | Electrode material | Iridium oxide (dry) |
+# | Additional sensors | GENEactiv actigraphy |
+# | % Unscored epochs | 5% |
 # 
 # All files follow BIDS standard and can be loaded with mne-bids.
 
@@ -166,54 +166,47 @@ class DatasetConfig:
     has_actigraphy: bool; pct_unscored: float
 
 EESM19 = DatasetConfig('EESM19','ds005185',20,214,4,12,'Custom (ear impression)',True,5.0)
-EESM23 = DatasetConfig('EESM23','ds005178',10,106,2,10,'Generic earpiece',False,3.0)
+n_psg_nights = EESM19.n_subjects * EESM19.n_psg_per_subject
+n_home_only  = EESM19.n_nights_total - n_psg_nights
 
-for ds in [EESM19, EESM23]:
-    print(f'--- {ds.name} ({ds.openneuro_id}) ---')
-    print(f'  {ds.n_subjects} subjects | {ds.n_nights_total} nights | Unscored: {ds.pct_unscored}%')
-print(f'Combined: {EESM19.n_nights_total+EESM23.n_nights_total} nights | {EESM19.n_subjects+EESM23.n_subjects} subjects')
+print(f'--- {EESM19.name} ({EESM19.openneuro_id}) ---')
+print(f'  {EESM19.n_subjects} subjects | {n_psg_nights} PSG-scored nights ({EESM19.n_nights_total} total) | Unscored: {EESM19.pct_unscored}%')
 
 if not FORCE_RERUN and (OUTPUT_DIR/'dataset_overview.png').exists():
     print('Skipping dataset_overview.png (already exists in outputs/).')
 else:
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    fig.suptitle('EESM19 & EESM23 - Dataset Overview', fontsize=14, fontweight='bold', color='#111111')
+    fig.suptitle('EESM19 (ds005185) - Dataset Overview', fontsize=14, fontweight='bold', color='#111111')
 
     ax = axes[0]
-    v19 = [EESM19.n_subjects*EESM19.n_psg_per_subject, (EESM19.n_subjects//2)*EESM19.n_home_nights]
-    v23 = [EESM23.n_subjects*EESM23.n_psg_per_subject, EESM23.n_subjects*EESM23.n_home_nights]
-    x = np.arange(2); w = 0.35
-    b1 = ax.bar(x-w/2, v19, w, label='EESM19', color='#1F77B4', alpha=0.9, edgecolor='#222222', linewidth=0.5)
-    b2 = ax.bar(x+w/2, v23, w, label='EESM23', color='#2CA02C', alpha=0.9, edgecolor='#222222', linewidth=0.5)
-    ax.bar_label(b1, padding=3); ax.bar_label(b2, padding=3)
-    ax.set_xticks(x); ax.set_xticklabels(['PSG Nights','Home EEG'])
-    ax.set_title('Recording Types'); ax.legend(); ax.grid(axis='y', alpha=0.4)
+    v19 = [n_psg_nights, n_home_only]
+    b1 = ax.bar(['PSG-Scored\nNights', 'Home EEG\n(Unscored)'], v19, width=0.45, color=['#1F77B4', '#7F8C8D'], alpha=0.9, edgecolor='#222222', linewidth=0.5)
+    ax.bar_label(b1, padding=3)
+    ax.set_ylabel('Nights'); ax.set_title('Recording Types'); ax.grid(axis='y', alpha=0.4)
 
-    axes[1].pie([EESM19.n_nights_total,EESM23.n_nights_total],
-        labels=[f'EESM19\n(n={EESM19.n_nights_total})',f'EESM23\n(n={EESM23.n_nights_total})'],
-        colors=['#1F77B4','#2CA02C'],autopct='%1.0f%%',
-        wedgeprops=dict(width=0.5,edgecolor='white',linewidth=2),textprops={'color':'#111111'})
-    axes[1].set_title('Total: 320 Nights')
+    axes[1].pie([n_psg_nights, n_home_only],
+        labels=[f'PSG-Scored\n(n={n_psg_nights})', f'Home EEG-Only\n(n={n_home_only})'],
+        colors=['#1F77B4', '#7F8C8D'], autopct='%1.0f%%',
+        wedgeprops=dict(width=0.5, edgecolor='white', linewidth=2), textprops={'color': '#111111'})
+    axes[1].set_title(f'EESM19: {EESM19.n_nights_total} Total Nights')
 
     ax = axes[2]
-    scored=[100-EESM19.pct_unscored,100-EESM23.pct_unscored]
-    unscored_=[EESM19.pct_unscored,EESM23.pct_unscored]
-    x2=np.arange(2)
-    ax.bar(x2,scored,color='#2CA02C',label='Scored',alpha=0.9,edgecolor='#222222',linewidth=0.5)
-    ax.bar(x2,unscored_,bottom=scored,color='#D62728',label='Unscored',alpha=0.9,edgecolor='#222222',linewidth=0.5)
-    ax.set_xticks(x2); ax.set_xticklabels(['EESM19','EESM23'])
-    ax.set_ylim(0,108); ax.set_ylabel('Epoch %')
-    ax.set_title('Scoring Quality'); ax.legend(); ax.grid(axis='y',alpha=0.4)
+    scored = [100 - EESM19.pct_unscored]
+    unscored_ = [EESM19.pct_unscored]
+    ax.bar(['EESM19 PSG'], scored, width=0.4, color='#2CA02C', label='Scored', alpha=0.9, edgecolor='#222222', linewidth=0.5)
+    ax.bar(['EESM19 PSG'], unscored_, bottom=scored, width=0.4, color='#D62728', label='Unscored', alpha=0.9, edgecolor='#222222', linewidth=0.5)
+    ax.set_ylim(0, 108); ax.set_ylabel('Epoch %')
+    ax.set_title('Scoring Quality'); ax.legend(); ax.grid(axis='y', alpha=0.4)
 
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR/'dataset_overview.png',dpi=300,bbox_inches='tight',facecolor='white')
+    plt.savefig(OUTPUT_DIR/'dataset_overview.png', dpi=300, bbox_inches='tight', facecolor='white')
     plt.show()
 
 #%% [markdown]
 # ---
 # ## Section 2 - Data Loading
 # 
-# ### Real Data (EESM23 - ds005178)
+# ### Real Data (EESM19 - ds005185)
 # Downloads and extracts real Ear-EEG recordings and parses sleep staging labels from the corresponding PSG events.
 
 
@@ -341,14 +334,14 @@ class RealEEGSleepLoader:
 
                     start_idx = int(round(onset * orig_fs))
                     end_idx = start_idx + orig_epoch_samp
-                    if end_idx > sig_len:
+                    if start_idx < 0 or end_idx > sig_len:
                         continue
 
                     # Per-epoch cross-ear derivation with NaN-safe single-ear fallback BEFORE resampling
                     l_ep = left_sig[start_idx:end_idx] if left_sig is not None else None
                     r_ep = right_sig[start_idx:end_idx] if right_sig is not None else None
-                    l_ok = l_ep is not None and np.isfinite(l_ep).all()
-                    r_ok = r_ep is not None and np.isfinite(r_ep).all()
+                    l_ok = l_ep is not None and len(l_ep) == orig_epoch_samp and np.isfinite(l_ep).all()
+                    r_ok = r_ep is not None and len(r_ep) == orig_epoch_samp and np.isfinite(r_ep).all()
 
                     if self.use_cross_ear and l_ok and r_ok:
                         ep = l_ep - r_ep
@@ -403,8 +396,8 @@ class RealEEGSleepLoader:
         return data
 
 loader = RealEEGSleepLoader(data_root=r'E:\EESM19\ds005185-download', use_cross_ear=True)
-# For full 18-subject publication run, use: [f'{i:03d}' for i in range(1, 19)]
-SUBJECTS_TO_LOAD = ['001', '002', '003']
+# Full 20-subject publication run (80 PSG-scored nights)
+SUBJECTS_TO_LOAD = [f'{i:03d}' for i in range(1, 21)]
 dataset_cache_path = OUTPUT_DIR / 'loaded_dataset_cross_ear.pkl'
 if dataset_cache_path.exists():
     import pickle
@@ -840,7 +833,7 @@ def _prepare_loso_arrays():
 
 all_epochs_np, all_labels_np, all_subjects = _prepare_loso_arrays()
 unique_subs=np.unique(all_subjects)
-N_FOLDS=min(len(unique_subs),5)   # Increase for full LOSO publication run
+N_FOLDS=len(unique_subs)           # Full 20-subject LOSO-CV
 N_TRAIN_EP=80                      # Increase to 60+ for publication
 
 print(f'Total: {len(all_epochs_np):,} epochs | {len(unique_subs)} subjects | Device: {DEVICE}')
@@ -1375,15 +1368,17 @@ else:
 
     fig = plt.figure(figsize=(20, 14))
     fig.patch.set_facecolor('white')
-    fig.suptitle('TinyEEGSleep Research Dashboard\nEar-EEG Sleep | EESM19+EESM23 | Mikkelsen et al. Scientific Data 2025',
+    fig.suptitle('TinyEEGSleep Research Dashboard\nEar-EEG Sleep | EESM19 (ds005185) | Mikkelsen et al. Scientific Data 2025',
                  fontsize=14, fontweight='bold', color='#111111', y=1.02)
     gs = gridspec.GridSpec(3, 4, figure=fig, hspace=0.48, wspace=0.38)
 
     ax = fig.add_subplot(gs[0, 0])
-    ax.pie([EESM19.n_nights_total, EESM23.n_nights_total],
-           labels=['EESM19\n214 nights', 'EESM23\n106 nights'], colors=['#1F77B4', '#2CA02C'], autopct='%1.0f%%',
+    n_psg_d = EESM19.n_subjects * EESM19.n_psg_per_subject
+    n_home_d = EESM19.n_nights_total - n_psg_d
+    ax.pie([n_psg_d, n_home_d],
+           labels=[f'PSG-Scored\n{n_psg_d} nights', f'Home Only\n{n_home_d} nights'], colors=['#1F77B4', '#7F8C8D'], autopct='%1.0f%%',
            wedgeprops=dict(width=0.5, edgecolor='white', linewidth=2), textprops={'color': '#111111', 'fontsize': 9})
-    ax.set_title('320 Total Nights', fontweight='bold', color='#111111', fontsize=10)
+    ax.set_title(f'EESM19: {EESM19.n_nights_total} Nights', fontweight='bold', color='#111111', fontsize=10)
 
     ax = fig.add_subplot(gs[0, 1])
     ax.bar(STAGE_ORDER, pcts, color=[STAGE_COLORS[s] for s in STAGE_ORDER], alpha=0.9, edgecolor='#222222', linewidth=0.5)
@@ -1454,7 +1449,7 @@ else:
 print('Generated outputs:')
 for f in sorted(OUTPUT_DIR.glob('*')): print(f'  {f.name} ({f.stat().st_size/1024:.1f} KB)')
 print('\nNotebook complete!')
-print('Real data -> openneuro.org/datasets/ds005185 (EESM19) | ds005178 (EESM23)')
+print('Real data -> openneuro.org/datasets/ds005185 (EESM19)')
 print('Paper DOI  -> 10.1038/s41597-025-04579-8')
 
 #%% [markdown]
@@ -1468,7 +1463,6 @@ print('Paper DOI  -> 10.1038/s41597-025-04579-8')
 # 5. **Phan H et al.** SeqSleepNet. *IEEE TASLP* 27(6) (2019).
 # 6. **Kappel SL et al.** Dry-Contact Electrode Ear-EEG. *IEEE TBME* 66, 150-158 (2019).
 # 
-# Dataset DOIs:
+# Dataset DOI:
 # - EESM19: `10.18112/openneuro.ds005185.v1.0.0`
-# - EESM23: `10.18112/openneuro.ds005178.v1.0.0`
 
