@@ -13,11 +13,12 @@ Our goal is to automatically classify **30-second slices of brain waves recorded
 ## 🔍 Section-by-Section Algorithm Walkthrough (Plain English)
 
 ### Section 0 — Environment Setup & Experiment Configuration
-- **What It Does:** Installs/imports libraries, selects the fastest compute device (`Intel Arc XPU > NVIDIA CUDA > CPU`), sets publication-grade **white-background, 300 DPI** chart styling, and defines every experiment setting in one place (`RUN_NAME`, `FS = 128`, `CONTEXT_LEN = 3`, `CLASS_WT_POWER = 0.5`, etc.).
-- **How Outputs Are Separated:**
+- **What It Does:** Installs/imports libraries, selects the fastest compute device (`Intel Arc XPU > NVIDIA CUDA > CPU`), sets publication-grade **white-background, 300 DPI** chart styling, and defines every experiment setting in one place (`RUN_NAME`, `FS = 128`, `CONTEXT_LEN = 3`, `CLASS_WT_POWER = 0.5`, plus fast-iteration toggles `DEV_FOLD_INDICES`, `RUN_QAT`, and `QAT_LR`).
+- **2-Tier Iteration & Automatic Run Isolation (`ACTIVE_RUN_NAME`):**
+  - When `DEV_FOLD_INDICES` is a subset (e.g. `[7, 8, 13]`), the script automatically appends `_dev3f` to form `ACTIVE_RUN_NAME` so quick dev tests can **never overwrite** a full 20-fold paper run folder or its `experiments_log.csv` row.
   - Heavy dataset files go into `outputs/cache/` so they are shared across runs.
-  - Every training experiment gets its own folder under `outputs/runs/<RUN_NAME>/` and saves its settings to `config.json`, so running a new test never overwrites old results.
-- **Why We Do It This Way:** Having all parameters at the top and isolating every run by `RUN_NAME` makes ablation studies reproducible and prevents accidental mixing of old 256 Hz and new 128 Hz results.
+  - Every experiment writes into `outputs/runs/<ACTIVE_RUN_NAME>/` and saves its exact switches to `config.json`.
+- **Why We Do It This Way:** Having all parameters at the top, isolating every run by `ACTIVE_RUN_NAME`, and providing a Tier-1 fast dev toggle lets you test new model ideas in ~5–8 minutes without risking or overwriting 20-fold baseline results.
 
 ---
 
@@ -84,7 +85,10 @@ Our goal is to automatically classify **30-second slices of brain waves recorded
 ---
 
 ### Section 7 — Leak-Free Subject-Independent Evaluation (3-Way LOSO-CV)
-- **What It Does:** Tests how well the model generalizes to a **completely unseen person** across all **20 subjects**.
+- **What It Does:** Tests how well the model generalizes to a **completely unseen person** across either the **Tier-1 Fast Dev Subset** (`DEV_FOLD_INDICES = [7, 8, 13]`) or **Tier-2 Full 20-Subject Run** (`DEV_FOLD_INDICES = None`).
+- **2-Tier Testing Modes:**
+  - **Tier-1 Fast Dev (`DEV_FOLD_INDICES = [7, 8, 13]`):** Evaluates 3 representative subjects (`Sub 008` easy, `Sub 009` median, `Sub 014` hard) using their **exact** original 17/2/1 train/val/test splits in ~5–8 minutes on GPU (v2 reference anchor: **68.4% FP32 / 68.8% PTQ**).
+  - **Tier-2 Full Paper Run (`DEV_FOLD_INDICES = None`):** Evaluates all **20 subjects** for final paper tables and statistical significance.
 - **Strict 3-Way Split (Per Fold):**
   - **Test Set (`1` subject):** Locked away and evaluated **only once** after training finishes.
   - **Validation Set (`2` other subjects):** Used at each training epoch to pick the best checkpoint and trigger **Early Stopping (`patience=12`, max `50` epochs)**.
@@ -94,11 +98,13 @@ Our goal is to automatically classify **30-second slices of brain waves recorded
 
 ---
 
-### Section 8 — Real 20-Fold INT8 Quantization (PTQ & QAT)
-- **What It Does:** Compresses **every single one of the 20 fold models** from 32-bit floating-point (`FP32`) down to 8-bit integers (`INT8`, ~4x smaller) using two methods and compares them fairly across all 20 subjects (no best-fold cherry-picking):
-  1. **INT8 PTQ (Post-Training Quantization):** Fuses `Conv+BN+ReLU`, calibrates activation ranges on 30 batches of the **validation** subjects, and converts to INT8.
-  2. **INT8 QAT (Quantization-Aware Training):** Fuses `Conv+BN+ReLU`, inserts fake-quantization observers, fine-tunes for `5` epochs on CPU so weights adapt to 8-bit rounding noise, and converts to true CPU INT8 kernels (`fbgemm`). *(Runs on CPU because PyTorch observers require `float64`, which Intel Arc XPU does not support.)*
-- **Files Written:** `checkpoints/qat_fold_<sub_id>.pkl`, `checkpoints/qat_results.pkl`, `models/tiny_eeg_sleep_fp32.pt`, `models/tiny_eeg_sleep_int8.pt`, `figures/quantization_analysis.png`
+### Section 8 — INT8 Quantization (Fast PTQ-Only & Validation-Guarded QAT)
+- **What It Does:** Compresses every evaluated fold model from 32-bit floating-point (`FP32`) down to 8-bit integers (`INT8`, ~4x smaller), automatically selecting the supported Windows/CPU quantization engine (`fbgemm` or `onednn`):
+  1. **INT8 PTQ (Post-Training Quantization — always runs, ~seconds):** Fuses `Conv+BN+ReLU`, calibrates activation ranges on 30 batches of the **validation** subjects (zero training needed), and converts to INT8.
+  2. **INT8 QAT (Quantization-Aware Training — controlled by `RUN_QAT`):**
+     - When **`RUN_QAT = False`** (default in Tier-1 Dev): Skips multi-epoch CPU retraining and evaluates **INT8 PTQ** as the quantized deployment model (`ptq_fold_<sub_id>.pkl`), keeping Section 8 down to seconds instead of ~25 hours.
+     - When **`RUN_QAT = True`**: Fuses `Conv+BN+ReLU`, inserts fake-quantization observers, fine-tunes for `5` epochs on CPU using a conservative learning rate (`QAT_LR = 5e-5`) with **validation-F1 checkpointing** (preventing overfitting collapse on early-stopped folds), and converts to INT8 (`qat_fold_<sub_id>.pkl`). *(Runs on CPU because PyTorch observers require `float64`, which Intel Arc XPU does not support.)*
+- **Files Written:** `checkpoints/ptq_fold_<sub_id>.pkl` or `checkpoints/qat_fold_<sub_id>.pkl`, `checkpoints/qat_results.pkl`, `models/tiny_eeg_sleep_fp32.pt`, `models/tiny_eeg_sleep_int8.pt`, `figures/quantization_analysis.png`
 
 ---
 
@@ -116,17 +122,17 @@ Our goal is to automatically classify **30-second slices of brain waves recorded
 
 ---
 
-### Section 10 — Honest 20-Subject Benchmarks & SOTA Comparison
-- **What It Does:** Compares our **20-subject LOSO mean** (`FP32`, `INT8 PTQ`, `INT8 QAT`) against human experts and published baselines (`DeepSleepNet`, `TinySleepNet`, `SeqSleepNet` on EESM19 `73.0%` Macro F1).
+### Section 10 — Honest Multi-Subject Benchmarks & SOTA Comparison
+- **What It Does:** Compares the evaluated LOSO mean (`n` folds: 3 in dev mode, 20 in full paper mode) for `FP32`, `INT8 PTQ`, and (when `RUN_QAT=True`) `INT8 QAT` against human experts and published baselines (`DeepSleepNet`, `TinySleepNet`, `SeqSleepNet` on EESM19 `73.0%` Macro F1).
 - **Files Written:** `figures/benchmark_comparison.png`
 
 ---
 
 ### Section 11 — Real Statistical Validation, Logging & Dashboard
 - **What It Does:**
-  1. Runs **real paired Wilcoxon signed-rank tests** across all 20 subjects comparing `FP32 vs INT8 QAT` and `FP32 vs INT8 PTQ` (to verify statistically whether INT8 quantization causes significant accuracy loss).
-  2. Evaluates Hypothesis **H1** (`20-fold mean F1 drop < 2%`) and Hypothesis **H3** (`Total SRAM < 256 KB` and `Flash < 1024 KB`).
-  3. Automatically appends/updates a summary row in `outputs/experiments_log.csv` and saves `metrics_summary.json` + the 300 DPI `dashboard.png`.
+  1. Runs **real paired Wilcoxon signed-rank tests** across all evaluated folds comparing `FP32 vs INT8 PTQ` (and `FP32 vs INT8 QAT` when `RUN_QAT=True`). In Tier-1 Dev mode (`n < 6`), prints a reminder that `n=3` is underpowered for formal significance testing and a full 20-fold run is needed for the paper $p$-value.
+  2. Evaluates Hypothesis **H1** (`mean F1 drop < 2%` on INT8 QAT if `RUN_QAT=True`, or INT8 PTQ if `RUN_QAT=False`) and Hypothesis **H3** (`Total SRAM < 256 KB` and `Flash < 1024 KB`).
+  3. Automatically appends/updates a summary row under `ACTIVE_RUN_NAME` in `outputs/experiments_log.csv` and saves `metrics_summary.json` + the 300 DPI `dashboard.png`.
 - **Files Written:** `metrics_summary.json`, `outputs/experiments_log.csv`, `figures/dashboard.png`
 
 ---
@@ -157,7 +163,11 @@ work_dir/outputs/
         └── models/                        (tiny_eeg_sleep_fp32.pt, tiny_eeg_sleep_int8.pt)
 ```
 
-### How to Run a New Experiment / Ablation Safely
-1. Keep `outputs/cache/` untouched so you never have to re-read the 80 raw EEG `.fdt` files again.
-2. In **Section 0** of `ear_eeg_sleep_staging.py`, simply change **`RUN_NAME`** (for example, `'v3_128hz_ctx5_focal'`) and tweak any parameter (`CONTEXT_LEN = 5`, `USE_CROSS_EAR = False`, etc.).
-3. Run the notebook. All new checkpoints, figures, and models automatically save into `outputs/runs/v3_128hz_ctx5_focal/`, and a new comparison row is added to `outputs/experiments_log.csv`—without losing any previous run!
+### How to Run a New Experiment / Ablation Fast & Safely (2-Tier Workflow)
+1. **Keep `outputs/cache/` untouched** so you never have to re-read the 80 raw EEG `.fdt` files again.
+2. **Tier-1 Fast Dev Mode (~5–8 minutes per test):**
+   - In **Section 0**, set `RUN_NAME` (e.g., `'v3_128hz_ctx5'`), keep `DEV_FOLD_INDICES = [7, 8, 13]` and `RUN_QAT = False`, and tweak your idea (`CONTEXT_LEN = 5`, `CLASS_WT_POWER`, etc.).
+   - Because `DEV_FOLD_INDICES` is active, results automatically save to `outputs/runs/<RUN_NAME>_dev3f/`.
+   - Compare your 3-fold score against the `v2` 3-fold anchor (**68.4% FP32 / 68.8% PTQ**).
+3. **Tier-2 Full 20-Fold Paper Run (only for winning configs):**
+   - Once an idea clearly beats the Tier-1 anchor, set `DEV_FOLD_INDICES = None` (and optionally `RUN_QAT = True`), keep your `RUN_NAME`, and run all 20 folds once for final paper tables, figures, and Wilcoxon $p$-values without touching your previous runs.

@@ -138,14 +138,26 @@ PATIENCE        = 12           # Early stopping patience on held-out validation 
 BATCH_SIZE      = 256
 LR              = 1.5e-3
 QAT_EPOCHS      = 5            # Real per-fold INT8 QAT fine-tuning epochs
+# === 2-TIER FAST ITERATION SWITCHES ===
+# Tier 1 (Fast Dev, ~5-8 min): DEV_FOLD_INDICES = [7, 8, 13] (Sub 008 easy, 009 median, 014 hard; v2 ref: 68.4% FP32 / 68.8% PTQ), RUN_QAT = False
+# Tier 2 (Full 20-Fold Paper Run): DEV_FOLD_INDICES = None, RUN_QAT = True (or False for PTQ-only)
+DEV_FOLD_INDICES = [7, 8, 13]  # None = all 20 folds; list of 0-based indices = fast dev subset
+RUN_QAT          = False       # False = fast ~30s INT8 PTQ only; True = PTQ + validation-guarded INT8 QAT
+QAT_LR           = 5e-5        # Conservative fine-tuning LR for QAT (prevents overfitting collapse on early-stopped folds)
 SEED            = 42
 FORCE_RERUN     = False        # True = recompute current RUN_NAME artifacts (never deletes other runs)
+
+ACTIVE_RUN_NAME = (
+    f"{RUN_NAME}_dev{len(DEV_FOLD_INDICES)}f"
+    if (DEV_FOLD_INDICES is not None and '_dev' not in RUN_NAME)
+    else RUN_NAME
+)
 
 torch.manual_seed(SEED); np.random.seed(SEED)
 
 OUTPUT_DIR = Path('./outputs')
 CACHE_DIR  = OUTPUT_DIR / 'cache'
-RUN_DIR    = OUTPUT_DIR / 'runs' / RUN_NAME
+RUN_DIR    = OUTPUT_DIR / 'runs' / ACTIVE_RUN_NAME
 FIG_DIR    = RUN_DIR / 'figures'
 CKPT_DIR   = RUN_DIR / 'checkpoints'
 MODEL_DIR  = RUN_DIR / 'models'
@@ -158,10 +170,12 @@ PROC_CACHE_NAME = f"processed_{CACHE_TAG}.pkl"
 
 with open(RUN_DIR / 'config.json', 'w', encoding='utf-8') as _cf:
     json.dump({
-        'run_name': RUN_NAME, 'fs': FS, 'epoch_sec': EPOCH_SEC, 'epoch_samp': EPOCH_SAMP,
+        'base_run_name': RUN_NAME, 'run_name': ACTIVE_RUN_NAME, 'fs': FS,
+        'epoch_sec': EPOCH_SEC, 'epoch_samp': EPOCH_SAMP,
         'use_cross_ear': USE_CROSS_EAR, 'context_len': CONTEXT_LEN, 'class_wt_power': CLASS_WT_POWER,
         'label_smoothing': LABEL_SMOOTHING, 'n_train_ep': N_TRAIN_EP, 'patience': PATIENCE,
-        'batch_size': BATCH_SIZE, 'lr': LR, 'qat_epochs': QAT_EPOCHS, 'seed': SEED,
+        'batch_size': BATCH_SIZE, 'lr': LR, 'qat_epochs': QAT_EPOCHS,
+        'dev_fold_indices': DEV_FOLD_INDICES, 'run_qat': RUN_QAT, 'qat_lr': QAT_LR, 'seed': SEED,
     }, _cf, indent=2)
 
 def save_cache(name, obj, shared=False):
@@ -177,7 +191,14 @@ def load_cache(name, shared=False):
             return pickle.load(f)
     return None
 
-print(f'Run: {RUN_NAME} | FS: {FS} Hz ({EPOCH_SAMP} samp) | Ctx: {CONTEXT_LEN} | Device: {DEVICE}')
+_mode_banner = (
+    f"Mode: TIER-1 FAST DEV ({len(DEV_FOLD_INDICES)} folds: {DEV_FOLD_INDICES})"
+    if DEV_FOLD_INDICES is not None
+    else "Mode: TIER-2 FULL 20-FOLD PAPER RUN"
+)
+_quant_banner = "Quant: PTQ + Val-Guarded QAT" if RUN_QAT else "Quant: PTQ-only"
+print(f'Run: {ACTIVE_RUN_NAME} | {_mode_banner} | {_quant_banner}')
+print(f'FS: {FS} Hz ({EPOCH_SAMP} samp) | Ctx: {CONTEXT_LEN} | Device: {DEVICE}')
 print(f'MNE: {mne.__version__} | PyTorch: {torch.__version__}')
 if DEVICE == 'xpu':
     print(f'Intel Arc GPU: {torch.xpu.get_device_name(0)} | XPU count: {torch.xpu.device_count()}')
@@ -840,7 +861,6 @@ print(f'Float32: {n_p*4/1024:.1f} KB | INT8 raw weights: {n_p/1024:.1f} KB')
 dummy = torch.randn(4, CONTEXT_LEN, EPOCH_SAMP).to(DEVICE)
 print(f'Input: {tuple(dummy.shape)} -> Output: {tuple(model(dummy).shape)}')
 
-#%%
 class SleepContextDataset(Dataset):
     """Zero-copy context window gatherer with optional EEG signal augmentation."""
     def __init__(self, X_all, y_all, ctx_indices, sample_ids, augment=False):
@@ -973,22 +993,30 @@ def get_loso_split(unique_subs, fold_i, n_val=2):
 
 all_epochs_np, all_labels_np, all_subjects, all_ctx_indices = _prepare_loso_arrays(CONTEXT_LEN)
 unique_subs = np.unique(all_subjects)
-N_FOLDS = len(unique_subs)
+if DEV_FOLD_INDICES is not None:
+    eval_fold_indices = [i for i in DEV_FOLD_INDICES if 0 <= i < len(unique_subs)]
+    if not eval_fold_indices:
+        raise ValueError(f'DEV_FOLD_INDICES={DEV_FOLD_INDICES} has no valid indices for {len(unique_subs)} subjects')
+else:
+    eval_fold_indices = list(range(len(unique_subs)))
+N_FOLDS = len(eval_fold_indices)
+eval_sub_names = [str(unique_subs[i]) for i in eval_fold_indices]
 
-print(f'Total clean epochs: {len(all_epochs_np):,} | {len(unique_subs)} subjects | Context: {CONTEXT_LEN} | Device: {DEVICE}')
-print(f'Running leak-free {N_FOLDS}-fold LOSO-CV (max {N_TRAIN_EP} epochs/fold, patience={PATIENCE})...')
+print(f'Total clean epochs: {len(all_epochs_np):,} | {len(unique_subs)} total subjects | Context: {CONTEXT_LEN} | Device: {DEVICE}')
+_loso_mode_str = f'FAST DEV ({N_FOLDS}/{len(unique_subs)} folds: {eval_sub_names})' if DEV_FOLD_INDICES is not None else f'FULL {N_FOLDS}-fold'
+print(f'Running leak-free {_loso_mode_str} LOSO-CV (max {N_TRAIN_EP} epochs/fold, patience={PATIENCE})...')
 
 loso_results = load_cache('loso_results.pkl')
-if loso_results is not None:
+if loso_results is not None and [str(r['subject']) for r in loso_results] == eval_sub_names:
     print('Loading LOSO results from cache...')
 else:
     loso_results = []
     use_pin = DEVICE in ('xpu', 'cuda')
-    for fold_i in range(N_FOLDS):
+    for run_idx, fold_i in enumerate(eval_fold_indices):
         train_subs, val_subs, test_sub = get_loso_split(unique_subs, fold_i, n_val=2)
         fold_cache = load_cache(f'loso_fold_{test_sub}.pkl')
         if fold_cache is not None:
-            print(f'Fold {fold_i+1}/{N_FOLDS} | Sub {test_sub} -> loaded from checkpoint!')
+            print(f'Fold {run_idx+1}/{N_FOLDS} (orig #{fold_i+1}) | Sub {test_sub} -> loaded from checkpoint!')
             loso_results.append(fold_cache)
             continue
 
@@ -1007,7 +1035,7 @@ else:
             va_ids = np.where(np.isin(all_subjects, val_subs))[0]
             te_ids = np.where(all_subjects == test_sub)[0]
 
-        print(f'\nFold {fold_i+1}/{N_FOLDS} | Test: Sub {test_sub} ({len(te_ids):,}) | Val: {val_subs} ({len(va_ids):,}) | Train: {len(train_subs)} subs ({len(tr_ids):,})')
+        print(f'\nFold {run_idx+1}/{N_FOLDS} (orig #{fold_i+1}) | Test: Sub {test_sub} ({len(te_ids):,}) | Val: {val_subs} ({len(va_ids):,}) | Train: {len(train_subs)} subs ({len(tr_ids):,})')
 
         cw = class_weights(all_labels_np[tr_ids], power=CLASS_WT_POWER)
         crit_ = nn.CrossEntropyLoss(weight=cw.to(DEVICE), label_smoothing=LABEL_SMOOTHING)
@@ -1065,7 +1093,7 @@ mean_k_   = np.mean([r['kappa'] for r in loso_results])
 pooled_gts_  = np.concatenate([r['ground_truth'] for r in loso_results])
 pooled_preds_ = np.concatenate([r['predictions'] for r in loso_results])
 pooled_f1_   = f1_score(pooled_gts_, pooled_preds_, average='macro', zero_division=0)
-print(f'\nLOSO 20-Fold Mean | Acc: {mean_acc_*100:.1f}% | F1: {mean_f1_*100:.1f}+/-{std_f1_*100:.1f}% | kappa: {mean_k_:.3f} | Pooled F1: {pooled_f1_*100:.1f}%')
+print(f'\nLOSO {len(loso_results)}-Fold Mean | Acc: {mean_acc_*100:.1f}% | F1: {mean_f1_*100:.1f}+/-{std_f1_*100:.1f}% | kappa: {mean_k_:.3f} | Pooled F1: {pooled_f1_*100:.1f}%')
 
 #%%
 if not FORCE_RERUN and (FIG_DIR/'loso_results.png').exists():
@@ -1098,6 +1126,9 @@ else:
     ax.axhline(mean_f1_ * 100, color='#1F77B4', lw=2, ls='--', label=f'Mean: {mean_f1_*100:.1f}%')
     ax.axhline(73.0, color='#D97706', lw=1.5, ls=':', label='Ear-EEG SOTA (73.0%)')
     ax.set_ylim(0, max(max(fold_f1s_), 75) * 1.24)
+    ax.set_xticks(range(1, len(fold_f1s_) + 1))
+    ax.set_xticklabels([str(r['subject']) for r in loso_results],
+                       rotation=45 if len(fold_f1s_) > 6 else 0, fontsize=8)
     ax.set_xlabel('Subject Fold'); ax.set_ylabel('Macro F1 (%)'); ax.set_title('Per-Subject LOSO Test F1')
     ax.legend(loc='upper right', ncol=2, fontsize=8.5); ax.grid(axis='y', alpha=0.4)
 
@@ -1166,8 +1197,15 @@ def latency_ms(m, x, n=50):
     return (time.time() - t0) / n * 1000.0
 
 qat_cache = load_cache('qat_results.pkl')
-if qat_cache is not None and 'ptq_f1s_loso' in qat_cache:
-    print('Loading real multi-fold PTQ & INT8 QAT evaluation results from cache...')
+_loso_loaded_len = len(loso_results) if ('loso_results' in globals() and loso_results is not None) else None
+_qat_cache_ok = (
+    qat_cache is not None
+    and 'ptq_f1s_loso' in qat_cache
+    and qat_cache.get('qat_ran', True) == RUN_QAT
+    and (_loso_loaded_len is None or len(qat_cache['fp32_f1s_loso']) == _loso_loaded_len)
+)
+if _qat_cache_ok:
+    print('Loading real multi-fold PTQ & INT8 evaluation results from cache...')
     fp32_acc, fp32_f1, fp32_k = qat_cache['fp32_acc'], qat_cache['fp32_f1'], qat_cache['fp32_k']
     ptq_acc, ptq_f1, ptq_k    = qat_cache['ptq_acc'],  qat_cache['ptq_f1'],  qat_cache['ptq_k']
     int8_acc, int8_f1, int8_k = qat_cache['int8_acc'], qat_cache['int8_f1'], qat_cache['int8_k']
@@ -1179,6 +1217,7 @@ if qat_cache is not None and 'ptq_f1s_loso' in qat_cache:
     fp32_lat_ms, int8_lat_ms = qat_cache['fp32_lat_ms'], qat_cache['int8_lat_ms']
     fp32_kb, int8_kb         = qat_cache['fp32_kb'],     qat_cache['int8_kb']
     fp32_raw_kb, int8_raw_kb = qat_cache['fp32_raw_kb'], qat_cache['int8_raw_kb']
+    qat_ran = qat_cache.get('qat_ran', True)
 else:
     if 'loso_results' not in globals() or loso_results is None:
         loso_results = load_cache('loso_results.pkl')
@@ -1186,24 +1225,34 @@ else:
             raise RuntimeError(f'loso_results.pkl not found in {CKPT_DIR}. Run Section 7 first!')
     if 'all_epochs_np' not in globals() or 'all_ctx_indices' not in globals():
         all_epochs_np, all_labels_np, all_subjects, all_ctx_indices = _prepare_loso_arrays(CONTEXT_LEN)
-        unique_subs = np.unique(all_subjects)
+    unique_subs = np.unique(all_subjects)
+
+    q_engine = 'fbgemm' if 'fbgemm' in torch.backends.quantized.supported_engines else 'onednn'
+    torch.backends.quantized.engine = q_engine
 
     torch.set_num_threads(os.cpu_count() or 4)
     fold_q_results = []
     med_target = float(np.median([r['macro_f1'] for r in loso_results]))
     rep_sub = min(loso_results, key=lambda r: abs(r['macro_f1'] - med_target))['subject']
+    fp32_lat_ms, int8_lat_ms = 0.0, 0.0
+    fp32_kb, int8_kb = 0.0, 0.0
+    fp32_raw_kb, int8_raw_kb = 0.0, 0.0
+    qat_ran = bool(RUN_QAT)
 
     for fold_i, res in enumerate(loso_results):
         ts = res['subject']
-        q_fold_cache = load_cache(f'qat_fold_{ts}.pkl')
+        q_ckpt_name = f'qat_fold_{ts}.pkl' if RUN_QAT else f'ptq_fold_{ts}.pkl'
+        q_fold_cache = load_cache(q_ckpt_name)
         if q_fold_cache is not None and ts != rep_sub:
             fold_q_results.append(q_fold_cache)
-            print(f'QAT Fold {fold_i+1}/{len(loso_results)} | Sub {ts} -> loaded from checkpoint (QAT F1={q_fold_cache["int8_f1"]*100:.1f}%)')
+            _m_lbl = 'QAT' if RUN_QAT else 'PTQ'
+            print(f'{_m_lbl} Fold {fold_i+1}/{len(loso_results)} | Sub {ts} -> loaded from checkpoint (F1={q_fold_cache["int8_f1"]*100:.1f}%)')
             continue
 
         val_subs = res.get('val_subs')
         if val_subs is None:
-            train_subs, val_subs, _ = get_loso_split(unique_subs, fold_i, n_val=2)
+            orig_fold_idx = int(res.get('fold', fold_i + 1)) - 1
+            train_subs, val_subs, _ = get_loso_split(unique_subs, orig_fold_idx, n_val=2)
         else:
             train_subs = [s for s in unique_subs if s != ts and s not in val_subs]
 
@@ -1238,7 +1287,7 @@ else:
         ptq_m = TinyEEGSleep(context_len=CONTEXT_LEN)
         ptq_m.load_state_dict(res['model_state']); ptq_m.eval()
         ptq_m.fuse_model(is_qat=False)
-        ptq_m.qconfig = quantization.get_default_qconfig('fbgemm')
+        ptq_m.qconfig = quantization.get_default_qconfig(q_engine)
         quantization.prepare(ptq_m, inplace=True)
         with torch.no_grad():
             for b_i, (x_cal, _) in enumerate(ld_va_q):
@@ -1246,32 +1295,44 @@ else:
                 if b_i >= 29:
                     break
         ptq_int8_m = quantization.convert(ptq_m, inplace=False)
-        p_acc, p_f1, p_k, _, _ = eval_cpu(ptq_int8_m, ld_te_q)
+        p_acc, p_f1, p_k, p_p, p_g = eval_cpu(ptq_int8_m, ld_te_q)
 
-        # 3. Quantization-Aware Training (QAT) on CPU (fake-quant observers require FP64 not supported on Intel XPU)
-        qat_m = TinyEEGSleep(context_len=CONTEXT_LEN)
-        qat_m.load_state_dict(res['model_state']); qat_m.train()
-        qat_m.fuse_model(is_qat=True)
-        qat_m.qconfig = quantization.get_default_qat_qconfig('fbgemm')
-        quantization.prepare_qat(qat_m, inplace=True)
-        opt_q = optim.AdamW(qat_m.parameters(), lr=3e-4, weight_decay=1e-4)
-        for ep in range(QAT_EPOCHS):
-            qat_m.train()
-            for x_q, y_q in ld_tr_q:
-                opt_q.zero_grad(); loss = crit_q(qat_m(x_q), y_q); loss.backward(); opt_q.step()
-        qat_m.eval()
-        q_int8_m = quantization.convert(qat_m, inplace=False)
-        q_acc, q_f1, q_k, q_p, q_g = eval_cpu(q_int8_m, ld_te_q)
+        # 3. Quantization-Aware Training (QAT) on CPU (or skip in fast PTQ-only mode)
+        if RUN_QAT:
+            qat_m = TinyEEGSleep(context_len=CONTEXT_LEN)
+            qat_m.load_state_dict(res['model_state']); qat_m.train()
+            qat_m.fuse_model(is_qat=True)
+            qat_m.qconfig = quantization.get_default_qat_qconfig(q_engine)
+            quantization.prepare_qat(qat_m, inplace=True)
+            opt_q = optim.AdamW(qat_m.parameters(), lr=QAT_LR, weight_decay=1e-4)
+            best_q_vf1, best_q_state = -1.0, None
+            for ep in range(QAT_EPOCHS):
+                qat_m.train()
+                for x_q, y_q in ld_tr_q:
+                    opt_q.zero_grad(); loss = crit_q(qat_m(x_q), y_q); loss.backward(); opt_q.step()
+                _, q_vf1, _, _, _ = eval_cpu(qat_m, ld_va_q)
+                if q_vf1 > best_q_vf1:
+                    best_q_vf1 = q_vf1
+                    best_q_state = {k: v.clone() for k, v in qat_m.state_dict().items()}
+            if best_q_state is not None:
+                qat_m.load_state_dict(best_q_state)
+            qat_m.eval()
+            q_int8_m = quantization.convert(qat_m, inplace=False)
+            q_acc, q_f1, q_k, q_p, q_g = eval_cpu(q_int8_m, ld_te_q)
+            print(f'QAT Fold {fold_i+1}/{len(loso_results)} | Sub {ts} | FP32={f_f1*100:.1f}% | PTQ={p_f1*100:.1f}% | QAT={q_f1*100:.1f}% (drop={(f_f1-q_f1)*100:+.2f}%)')
+        else:
+            q_int8_m = ptq_int8_m
+            q_acc, q_f1, q_k, q_p, q_g = p_acc, p_f1, p_k, p_p, p_g
+            print(f'PTQ Fold {fold_i+1}/{len(loso_results)} | Sub {ts} | FP32={f_f1*100:.1f}% | PTQ={p_f1*100:.1f}% (drop={(f_f1-p_f1)*100:+.2f}%) [QAT skipped]')
 
         qf_res = {
-            'subject': ts,
+            'subject': ts, 'qat_ran': bool(RUN_QAT),
             'fp32_acc': f_acc, 'fp32_f1': f_f1, 'fp32_k': f_k, 'fp32_preds': f_p, 'fp32_gts': f_g,
             'ptq_acc':  p_acc, 'ptq_f1':  p_f1, 'ptq_k':  p_k,
             'int8_acc': q_acc, 'int8_f1': q_f1, 'int8_k': q_k, 'int8_preds': q_p, 'int8_gts': q_g,
         }
-        save_cache(f'qat_fold_{ts}.pkl', qf_res)
+        save_cache(q_ckpt_name, qf_res)
         fold_q_results.append(qf_res)
-        print(f'QAT Fold {fold_i+1}/{len(loso_results)} | Sub {ts} | FP32={f_f1*100:.1f}% | PTQ={p_f1*100:.1f}% | QAT={q_f1*100:.1f}% (drop={(f_f1-q_f1)*100:+.2f}%)')
 
         if ts == rep_sub:
             fp32_model, int8_model = fp32_m, q_int8_m
@@ -1306,6 +1367,7 @@ else:
     int8_gts   = np.concatenate([r['int8_gts']   for r in fold_q_results])
 
     save_cache('qat_results.pkl', {
+        'qat_ran': qat_ran,
         'fp32_acc': fp32_acc, 'fp32_f1': fp32_f1, 'fp32_k': fp32_k, 'fp32_preds': fp32_preds, 'fp32_gts': fp32_gts,
         'ptq_acc':  ptq_acc,  'ptq_f1':  ptq_f1,  'ptq_k':  ptq_k,
         'int8_acc': int8_acc, 'int8_f1': int8_f1, 'int8_k': int8_k, 'int8_preds': int8_preds, 'int8_gts': int8_gts,
@@ -1314,19 +1376,27 @@ else:
         'fp32_kb': fp32_kb, 'int8_kb': int8_kb, 'fp32_raw_kb': fp32_raw_kb, 'int8_raw_kb': int8_raw_kb,
     })
 
-print(f"\n{'Metric (20-Fold Mean)':<25} {'Float32':>10} {'INT8 PTQ':>10} {'INT8 QAT':>10} {'QAT Delta':>10}")
+n_q_folds = len(fp32_f1s_loso)
+int8_lbl = 'INT8 QAT' if qat_ran else 'INT8 PTQ'
+_hdr_m = f'Metric ({n_q_folds}-Fold Mean)'
+print(f"\n{_hdr_m:<25} {'Float32':>10} {'INT8 PTQ':>10} {'INT8 QAT':>10} {'Delta':>10}")
 print('-' * 68)
 for lbl, v32, vp, v8 in [
     ('Accuracy (%)', fp32_acc*100, ptq_acc*100, int8_acc*100),
     ('Macro F1 (%)', fp32_f1*100,  ptq_f1*100,  int8_f1*100),
     ("Cohen's kappa", fp32_k,      ptq_k,       int8_k),
 ]:
-    print(f'{lbl:<25} {v32:>10.2f} {vp:>10.2f} {v8:>10.2f} {v8-v32:>+10.2f}')
-print(f"{'Raw Weights (KB)':<25} {fp32_raw_kb:>10.1f} {int8_raw_kb:>10.1f} {int8_raw_kb:>10.1f} {int8_raw_kb/fp32_raw_kb:>9.2f}x")
-print(f"{'State-Dict (KB)':<25} {fp32_kb:>10.1f} {'-':>10} {int8_kb:>10.1f} {fp32_kb/int8_kb:>9.1f}x")
-print(f"{'PC CPU Lat (ms/ctx)':<25} {fp32_lat_ms:>10.2f} {'-':>10} {int8_lat_ms:>10.2f} {int8_lat_ms-fp32_lat_ms:>+10.2f}")
+    q_str = f'{v8:>10.2f}' if qat_ran else f'{"SKIPPED":>10}'
+    print(f'{lbl:<25} {v32:>10.2f} {vp:>10.2f} {q_str} {v8-v32:>+10.2f}')
+q_rw = f'{int8_raw_kb:>10.1f}' if qat_ran else f'{"SKIPPED":>10}'
+q_sd = f'{int8_kb:>10.1f}' if qat_ran else f'{"SKIPPED":>10}'
+q_lt = f'{int8_lat_ms:>10.2f}' if qat_ran else f'{"SKIPPED":>10}'
+print(f"{'Raw Weights (KB)':<25} {fp32_raw_kb:>10.1f} {int8_raw_kb:>10.1f} {q_rw} {int8_raw_kb/max(fp32_raw_kb, 1e-6):>9.2f}x")
+print(f"{'State-Dict (KB)':<25} {fp32_kb:>10.1f} {'-':>10} {q_sd} {fp32_kb/max(int8_kb, 1e-6):>9.1f}x")
+print(f"{'PC CPU Lat (ms/ctx)':<25} {fp32_lat_ms:>10.2f} {'-':>10} {q_lt} {int8_lat_ms-fp32_lat_ms:>+10.2f}")
 f1_drop = (fp32_f1 - int8_f1) * 100
-print(f'\n20-Fold Mean F1 drop (FP32->QAT): {f1_drop:+.2f}% | {"H1 SUPPORTED (<2%)" if f1_drop < 2.0 else "WARNING: >=2% drop"}')
+_drop_src = 'FP32->QAT' if qat_ran else 'FP32->PTQ'
+print(f'\n{n_q_folds}-Fold Mean F1 drop ({_drop_src}): {f1_drop:+.2f}% | {"H1 SUPPORTED (<2%)" if f1_drop < 2.0 else "WARNING: >=2% drop"}')
 
 #%%
 if not FORCE_RERUN and (FIG_DIR/'quantization_analysis.png').exists():
@@ -1339,7 +1409,8 @@ else:
         _sram_plot = total_sram_kb
 
     fig, axes = plt.subplots(2, 3, figsize=(18, 10))
-    fig.suptitle(f'Float32 vs INT8 PTQ vs INT8 QAT - {len(fp32_f1s_loso)}-Subject Pooled Analysis',
+    _sup_q = 'Float32 vs INT8 PTQ vs INT8 QAT' if qat_ran else 'Float32 vs INT8 PTQ (QAT Skipped in Fast Mode)'
+    fig.suptitle(f'{_sup_q} - {n_q_folds}-Subject Pooled Analysis',
                  fontsize=14, fontweight='bold', color='#111111')
 
     ax = axes[0, 0]
@@ -1347,7 +1418,7 @@ else:
     int8_pc = f1_score(int8_gts, int8_preds, average=None, zero_division=0)
     x_ = np.arange(5); w_ = 0.35
     ax.bar(x_ - w_/2, fp32_pc * 100, w_, label='Float32', color='#1F77B4', alpha=0.9, edgecolor='#222222', linewidth=0.5)
-    ax.bar(x_ + w_/2, int8_pc * 100, w_, label='INT8 QAT', color='#D97706', alpha=0.9, edgecolor='#222222', linewidth=0.5)
+    ax.bar(x_ + w_/2, int8_pc * 100, w_, label=int8_lbl, color='#D97706', alpha=0.9, edgecolor='#222222', linewidth=0.5)
     ax.set_xticks(x_); ax.set_xticklabels([INV_STAGE_MAP[i] for i in range(5)])
     ax.set_ylabel('Pooled F1 (%)'); ax.set_title('Per-Class F1 (All Subjects)'); ax.legend(); ax.grid(axis='y', alpha=0.4)
 
@@ -1356,7 +1427,7 @@ else:
     brs2 = ax.bar([INV_STAGE_MAP[i] for i in range(5)], drops, color=clrs_d, alpha=0.9, edgecolor='#222222', linewidth=0.5)
     ax.bar_label(brs2, fmt='%+.1f%%', padding=3, fontsize=9)
     ax.axhspan(-2, 2, alpha=0.12, color='#2CA02C', label='+/-2% safe zone'); ax.axhline(0, color='#333333', lw=1, ls='--')
-    ax.set_title('Per-Class F1 Drop (FP32 -> QAT)'); ax.legend(); ax.grid(axis='y', alpha=0.4)
+    ax.set_title(f'Per-Class F1 Drop (FP32 -> {int8_lbl})'); ax.legend(); ax.grid(axis='y', alpha=0.4)
 
     ax = axes[0, 2]
     cm8 = confusion_matrix(int8_gts, int8_preds)
@@ -1365,7 +1436,7 @@ else:
     ax.set_xticks(range(5)); ax.set_yticks(range(5))
     ax.set_xticklabels([INV_STAGE_MAP[i] for i in range(5)], fontsize=8)
     ax.set_yticklabels([INV_STAGE_MAP[i] for i in range(5)], fontsize=8)
-    ax.set_title(f'Pooled INT8 Confusion | Mean k={int8_k:.3f}')
+    ax.set_title(f'Pooled {int8_lbl} Confusion | Mean k={int8_k:.3f}')
     for i in range(5):
         for j in range(5):
             ax.text(j, i, f'{cm8_n[i,j]:.2f}', ha='center', va='center', fontsize=8,
@@ -1382,24 +1453,34 @@ else:
     ax.set_ylabel('KB'); ax.set_title('Arduino Flash vs. SRAM Footprint'); ax.legend(fontsize=8.5); ax.grid(axis='y', alpha=0.4)
 
     ax = axes[1, 1]
-    brs4 = ax.bar(['PC CPU\n(Float32)', 'PC CPU\n(INT8 QAT)'], [fp32_lat_ms, int8_lat_ms],
+    brs4 = ax.bar(['PC CPU\n(Float32)', f'PC CPU\n({int8_lbl})'], [fp32_lat_ms, int8_lat_ms],
                   width=0.45, color=['#1F77B4', '#2CA02C'], alpha=0.9, edgecolor='#222222', linewidth=0.5)
     ax.bar_label(brs4, fmt='%.2f ms', padding=3, fontsize=9)
     ax.set_ylabel('Latency (ms)'); ax.set_title('Measured PC CPU Latency (MCU HIL Pending)')
-    ax.set_ylim(0, max(fp32_lat_ms, int8_lat_ms) * 1.3); ax.grid(axis='y', alpha=0.4)
+    ax.set_ylim(0, max(max(fp32_lat_ms, int8_lat_ms), 0.1) * 1.3); ax.grid(axis='y', alpha=0.4)
 
     ax = axes[1, 2]; ax.axis('off')
-    sc = [['Metric', 'Float32', 'INT8 PTQ', 'INT8 QAT'],
-          ['Accuracy', f'{fp32_acc*100:.1f}%', f'{ptq_acc*100:.1f}%', f'{int8_acc*100:.1f}%'],
-          ['Macro F1', f'{fp32_f1*100:.1f}%', f'{ptq_f1*100:.1f}%', f'{int8_f1*100:.1f}%'],
-          ["Cohen's k", f'{fp32_k:.3f}', f'{ptq_k:.3f}', f'{int8_k:.3f}'],
-          ['Raw Size', f'{fp32_raw_kb:.0f} KB', f'{int8_raw_kb:.0f} KB', f'{int8_raw_kb:.0f} KB'],
-          ['PC Lat.', f'{fp32_lat_ms:.2f}ms', '-', f'{int8_lat_ms:.2f}ms'],
-          ['F1 Drop', '-', f'{(fp32_f1-ptq_f1)*100:+.2f}%', f'{(fp32_f1-int8_f1)*100:+.2f}%'],
-          ['H1 (<2%)', 'BASE', 'PASS' if (fp32_f1-ptq_f1)*100<2 else 'FAIL', 'SUPPORTED' if (fp32_f1-int8_f1)*100<2 else 'FAILED']]
+    if qat_ran:
+        sc = [['Metric', 'Float32', 'INT8 PTQ', 'INT8 QAT'],
+              ['Accuracy', f'{fp32_acc*100:.1f}%', f'{ptq_acc*100:.1f}%', f'{int8_acc*100:.1f}%'],
+              ['Macro F1', f'{fp32_f1*100:.1f}%', f'{ptq_f1*100:.1f}%', f'{int8_f1*100:.1f}%'],
+              ["Cohen's k", f'{fp32_k:.3f}', f'{ptq_k:.3f}', f'{int8_k:.3f}'],
+              ['Raw Size', f'{fp32_raw_kb:.0f} KB', f'{int8_raw_kb:.0f} KB', f'{int8_raw_kb:.0f} KB'],
+              ['PC Lat.', f'{fp32_lat_ms:.2f}ms', '-', f'{int8_lat_ms:.2f}ms'],
+              ['F1 Drop', '-', f'{(fp32_f1-ptq_f1)*100:+.2f}%', f'{(fp32_f1-int8_f1)*100:+.2f}%'],
+              ['H1 (<2%)', 'BASE', 'PASS' if (fp32_f1-ptq_f1)*100<2 else 'FAIL', 'SUPPORTED' if (fp32_f1-int8_f1)*100<2 else 'FAILED']]
+    else:
+        sc = [['Metric', 'Float32', 'INT8 PTQ', 'INT8 QAT'],
+              ['Accuracy', f'{fp32_acc*100:.1f}%', f'{ptq_acc*100:.1f}%', 'SKIPPED'],
+              ['Macro F1', f'{fp32_f1*100:.1f}%', f'{ptq_f1*100:.1f}%', 'SKIPPED'],
+              ["Cohen's k", f'{fp32_k:.3f}', f'{ptq_k:.3f}', 'SKIPPED'],
+              ['Raw Size', f'{fp32_raw_kb:.0f} KB', f'{int8_raw_kb:.0f} KB', '-'],
+              ['PC Lat.', f'{fp32_lat_ms:.2f}ms', f'{int8_lat_ms:.2f}ms', '-'],
+              ['F1 Drop', '-', f'{(fp32_f1-ptq_f1)*100:+.2f}%', '-'],
+              ['H1 (<2%)', 'BASE', 'PASS' if (fp32_f1-ptq_f1)*100<2 else 'FAIL', 'SKIPPED']]
     tbl = ax.table(cellText=sc[1:], colLabels=sc[0], loc='center', cellLoc='center')
     tbl.auto_set_font_size(False); tbl.set_fontsize(9.5); tbl.scale(1.05, 1.7)
-    ax.set_title(f'{len(fp32_f1s_loso)}-Fold Quantization Summary', fontweight='bold', color='#111111')
+    ax.set_title(f'{n_q_folds}-Fold Quantization Summary', fontweight='bold', color='#111111')
     plt.tight_layout()
     plt.savefig(FIG_DIR/'quantization_analysis.png', dpi=300, bbox_inches='tight', facecolor='white')
     plt.show()
@@ -1547,39 +1628,46 @@ print('Hardware latency: pending physical HIL measurement on Arduino Nano 33 BLE
 # ## Section 10 - Honest 20-Subject Benchmarks & SOTA Comparison
 
 #%%
-if 'fp32_acc' not in globals():
+if 'fp32_acc' not in globals() or 'fp32_f1s_loso' not in globals() or 'qat_ran' not in globals():
     _qc = load_cache('qat_results.pkl')
     if _qc is None: raise RuntimeError(f'qat_results.pkl not found in {CKPT_DIR}. Run Section 8 first!')
     fp32_acc, fp32_f1, fp32_k = _qc['fp32_acc'], _qc['fp32_f1'], _qc['fp32_k']
     ptq_acc,  ptq_f1,  ptq_k  = _qc['ptq_acc'],  _qc['ptq_f1'],  _qc['ptq_k']
     int8_acc, int8_f1, int8_k = _qc['int8_acc'], _qc['int8_f1'], _qc['int8_k']
+    fp32_f1s_loso = _qc['fp32_f1s_loso']
+    qat_ran = _qc.get('qat_ran', True)
 
-# Strictly uses 20-subject LOSO mean (NOT single best fold) for apples-to-apples SOTA comparison
+n_bench_folds = len(fp32_f1s_loso)
+# Strictly uses multi-subject LOSO mean (NOT single best fold) for apples-to-apples SOTA comparison
 benchmarks = [
     ('Expert Human',           'PSG',       0.88,     0.82,    0.80,   'AASM 2017'),
     ('DeepSleepNet',           'Sleep-EDF', 0.82,     0.76,    0.75,   'Supratak 2017'),
     ('TinySleepNet',           'Sleep-EDF', 0.83,     0.78,    0.77,   'Supratak 2020'),
     ('SeqSleepNet (ear-EEG)',  'EESM19',    0.79,     0.73,    0.72,   'Mikkelsen 2025'),
-    ('TinyEEGSleep FP32 (20-Fold)', 'Real EESM19', fp32_acc, fp32_f1, fp32_k, 'This Notebook'),
+    (f'TinyEEGSleep FP32 ({n_bench_folds}-Fold)', 'Real EESM19', fp32_acc, fp32_f1, fp32_k, 'This Notebook'),
     ('TinyEEGSleep INT8 PTQ',       'Real EESM19', ptq_acc,  ptq_f1,  ptq_k,  'This Notebook'),
-    ('TinyEEGSleep INT8 QAT',       'Real EESM19', int8_acc, int8_f1, int8_k, 'This Notebook'),
 ]
+short_lbl = ['Expert\nHuman', 'Deep\nSleepNet', 'Tiny\nSleepNet', 'SeqSleep\nNet', 'Ours\nFP32', 'Ours\nPTQ']
+b_colors  = ['#D97706', '#7F8C8D', '#7F8C8D', '#7F8C8D', '#1F77B4', '#9467BD']
+if qat_ran:
+    benchmarks.append(('TinyEEGSleep INT8 QAT', 'Real EESM19', int8_acc, int8_f1, int8_k, 'This Notebook'))
+    short_lbl.append('Ours\nQAT')
+    b_colors.append('#2CA02C')
+
 df_bench = pd.DataFrame(benchmarks, columns=['Method', 'Dataset', 'Accuracy', 'Macro F1', "Cohen's k", 'Reference'])
 
-print(f"{'Method':<30} {'Acc':>7} {'F1':>8} {'kappa':>8}")
+print(f"{'Method':<32} {'Acc':>7} {'F1':>8} {'kappa':>8}")
 for _, r in df_bench.iterrows():
     mark = '** ' if 'Notebook' in r['Reference'] else '   '
     ck = r["Cohen's k"]
-    print(f"{mark}{r['Method']:<27} {r['Accuracy']*100:>6.1f}% {r['Macro F1']*100:>7.1f}% {ck:>8.3f}")
+    print(f"{mark}{r['Method']:<29} {r['Accuracy']*100:>6.1f}% {r['Macro F1']*100:>7.1f}% {ck:>8.3f}")
 
 if not FORCE_RERUN and (FIG_DIR/'benchmark_comparison.png').exists():
     print(f'Skipping benchmark_comparison.png (already exists in {FIG_DIR}).')
 else:
     fig, axes = plt.subplots(1, 3, figsize=(20, 6))
-    fig.suptitle(f'TinyEEGSleep ({len(fp32_f1s_loso)}-Subject LOSO Mean) vs. State-of-the-Art',
+    fig.suptitle(f'TinyEEGSleep ({n_bench_folds}-Subject LOSO Mean) vs. State-of-the-Art',
                  fontsize=14, fontweight='bold', color='#111111')
-    short_lbl = ['Expert\nHuman', 'Deep\nSleepNet', 'Tiny\nSleepNet', 'SeqSleep\nNet', 'Ours\nFP32', 'Ours\nPTQ', 'Ours\nQAT']
-    b_colors  = ['#D97706', '#7F8C8D', '#7F8C8D', '#7F8C8D', '#1F77B4', '#9467BD', '#2CA02C']
     for ax, metric in zip(axes, ['Accuracy', 'Macro F1', "Cohen's k"]):
         vals = df_bench[metric].values * (100 if metric != "Cohen's k" else 1)
         brs = ax.bar(short_lbl, vals, color=b_colors, alpha=0.9, edgecolor='#222222', linewidth=0.5)
@@ -1589,12 +1677,13 @@ else:
         if metric == 'Macro F1':
             ax.axhline(73.0, color='#D62728', lw=1.5, ls=':', label='Ear-EEG SOTA (73%)')
             ax.legend(fontsize=8)
-    fig.legend(handles=[mpatches.Patch(color='#D97706', label='Human'),
-                        mpatches.Patch(color='#7F8C8D', label='Published SOTA'),
-                        mpatches.Patch(color='#1F77B4', label='Ours (FP32)'),
-                        mpatches.Patch(color='#9467BD', label='Ours (PTQ)'),
-                        mpatches.Patch(color='#2CA02C', label='Ours (QAT)')],
-               loc='lower center', ncol=5, bbox_to_anchor=(0.5, -0.02), fontsize=9.5)
+    _leg_h = [mpatches.Patch(color='#D97706', label='Human'),
+              mpatches.Patch(color='#7F8C8D', label='Published SOTA'),
+              mpatches.Patch(color='#1F77B4', label='Ours (FP32)'),
+              mpatches.Patch(color='#9467BD', label='Ours (PTQ)')]
+    if qat_ran:
+        _leg_h.append(mpatches.Patch(color='#2CA02C', label='Ours (QAT)'))
+    fig.legend(handles=_leg_h, loc='lower center', ncol=len(_leg_h), bbox_to_anchor=(0.5, -0.02), fontsize=9.5)
     plt.tight_layout(rect=[0, 0.06, 1, 1])
     plt.savefig(FIG_DIR/'benchmark_comparison.png', dpi=300, bbox_inches='tight', facecolor='white')
     plt.show()
@@ -1612,13 +1701,14 @@ if 'mean_acc_' not in globals():
     std_f1_   = float(np.std([r['macro_f1']  for r in loso_results]))
     mean_k_   = float(np.mean([r['kappa']    for r in loso_results]))
     best_     = max(loso_results, key=lambda r: r['macro_f1'])
-if 'fp32_f1s_loso' not in globals():
+if 'fp32_f1s_loso' not in globals() or 'qat_ran' not in globals():
     _qc = load_cache('qat_results.pkl')
     fp32_acc, fp32_f1, fp32_k, fp32_kb, fp32_raw_kb = _qc['fp32_acc'], _qc['fp32_f1'], _qc['fp32_k'], _qc['fp32_kb'], _qc['fp32_raw_kb']
     ptq_acc,  ptq_f1,  ptq_k                          = _qc['ptq_acc'],  _qc['ptq_f1'],  _qc['ptq_k']
     int8_acc, int8_f1, int8_k, int8_kb, int8_raw_kb = _qc['int8_acc'], _qc['int8_f1'], _qc['int8_k'], _qc['int8_kb'], _qc['int8_raw_kb']
     fp32_f1s_loso, ptq_f1s_loso, int8_f1s_loso = _qc['fp32_f1s_loso'], _qc['ptq_f1s_loso'], _qc['int8_f1s_loso']
     int8_preds, int8_gts = _qc['int8_preds'], _qc['int8_gts']
+    qat_ran = _qc.get('qat_ran', True)
 if 'total_sram_kb' not in globals():
     _ep = load_cache('edge_profile.pkl')
     dsp_sram_kb, flash_fb_kb, act_sram_kb, rt_sram_kb, total_sram_kb, budget_kb, sram_headroom = (
@@ -1627,56 +1717,73 @@ if 'total_sram_kb' not in globals():
 else:
     n_p_log = prof['n_params']
 
-# Real paired Wilcoxon signed-rank tests across all LOSO folds (ZERO random/fake values)
+n_eval_folds = len(fp32_f1s_loso)
+int8_lbl = 'INT8 QAT' if qat_ran else 'INT8 PTQ'
+
+# Real paired Wilcoxon signed-rank tests across all evaluated LOSO folds (ZERO random/fake values)
 pval_qat, pval_ptq = None, None
-try:
-    if len(fp32_f1s_loso) >= 2 and not np.allclose(fp32_f1s_loso, int8_f1s_loso):
-        stat_q, pval_qat = wilcoxon(fp32_f1s_loso, int8_f1s_loso, alternative='two-sided')
-        print(f'Wilcoxon (FP32 vs INT8 QAT, n={len(fp32_f1s_loso)}): stat={stat_q:.3f}, p={pval_qat:.4f}')
-        print('  -> NOT significant (p > 0.05): QAT preserves accuracy!' if pval_qat > 0.05 else '  -> Statistically significant difference (check effect size)')
-    else:
-        print('Wilcoxon (FP32 vs INT8 QAT): skipped (need >=2 non-identical folds)')
-except Exception as e:
-    print(f'Wilcoxon QAT note: {e}')
+if qat_ran:
+    try:
+        if n_eval_folds >= 2 and not np.allclose(fp32_f1s_loso, int8_f1s_loso):
+            stat_q, pval_qat = wilcoxon(fp32_f1s_loso, int8_f1s_loso, alternative='two-sided')
+            print(f'Wilcoxon (FP32 vs INT8 QAT, n={n_eval_folds}): stat={stat_q:.3f}, p={pval_qat:.4f}')
+            if n_eval_folds < 6:
+                print(f'  -> (DEV mode n={n_eval_folds}: underpowered for significance; run full 20-fold for paper p-value)')
+            else:
+                print('  -> NOT significant (p > 0.05): QAT preserves accuracy!' if pval_qat > 0.05 else '  -> Statistically significant difference (check effect size)')
+        else:
+            print('Wilcoxon (FP32 vs INT8 QAT): skipped (need >=2 non-identical folds)')
+    except Exception as e:
+        print(f'Wilcoxon QAT note: {e}')
+else:
+    print('Wilcoxon (FP32 vs INT8 QAT): skipped (RUN_QAT=False)')
 
 try:
-    if len(fp32_f1s_loso) >= 2 and not np.allclose(fp32_f1s_loso, ptq_f1s_loso):
+    if n_eval_folds >= 2 and not np.allclose(fp32_f1s_loso, ptq_f1s_loso):
         stat_p, pval_ptq = wilcoxon(fp32_f1s_loso, ptq_f1s_loso, alternative='two-sided')
-        print(f'Wilcoxon (FP32 vs INT8 PTQ, n={len(fp32_f1s_loso)}): stat={stat_p:.3f}, p={pval_ptq:.4f}')
+        print(f'Wilcoxon (FP32 vs INT8 PTQ, n={n_eval_folds}): stat={stat_p:.3f}, p={pval_ptq:.4f}')
+        if n_eval_folds < 6:
+            print(f'  -> (DEV mode n={n_eval_folds}: underpowered for significance; run full 20-fold for paper p-value)')
 except Exception as e:
     print(f'Wilcoxon PTQ note: {e}')
 
-qat_drop_pct = (fp32_f1 - int8_f1) * 100.0
-ptq_drop_pct = (fp32_f1 - ptq_f1) * 100.0
-h1_pass = bool(qat_drop_pct < 2.0)
+active_pval = pval_qat if qat_ran else pval_ptq
+active_drop_pct = (fp32_f1 - int8_f1) * 100.0
+ptq_drop_pct    = (fp32_f1 - ptq_f1) * 100.0
+h1_pass = bool(active_drop_pct < 2.0)
 h3_pass = bool(sram_headroom > 0 and flash_headroom > 0)
 
 print()
 print('=' * 70)
-print(f'FINAL RESULTS — {RUN_NAME}')
+print(f'FINAL RESULTS — {ACTIVE_RUN_NAME}')
 print('=' * 70)
-print(f'  20-Fold FP32 Acc / F1 / k:  {fp32_acc*100:.2f}% / {fp32_f1*100:.2f}% / {fp32_k:.3f}')
-print(f'  20-Fold PTQ  Acc / F1 / k:  {ptq_acc*100:.2f}% / {ptq_f1*100:.2f}% / {ptq_k:.3f} (drop {ptq_drop_pct:+.2f}%)')
-print(f'  20-Fold QAT  Acc / F1 / k:  {int8_acc*100:.2f}% / {int8_f1*100:.2f}% / {int8_k:.3f} (drop {qat_drop_pct:+.2f}%)')
+print(f'  {n_eval_folds}-Fold FP32 Acc / F1 / k:  {fp32_acc*100:.2f}% / {fp32_f1*100:.2f}% / {fp32_k:.3f}')
+print(f'  {n_eval_folds}-Fold PTQ  Acc / F1 / k:  {ptq_acc*100:.2f}% / {ptq_f1*100:.2f}% / {ptq_k:.3f} (drop {ptq_drop_pct:+.2f}%)')
+if qat_ran:
+    print(f'  {n_eval_folds}-Fold QAT  Acc / F1 / k:  {int8_acc*100:.2f}% / {int8_f1*100:.2f}% / {int8_k:.3f} (drop {active_drop_pct:+.2f}%)')
+else:
+    print(f'  {n_eval_folds}-Fold QAT:                 SKIPPED (RUN_QAT=False; H1 evaluated on INT8 PTQ)')
 print(f'  Flash (Raw / Est FlatBuf):  {raw_weights_kb:.1f} / {flash_fb_kb:.1f} KB (limit 1024 KB)')
 print(f'  Arduino SRAM Used:          {total_sram_kb:.1f} / {budget_kb:.0f} KB (free {sram_headroom:.1f} KB)')
-print(f'  H1 (<2% QAT F1 drop):       {"SUPPORTED" if h1_pass else "REJECTED"}')
+print(f'  H1 (<2% {int8_lbl} F1 drop): {"SUPPORTED" if h1_pass else "REJECTED"}')
 print(f'  H3 (<256KB SRAM & <1MB Flash): {"SUPPORTED" if h3_pass else "REJECTED"}')
 print('=' * 70)
 
+_dev_tag = f'[DEV {n_eval_folds}-fold] ' if DEV_FOLD_INDICES is not None else ''
+_q_tag = f'PTQ+QAT(lr={QAT_LR},val-es)' if qat_ran else 'PTQ-only(QAT skipped)'
 # Save metrics_summary.json and upsert row in outputs/experiments_log.csv
 metrics_summary = {
-    'run_name': RUN_NAME,
+    'run_name': ACTIVE_RUN_NAME,
     'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
-    'fs_hz': FS, 'context_len': CONTEXT_LEN, 'n_subjects': len(fp32_f1s_loso), 'params': int(n_p_log),
+    'fs_hz': FS, 'context_len': CONTEXT_LEN, 'n_subjects': n_eval_folds, 'params': int(n_p_log),
     'fp32_acc': round(fp32_acc * 100, 2), 'fp32_f1': round(fp32_f1 * 100, 2), 'fp32_kappa': round(fp32_k, 3),
     'ptq_f1': round(ptq_f1 * 100, 2),
     'int8_acc': round(int8_acc * 100, 2), 'int8_f1': round(int8_f1 * 100, 2), 'int8_kappa': round(int8_k, 3),
-    'f1_drop_pct': round(qat_drop_pct, 3),
-    'wilcoxon_p': round(float(pval_qat), 4) if pval_qat is not None else '',
+    'f1_drop_pct': round(active_drop_pct, 3),
+    'wilcoxon_p': round(float(active_pval), 4) if (active_pval is not None and not np.isnan(active_pval)) else '',
     'flash_kb': round(flash_fb_kb, 1), 'sram_kb': round(total_sram_kb, 1),
     'h1_pass': h1_pass, 'h3_pass': h3_pass,
-    'notes': f'Cross-ear {FS}Hz, ctx={CONTEXT_LEN}, damp_pow={CLASS_WT_POWER}, leak-free 17/2/1 LOSO + real PTQ/QAT'
+    'notes': f'{_dev_tag}Cross-ear {FS}Hz, ctx={CONTEXT_LEN}, damp_pow={CLASS_WT_POWER}, leak-free 17/2/1 LOSO + {_q_tag}'
 }
 with open(RUN_DIR / 'metrics_summary.json', 'w', encoding='utf-8') as _mf:
     json.dump(metrics_summary, _mf, indent=2)
@@ -1686,7 +1793,7 @@ log_cols = ['run_name','timestamp','fs_hz','context_len','n_subjects','params',
             'fp32_acc','fp32_f1','fp32_kappa','ptq_f1','int8_acc','int8_f1','int8_kappa',
             'f1_drop_pct','wilcoxon_p','flash_kb','sram_kb','h1_pass','h3_pass','notes']
 df_log = pd.read_csv(log_csv) if log_csv.exists() else pd.DataFrame(columns=log_cols)
-df_log = df_log[df_log['run_name'] != RUN_NAME]
+df_log = df_log[df_log['run_name'] != ACTIVE_RUN_NAME]
 df_log = pd.concat([df_log, pd.DataFrame([metrics_summary])], ignore_index=True)
 df_log.to_csv(log_csv, index=False)
 print(f'Logged run to {log_csv} and {RUN_DIR / "metrics_summary.json"}')
@@ -1705,20 +1812,28 @@ else:
 
     if 'loso_results' not in globals() or loso_results is None:
         loso_results = load_cache('loso_results.pkl')
+    if 'qat_ran' not in globals():
+        qat_ran = True
+    n_eval_folds = len(fp32_f1s_loso)
+    int8_lbl = 'INT8 QAT' if qat_ran else 'INT8 PTQ'
 
     fig = plt.figure(figsize=(20, 14))
     fig.patch.set_facecolor('white')
-    fig.suptitle(f'TinyEEGSleep Research Dashboard ({RUN_NAME})\nEar-EEG Sleep | EESM19 (ds005185) | {len(fp32_f1s_loso)}-Subject Leak-Free LOSO-CV',
+    fig.suptitle(f'TinyEEGSleep Research Dashboard ({ACTIVE_RUN_NAME})\nEar-EEG Sleep | EESM19 (ds005185) | {n_eval_folds}-Subject Leak-Free LOSO-CV',
                  fontsize=14, fontweight='bold', color='#111111', y=1.02)
     gs = gridspec.GridSpec(3, 4, figure=fig, hspace=0.48, wspace=0.38)
 
     ax = fig.add_subplot(gs[0, 0])
-    n_psg_d = EESM19.n_subjects * EESM19.n_psg_per_subject
-    n_home_d = EESM19.n_nights_total - n_psg_d
+    if 'EESM19' in globals():
+        n_psg_d = EESM19.n_subjects * EESM19.n_psg_per_subject
+        n_tot_d = EESM19.n_nights_total
+    else:
+        n_psg_d, n_tot_d = 80, 214
+    n_home_d = n_tot_d - n_psg_d
     ax.pie([n_psg_d, n_home_d],
            labels=[f'PSG-Scored\n{n_psg_d} nights', f'Home Only\n{n_home_d} nights'], colors=['#1F77B4', '#7F8C8D'], autopct='%1.0f%%',
            wedgeprops=dict(width=0.5, edgecolor='white', linewidth=2), textprops={'color': '#111111', 'fontsize': 9})
-    ax.set_title(f'EESM19: {EESM19.n_nights_total} Nights', fontweight='bold', color='#111111', fontsize=10)
+    ax.set_title(f'EESM19: {n_tot_d} Nights', fontweight='bold', color='#111111', fontsize=10)
 
     ax = fig.add_subplot(gs[0, 1])
     ax.bar(STAGE_ORDER, pcts, color=[STAGE_COLORS[s] for s in STAGE_ORDER], alpha=0.9, edgecolor='#222222', linewidth=0.5)
@@ -1726,11 +1841,13 @@ else:
     ax.set_ylabel('%'); ax.grid(axis='y', alpha=0.4); ax.set_ylim(0, max(pcts) * 1.3)
 
     ax = fig.add_subplot(gs[0, 2])
-    m_bars = ax.bar(['FP32', 'PTQ', 'QAT'], [fp32_f1 * 100, ptq_f1 * 100, int8_f1 * 100],
-                    color=['#1F77B4', '#9467BD', '#2CA02C'], alpha=0.9, edgecolor='#222222', linewidth=0.5)
+    _m_lbls = ['FP32', 'PTQ', 'QAT'] if qat_ran else ['FP32', 'PTQ']
+    _m_vals = [fp32_f1 * 100, ptq_f1 * 100, int8_f1 * 100] if qat_ran else [fp32_f1 * 100, ptq_f1 * 100]
+    _m_cols = ['#1F77B4', '#9467BD', '#2CA02C'] if qat_ran else ['#1F77B4', '#9467BD']
+    m_bars = ax.bar(_m_lbls, _m_vals, color=_m_cols, alpha=0.9, edgecolor='#222222', linewidth=0.5)
     ax.bar_label(m_bars, fmt='%.1f%%', padding=2, fontsize=8.5)
     ax.axhline(73.0, color='#D62728', lw=1.5, ls='--', label='SOTA 73%')
-    ax.set_title('20-Subject Mean F1', fontweight='bold', color='#111111', fontsize=10)
+    ax.set_title(f'{n_eval_folds}-Subject Mean F1', fontweight='bold', color='#111111', fontsize=10)
     ax.set_ylabel('Macro F1 (%)'); ax.set_ylim(0, 95); ax.legend(fontsize=8); ax.grid(axis='y', alpha=0.4)
 
     ax = fig.add_subplot(gs[0, 3])
@@ -1762,8 +1879,12 @@ else:
     ax.bar(range(1, len(fold_f1s_plot) + 1), fold_f1s_plot,
            color=['#2CA02C' if f >= 70 else '#D62728' for f in fold_f1s_plot], alpha=0.9, edgecolor='#222222', linewidth=0.5)
     ax.axhline(int8_f1 * 100, color='#1F77B4', lw=2, ls='--')
-    ax.set_xlabel('Subject Fold'); ax.set_ylabel('INT8 QAT F1 (%)')
-    ax.set_title('Per-Subject INT8 QAT F1', fontweight='bold', color='#111111', fontsize=10); ax.grid(axis='y', alpha=0.4)
+    if loso_results and len(loso_results) == len(fold_f1s_plot):
+        ax.set_xticks(range(1, len(fold_f1s_plot) + 1))
+        ax.set_xticklabels([str(r['subject']) for r in loso_results],
+                           rotation=45 if len(fold_f1s_plot) > 6 else 0, fontsize=7.5)
+    ax.set_xlabel('Subject Fold'); ax.set_ylabel(f'{int8_lbl} F1 (%)')
+    ax.set_title(f'Per-Subject {int8_lbl} F1', fontweight='bold', color='#111111', fontsize=10); ax.grid(axis='y', alpha=0.4)
 
     ax = fig.add_subplot(gs[2, 1])
     cm_bd = confusion_matrix(int8_gts, int8_preds)
@@ -1772,16 +1893,25 @@ else:
     ax.set_xticks(range(5)); ax.set_yticks(range(5))
     ax.set_xticklabels([INV_STAGE_MAP[i] for i in range(5)], fontsize=7)
     ax.set_yticklabels([INV_STAGE_MAP[i] for i in range(5)], fontsize=7)
-    ax.set_title('Pooled 20-Sub INT8 Confusion', fontweight='bold', color='#111111', fontsize=10)
+    ax.set_title(f'Pooled {n_eval_folds}-Sub {int8_lbl} Confusion', fontweight='bold', color='#111111', fontsize=10)
 
     ax = fig.add_subplot(gs[2, 2:4])
-    bench_f1s = df_bench['Macro F1'].values * 100
-    brs_b = ax.bar(['Expert\nHuman', 'Deep\nSleepNet', 'Tiny\nSleepNet', 'SeqSleep\nNet', 'Ours\nFP32', 'Ours\nPTQ', 'Ours\nQAT'],
-                   bench_f1s, color=['#D97706', '#7F8C8D', '#7F8C8D', '#7F8C8D', '#1F77B4', '#9467BD', '#2CA02C'],
+    if 'df_bench' in globals() and 'short_lbl' in globals() and 'b_colors' in globals() and len(df_bench) == len(short_lbl):
+        bench_f1s = df_bench['Macro F1'].values * 100
+        _b_lbls, _b_cols = short_lbl, b_colors
+    else:
+        _b_lbls = ['Expert\nHuman', 'Deep\nSleepNet', 'Tiny\nSleepNet', 'SeqSleep\nNet', 'Ours\nFP32', 'Ours\nPTQ']
+        _b_cols = ['#D97706', '#7F8C8D', '#7F8C8D', '#7F8C8D', '#1F77B4', '#9467BD']
+        bench_f1s = np.array([82.0, 76.0, 78.0, 73.0, fp32_f1 * 100, ptq_f1 * 100])
+        if qat_ran:
+            _b_lbls.append('Ours\nQAT')
+            _b_cols.append('#2CA02C')
+            bench_f1s = np.append(bench_f1s, int8_f1 * 100)
+    brs_b = ax.bar(_b_lbls, bench_f1s, color=_b_cols,
                    alpha=0.9, edgecolor='#222222', linewidth=0.5)
     ax.bar_label(brs_b, fmt='%.1f%%', padding=3, fontsize=8.5, color='#111111')
     ax.set_ylabel('Macro F1 (%)'); ax.grid(axis='y', alpha=0.4)
-    ax.set_title('Honest 20-Subject Benchmark Comparison', fontweight='bold', color='#111111', fontsize=10)
+    ax.set_title(f'Honest {n_eval_folds}-Subject Benchmark Comparison', fontweight='bold', color='#111111', fontsize=10)
     ax.set_ylim(40, 96); ax.axhline(73.0, color='#D62728', lw=1.5, ls=':', label='Ear-EEG SOTA (73%)'); ax.legend(fontsize=8)
 
     plt.savefig(FIG_DIR / 'dashboard.png', dpi=300, bbox_inches='tight', facecolor='white')
@@ -1789,7 +1919,7 @@ else:
     print(f'Dashboard saved to {FIG_DIR / "dashboard.png"}!')
 
 #%%
-print(f'Generated artifacts for run [{RUN_NAME}] in {RUN_DIR}:')
+print(f'Generated artifacts for run [{ACTIVE_RUN_NAME}] in {RUN_DIR}:')
 for f in sorted(RUN_DIR.rglob('*')):
     if f.is_file():
         print(f'  {f.relative_to(RUN_DIR)} ({f.stat().st_size/1024:.1f} KB)')
